@@ -25,12 +25,12 @@ import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.util.BytesRef;
 
-public class QueryRelevanceCollector {
+public class ConceptRelevanceCollector {
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 
-		QueryRelevanceCollector c = new QueryRelevanceCollector();
+		ConceptRelevanceCollector c = new ConceptRelevanceCollector();
 		c.collect();
 
 		System.out.println("process ends.");
@@ -51,8 +51,7 @@ public class QueryRelevanceCollector {
 
 		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
 
-		List<List<BaseQuery>> queryData = new ArrayList<List<BaseQuery>>();
-		List<List<SparseVector>> relevanceData = new ArrayList<List<SparseVector>>();
+		IndexSearcher wikiSearcher = DocumentSearcher.getIndexSearcher(MIRPath.WIKI_INDEX_DIR);
 
 		for (int i = 0; i < queryFileNames.length; i++) {
 			List<BaseQuery> bqs = new ArrayList<BaseQuery>();
@@ -76,35 +75,68 @@ public class QueryRelevanceCollector {
 				queryRels = RelevanceReader.readOhsumedRelevances(relDataFileNames[i]);
 			}
 
-			// int iii = 0;
-			//
-			// if (iii == 0) {
-			// continue;
-			// }
-
-			List<StrCounter> qcs = new ArrayList<StrCounter>();
-
-			for (int j = 0; j < bqs.size(); j++) {
-				BaseQuery bq = bqs.get(j);
-				List<String> words = AnalyzerUtils.getWords(bq.getSearchText(), analyzer);
-				StrCounter c = new StrCounter();
-				for (String word : words) {
-					c.incrementCount(word, 1);
-				}
-				qcs.add(c);
-			}
+			IndexSearcher indexSearcher = indexSearchers[i];
 
 			StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(docMapFileNames[i]);
 
-			// queryRelevances = RelevanceReader.filter(queryRelevances, docIdMap);
-
-			// baseQueries = QueryReader.filter(baseQueries, queryRelevances);
-
-			queryData.add(bqs);
-
 			List<SparseVector> docRelData = DocumentIdMapper.mapDocIdsToIndexIds(bqs, queryRels, docIdMap);
+			List<SparseVector> queryConceptData = new ArrayList<SparseVector>();
 
-			relevanceData.add(docRelData);
+			for (int j = 0; j < bqs.size(); j++) {
+				BaseQuery bq = bqs.get(j);
+				Counter<String> c = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
+				SparseVector queryConceptWeights = DocumentSearcher.search(AnalyzerUtils.getQuery(c), wikiSearcher, 100);
+				queryConceptData.add(queryConceptWeights);
+
+				SparseVector docRels = docRelData.get(j);
+				List<SparseVector> docConceptData = new ArrayList<SparseVector>();
+
+				for (int k = 0; k < docRels.size(); k++) {
+					int docId = docRels.indexAtLoc(k);
+					double rel = docRels.valueAtLoc(k);
+
+					Document doc = indexSearcher.getIndexReader().document(docId);
+
+					Terms terms = indexSearcher.getIndexReader().getTermVector(docId, IndexFieldName.CONTENT);
+
+					if (terms == null) {
+						continue;
+					}
+
+					TermsEnum termsEnum = terms.iterator(null);
+
+					BytesRef bytesRef = null;
+					PostingsEnum postingsEnum = null;
+					StrCounter cc = new StrCounter();
+
+					while ((bytesRef = termsEnum.next()) != null) {
+						postingsEnum = termsEnum.postings(null, postingsEnum, PostingsEnum.ALL);
+
+						if (postingsEnum.nextDoc() != 0) {
+							throw new AssertionError();
+						}
+
+						String word = bytesRef.utf8ToString();
+
+						if (word.equals("null")) {
+							continue;
+						}
+						int freq = postingsEnum.freq();
+						cc.incrementCount(word, freq);
+
+						// for (int k = 0; k < freq; k++) {
+						// final int position = postingsEnum.nextPosition();
+						// }
+					}
+
+					SparseVector docConceptWeights = DocumentSearcher.search(AnalyzerUtils.getQuery(cc), wikiSearcher, 100);
+					docConceptData.add(docConceptWeights);
+				}
+				
+				
+				
+				
+			}
 
 			IndexReader indexReader = indexSearchers[i].getIndexReader();
 

@@ -30,7 +30,7 @@ public class TrecCdsDataHandler {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 		TrecCdsDataHandler dh = new TrecCdsDataHandler();
-		// dh.makeRawTextDump();
+		dh.makeRawTextDump();
 		dh.makeTextDump();
 		System.out.println("process ends.");
 	}

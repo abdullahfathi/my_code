@@ -66,7 +66,7 @@ public class DocumentIndexer {
 		Matcher m = p.matcher(text);
 
 		StringBuffer sb = new StringBuffer();
-
+		
 		while (m.find()) {
 			m.appendReplacement(sb, "");
 		}
