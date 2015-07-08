@@ -1,34 +1,24 @@
 package ohs.medical.ir.trec.cds_2015;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
-import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
 import ohs.lucene.common.IndexFieldName;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseVector;
-import ohs.medical.ir.DocumentSearcher;
+import ohs.medical.ir.MIRPath;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
+import ohs.types.ListMap;
+import ohs.utils.StrUtils;
 
-import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.DocsAndPositionsEnum;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.BytesRef;
-import org.hibernate.engine.query.spi.QueryMetadata;
 
 import de.bwaldvogel.liblinear.Feature;
 import de.bwaldvogel.liblinear.FeatureNode;
@@ -106,168 +96,31 @@ public class QueryClassifierTrainer {
 
 	private Model model;
 
-	private void chooseDocumentTypes() throws Exception {
-		System.out.println("choose document types.");
-		CounterMap<String, String> queryDocMap = new CounterMap<String, String>();
-
-		TextFileReader reader = new TextFileReader(new File(CDSPath.OUTPUT_INITIAL_SEARCH_RESULT_FILE));
-		while (reader.hasNext()) {
-			if (reader.getNumLines() == 1) {
-				continue;
-			}
-			String[] parts = reader.next().split("\t");
-			String qId = parts[0];
-			String docId = parts[1];
-			double score = Double.parseDouble(parts[2]);
-			queryDocMap.setCount(qId, docId, score);
-		}
-		reader.close();
-
-		Set<String> docSet = new TreeSet<String>();
-
-		for (String queryId : queryDocMap.keySet()) {
-			Counter<String> docScores = queryDocMap.getCounter(queryId);
-			docScores.keepTopNKeys(200);
-
-			for (String docId : docScores.keySet()) {
-				docSet.add(docId);
-			}
-		}
-
-		Map<String, CDSQuery> queryMap = new TreeMap<String, CDSQuery>();
-
-		for (CDSQuery cdsQuery : CDSQuery.read(CDSPath.TEST_QUERY_FILE)) {
-			queryMap.put(cdsQuery.getId(), cdsQuery);
-		}
-
-		CounterMap<String, String> docTypeMap = new CounterMap<String, String>();
-
-		for (String queryId : queryDocMap.keySet()) {
-			String type = queryMap.get(queryId).getType();
-			Counter<String> docScores = queryDocMap.getCounter(queryId);
-			for (String docId : docScores.keySet()) {
-				double score = docScores.getCount(docId);
-				docTypeMap.setCount(docId, type, 1);
-			}
-		}
-
-		Counter<String> docTypeCounts = new Counter<String>();
-		Map<String, String> docTypes = new TreeMap<String, String>();
-
-		for (String docId : docTypeMap.keySet()) {
-			Counter<String> typeCounts = docTypeMap.getCounter(docId);
-			if (typeCounts.size() > 1) {
-				Iterator<String> iter = typeCounts.keySet().iterator();
-				while (iter.hasNext()) {
-					iter.next();
-					iter.remove();
-				}
-				typeCounts.setCount("other", 1);
-				docTypes.put(docId, "other");
-			} else {
-				docTypes.put(docId, typeCounts.getSortedKeys().get(0));
-			}
-		}
-
-		for (String docId : docTypeMap.keySet()) {
-			List<String> types = docTypeMap.getCounter(docId).getSortedKeys();
-			docTypeCounts.incrementCount(types.get(0), 1);
-		}
-
-		System.out.printf("doc size:\t%d\n", docSet.size());
-		System.out.println(docTypeCounts.toString());
-
-		{
-			StringBuffer sb = new StringBuffer();
-			sb.append("IndexId\tType");
-
-			for (String docId : docTypes.keySet()) {
-				String type = docTypes.get(docId);
-				sb.append(String.format("\n%s\t%s", docId, type));
-			}
-
-			IOUtils.write(CDSPath.OUTPUT_DOC_TYPE_FILE, sb.toString());
-		}
-	}
-
 	private void generateTrainData() throws Exception {
 		System.out.println("generate training data.");
 
-		IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(CDSPath.INDEX_DIR);
+		ListMap<Integer, SparseVector> map = new ListMap<Integer, SparseVector>();
 
-		File vocDir = new File(CDSPath.VOCABULARY_DIR);
-
-		if (!vocDir.exists()) {
-			VocabularyData.make(indexSearcher.getIndexReader());
-		}
-
-		VocabularyData vocData = VocabularyData.read(vocDir);
-
-		Indexer<String> wordIndexer = vocData.getWordIndexer();
-		Indexer<String> typeIndexer = new Indexer<String>();
-
-		List<Integer> indexIds = new ArrayList<Integer>();
-		List<Integer> typeIds = new ArrayList<Integer>();
-
-		Counter<String> typeCounts = new Counter<String>();
-
-		TextFileReader reader = new TextFileReader(new File(CDSPath.OUTPUT_DOC_TYPE_FILE));
+		TextFileReader reader = new TextFileReader(MIRPath.TREC_CDS_QUERY_DOC_FILE);
 		while (reader.hasNext()) {
-			if (reader.getNumLines() == 1) {
-				continue;
+			List<String> lines = reader.getNextLines();
+
+			for (int i = 0; i < lines.size(); i++) {
+				String line = lines.get(i);
+				String[] parts = line.split("\t");
+				int qid = Integer.parseInt(parts[1]);
+
+				Counter<String> c = new Counter<String>();
+				String[] toks = parts[2].split(" ");
+				for (int j = 0; j < toks.length; j++) {
+					String[] two = StrUtils.split2Two(":", toks[j]);
+					c.incrementCount(two[0], Double.parseDouble(two[1]));
+				}
+				System.out.println(line);
 			}
-
-			String[] parts = reader.next().split("\t");
-			String type = parts[1];
-
-			// if (type.equals("other")) {
-			// continue;
-			// }
-
-			int docId = Integer.parseInt(parts[0]);
-			int typeId = typeIndexer.getIndex(type);
-
-			indexIds.add(docId);
-			typeIds.add(typeId);
-
-			typeCounts.incrementCount(type, 1);
 		}
 		reader.close();
 
-		System.out.println(typeCounts.toString());
-
-		List<SparseVector> docs = getDocumentWordCounts(indexSearcher.getIndexReader(), wordIndexer, indexIds, typeIds);
-		SparseVector termDocFreqs = vocData.getDocumentFrequencies();
-
-		for (int i = 0; i < docs.size(); i++) {
-			SparseVector doc = docs.get(i);
-			double norm = 0;
-			for (int j = 0; j < doc.size(); j++) {
-				int termId = doc.indexAtLoc(j);
-				double tf = doc.valueAtLoc(j);
-
-				if (tf > 0) {
-					tf = Math.log(tf) + 1;
-				}
-
-				double docFreq = termDocFreqs.valueAlways(termId);
-				double numDocs = indexSearcher.getIndexReader().maxDoc();
-				// double tf = 1 + (count == 0 ? 0 : Math.log(count));
-				double idf = docFreq == 0 ? 0 : Math.log((numDocs + 1) / docFreq);
-				double tfidf = tf * idf;
-				doc.setAtLoc(j, tfidf);
-				norm += tfidf * tfidf;
-			}
-			doc.scale(1f / norm);
-		}
-
-		for (int i = 0; i < 5; i++) {
-			Collections.shuffle(docs);
-		}
-
-		this.labelIndexer = typeIndexer;
-		this.featureIndexer = wordIndexer;
-		this.trainData = docs;
 	}
 
 	private Parameter getSVMParamter() {
@@ -307,10 +160,8 @@ public class QueryClassifierTrainer {
 	public void train() throws Exception {
 		System.out.println("train.");
 
-		chooseDocumentTypes();
 		generateTrainData();
 		trainSVMs();
-		write();
 	}
 
 	private void trainSVMs() {
@@ -351,9 +202,4 @@ public class QueryClassifierTrainer {
 		model = Linear.train(prob, getSVMParamter());
 	}
 
-	private void write() throws Exception {
-		System.out.println("write model.");
-		IOUtils.write(CDSPath.QUERY_CLASSIFIER_TYPE_INDEXER_FILE, labelIndexer);
-		model.save(new File(CDSPath.QUERY_CLASSIFIER_MODEL_FILE));
-	}
 }

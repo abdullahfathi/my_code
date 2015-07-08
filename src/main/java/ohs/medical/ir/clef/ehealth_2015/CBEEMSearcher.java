@@ -886,12 +886,8 @@ public class CBEEMSearcher {
 		WordCountBox[] ret = new WordCountBox[num_colls];
 
 		for (int i = 0; i < num_colls; i++) {
-			IntCounterMap counterMap = wordCountData.get(i);
-			IntCounter counter = collWordCountData.get(i);
-			DeepMap<Integer, Integer, Integer> docWords = wordData.get(i);
-			ret[i] = new WordCountBox(VectorUtils.toSpasreMatrix(counterMap), VectorUtils.toSparseVector(counter),
-					VectorUtils.toSpasreMatrix(new CounterMap<Integer, Integer>()), cnt_sum_in_each_coll[i], num_docs_in_each_coll[i],
-					docWords);
+			SparseVector docScores = docScoreData[i];
+			ret[i] = WordCountBox.getWordCountBox(indexSearchers[i].getIndexReader(), docScores, wordIndexer);
 		}
 		docWordCountBoxes = ret;
 	}
