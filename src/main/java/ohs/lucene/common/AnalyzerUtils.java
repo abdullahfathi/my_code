@@ -16,13 +16,18 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.BooleanClause.Occur;
 
 public class AnalyzerUtils {
+
 	public static BooleanQuery getQuery(Counter<String> wordCounts) throws Exception {
+		return getQuery(wordCounts, IndexFieldName.CONTENT);
+	}
+
+	public static BooleanQuery getQuery(Counter<String> wordCounts, String field) throws Exception {
 		BooleanQuery ret = new BooleanQuery();
 		List<String> words = wordCounts.getSortedKeys();
 		for (int i = 0; i < words.size() && i < BooleanQuery.getMaxClauseCount(); i++) {
 			String word = words.get(i);
 			double cnt = wordCounts.getCount(word);
-			TermQuery tq = new TermQuery(new Term(IndexFieldName.CONTENT, word));
+			TermQuery tq = new TermQuery(new Term(field, word));
 			tq.setBoost((float) cnt);
 			ret.add(tq, Occur.SHOULD);
 		}
@@ -30,16 +35,24 @@ public class AnalyzerUtils {
 	}
 
 	public static BooleanQuery getQuery(List<String> words) throws Exception {
+		return getQuery(words, IndexFieldName.CONTENT);
+	}
+
+	public static BooleanQuery getQuery(List<String> words, String field) throws Exception {
 		BooleanQuery ret = new BooleanQuery();
 		for (int i = 0; i < words.size(); i++) {
 			String word = words.get(i);
-			TermQuery tq = new TermQuery(new Term(IndexFieldName.CONTENT, word));
+			TermQuery tq = new TermQuery(new Term(field, word));
 			ret.add(tq, Occur.SHOULD);
 		}
 		return ret;
 	}
 
 	public static BooleanQuery getQuery(String text, Analyzer analyzer) throws Exception {
+		return getQuery(text, analyzer, IndexFieldName.CONTENT);
+	}
+
+	public static BooleanQuery getQuery(String text, Analyzer analyzer, String field) throws Exception {
 		BooleanQuery ret = new BooleanQuery();
 
 		Counter<String> c = getWordCounts(text, analyzer);
@@ -48,7 +61,7 @@ public class AnalyzerUtils {
 		for (int i = 0; i < words.size() && i < BooleanQuery.getMaxClauseCount(); i++) {
 			String word = words.get(i);
 			double cnt = c.getProbability(word);
-			TermQuery tq = new TermQuery(new Term(IndexFieldName.CONTENT, word));
+			TermQuery tq = new TermQuery(new Term(field, word));
 			tq.setBoost((float) cnt);
 			ret.add(tq, Occur.SHOULD);
 		}

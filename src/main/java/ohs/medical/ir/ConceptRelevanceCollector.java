@@ -45,7 +45,8 @@ public class ConceptRelevanceCollector {
 
 		String[] docMapFileNames = MIRPath.DocIdMapFileNames;
 
-		String[] queryDocFileNames = { MIRPath.TREC_CDS_QUERY_DOC_FILE, MIRPath.CLEF_EHEALTH_QUERY_DOC_FILE, MIRPath.OHSUMED_QUERY_DOC_FILE };
+		String[] queryDocFileNames = { MIRPath.TREC_CDS_CONCEPT_QUERY_DOC_FILE, MIRPath.CLEF_EHEALTH_CONCEPT_QUERY_DOC_FILE,
+				MIRPath.OHSUMED_CONCEPT_QUERY_DOC_FILE };
 
 		IndexSearcher[] indexSearchers = DocumentSearcher.getIndexSearchers(indexDirNames);
 
@@ -61,18 +62,18 @@ public class ConceptRelevanceCollector {
 			// continue;
 			// }
 
-			File queryFile = new File(queryFileNames[i]);
-			File relvFile = new File(relDataFileNames[i]);
+			String queryFileName = queryFileNames[i];
+			String relvFileName = relDataFileNames[i];
 
 			if (i == 0) {
-				bqs = QueryReader.readTrecCdsQueries(queryFileNames[i]);
-				queryRels = RelevanceReader.readTrecCdsRelevances(relDataFileNames[i]);
+				bqs = QueryReader.readTrecCdsQueries(queryFileName);
+				queryRels = RelevanceReader.readTrecCdsRelevances(relvFileName);
 			} else if (i == 1) {
-				bqs = QueryReader.readClefEHealthQueries(queryFileNames[i]);
-				queryRels = RelevanceReader.readClefEHealthRelevances(relDataFileNames[i]);
+				bqs = QueryReader.readClefEHealthQueries(queryFileName);
+				queryRels = RelevanceReader.readClefEHealthRelevances(relvFileName);
 			} else if (i == 2) {
-				bqs = QueryReader.readOhsumedQueries(queryFileNames[i]);
-				queryRels = RelevanceReader.readOhsumedRelevances(relDataFileNames[i]);
+				bqs = QueryReader.readOhsumedQueries(queryFileName);
+				queryRels = RelevanceReader.readOhsumedRelevances(relvFileName);
 			}
 
 			IndexSearcher indexSearcher = indexSearchers[i];
@@ -80,16 +81,18 @@ public class ConceptRelevanceCollector {
 			StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(docMapFileNames[i]);
 
 			List<SparseVector> docRelData = DocumentIdMapper.mapDocIdsToIndexIds(bqs, queryRels, docIdMap);
-			List<SparseVector> queryConceptData = new ArrayList<SparseVector>();
+
+			TextFileWriter writer = new TextFileWriter(queryDocFileNames[i]);
 
 			for (int j = 0; j < bqs.size(); j++) {
 				BaseQuery bq = bqs.get(j);
 				Counter<String> c = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
 				SparseVector queryConceptWeights = DocumentSearcher.search(AnalyzerUtils.getQuery(c), wikiSearcher, 100);
-				queryConceptData.add(queryConceptWeights);
+
+				writer.write(String.format("Q_%d:\t", j + 1) + getString(queryConceptWeights) + "\n");
 
 				SparseVector docRels = docRelData.get(j);
-				List<SparseVector> docConceptData = new ArrayList<SparseVector>();
+				docRels.sortByValue();
 
 				for (int k = 0; k < docRels.size(); k++) {
 					int docId = docRels.indexAtLoc(k);
@@ -129,85 +132,34 @@ public class ConceptRelevanceCollector {
 						// }
 					}
 
+					cc.keepTopNKeys(50);
+
 					SparseVector docConceptWeights = DocumentSearcher.search(AnalyzerUtils.getQuery(cc), wikiSearcher, 100);
-					docConceptData.add(docConceptWeights);
-				}
-				
-				
-				
-				
-			}
-
-			IndexReader indexReader = indexSearchers[i].getIndexReader();
-
-			// List<CounterMap<Integer, String>> dcms = setWordCountBoxes(indexReader, docRelevances);
-
-			if (bqs.size() != docRelData.size()) {
-				throw new Exception();
-			}
-
-			TextFileWriter writer = new TextFileWriter(queryDocFileNames[i]);
-
-			for (int j = 0; j < bqs.size(); j++) {
-				BaseQuery bq = bqs.get(j);
-				StrCounter qwc = qcs.get(j);
-				SparseVector docRels = docRelData.get(j);
-
-				CounterMap<Integer, String> dcm = new CounterMap<Integer, String>();
-
-				for (int k = 0; k < docRels.size(); k++) {
-					int docId = docRels.indexAtLoc(k);
-					double relevance = docRels.valueAtLoc(k);
-					Document doc = indexReader.document(docId);
-
-					Terms terms = indexReader.getTermVector(docId, IndexFieldName.CONTENT);
-
-					if (terms == null) {
-						continue;
-					}
-
-					TermsEnum termsEnum = terms.iterator(null);
-
-					BytesRef bytesRef = null;
-					PostingsEnum postingsEnum = null;
-					StrCounter c = new StrCounter();
-
-					while ((bytesRef = termsEnum.next()) != null) {
-						postingsEnum = termsEnum.postings(null, postingsEnum, PostingsEnum.ALL);
-
-						if (postingsEnum.nextDoc() != 0) {
-							throw new AssertionError();
-						}
-
-						String word = bytesRef.utf8ToString();
-
-						if (word.equals("null")) {
-							continue;
-						}
-						int freq = postingsEnum.freq();
-						c.incrementCount(word, freq);
-
-						// for (int k = 0; k < freq; k++) {
-						// final int position = postingsEnum.nextPosition();
-						// }
-					}
-					dcm.setCounter(docId, c);
-				}
-
-				writer.write(String.format("#Query\t%d\t%s\n", j + 1, qwc.toStringSortedByValues(true, false, qwc.size())));
-
-				List<Integer> docIds = new ArrayList<Integer>(dcm.keySet());
-				Collections.sort(docIds);
-
-				for (int k = 0; k < docIds.size(); k++) {
-					int docId = docIds.get(k);
-					Counter<String> c = dcm.getCounter(docId);
-					double relevance = docRels.valueAlways(docId);
-					writer.write(String.format("%d\t%d\t%s\n", docId, (int) relevance, c.toStringSortedByValues(true, false, c.size())));
+					writer.write(rel + "\t" + getString(docConceptWeights) + "\n");
 				}
 				writer.write("\n");
 			}
+			writer.close();
 		}
 	}
 
+	private String getString(SparseVector sv) {
+		StringBuffer sb = new StringBuffer();
+		for (int i = 0; i < sv.size(); i++) {
+			int cid = sv.indexAtLoc(i);
+			double score = sv.valueAtLoc(i);
+			sb.append(String.format("%s:%f", cid, score));
+
+			if (i != sv.size() - 1) {
+				sb.append(" ");
+			}
+		}
+		return sb.toString();
+	}
+
+	private Counter<String> getConcepts(IndexReader reader, SparseVector conceptWeights) {
+		Counter<String> ret = new Counter<String>();
+
+		return ret;
+	}
 }

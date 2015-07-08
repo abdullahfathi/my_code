@@ -352,8 +352,12 @@ public class SparseVector implements Vector {
 	}
 
 	public void normalizeByL2Norm() {
-		ArrayMath.normalizeByL2Norm(values, values);
-		summation();
+		double norm = 0;
+		for (int i = 0; i < values.length; i++) {
+			norm += (values[i] * values[i]);
+		}
+		norm = Math.sqrt(norm);
+		scale(1f / norm);
 	}
 
 	public double prob(int index) {

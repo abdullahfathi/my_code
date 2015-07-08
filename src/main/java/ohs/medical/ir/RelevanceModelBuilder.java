@@ -8,13 +8,23 @@ import ohs.matrix.SparseVector;
 
 public class RelevanceModelBuilder {
 
-	public static int num_fb_docs = 5;
+	private int num_fb_docs;
 
-	public static double dirichlet_prior = 2000;
+	private int num_fb_words;
 
-	public static SparseVector getRelevanceModel(WordCountBox wcb, SparseVector docScores) throws IOException {
-		int num_fb_docs = 5;
+	private double dirichlet_prior;
 
+	public RelevanceModelBuilder() {
+		this(5, 20, 2000);
+	}
+
+	public RelevanceModelBuilder(int num_fb_docs, int num_fb_words, int dirichlet_prior) {
+		this.num_fb_docs = num_fb_docs;
+		this.num_fb_words = num_fb_words;
+		this.dirichlet_prior = dirichlet_prior;
+	}
+
+	public SparseVector getRelevanceModel(WordCountBox wcb, SparseVector docScores) throws IOException {
 		docScores.sortByValue();
 
 		SparseVector ret = new SparseVector(wcb.getCollWordCounts().size());
@@ -43,8 +53,9 @@ public class RelevanceModelBuilder {
 			}
 		}
 		docScores.sortByIndex();
-		ret.removeZeros();
-		ret.normalize();
+		docScores.keepTopN(num_fb_words);
+		docScores.normalize();
+
 		return ret;
 	}
 

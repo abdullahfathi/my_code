@@ -22,6 +22,7 @@ import ohs.medical.ir.HyperParameter;
 import ohs.medical.ir.KLDivergenceScorer;
 import ohs.medical.ir.MIRPath;
 import ohs.medical.ir.QueryReader;
+import ohs.medical.ir.RelevanceModelBuilder;
 import ohs.medical.ir.RelevanceReader;
 import ohs.medical.ir.WordCountBox;
 import ohs.medical.ir.esa.ESA;
@@ -43,20 +44,6 @@ import org.apache.lucene.search.Query;
  * 
  */
 public class TrecSearcher {
-
-	public static void main(String[] args) throws Exception {
-		System.out.println("process begins.");
-		TrecSearcher tc = new TrecSearcher();
-		// tc.searchByQLD();
-		tc.searchByKLD();
-		// tc.searchByCBEEM();
-		// tc.searchByESA();
-		// tc.searchByWiki();
-		// tc.searchByAbbr();
-		evalute();
-
-		System.out.println("process ends.");
-	}
 
 	public static void evalute() {
 		StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(MIRPath.TREC_CDS_DOCUMENT_ID_MAP_FILE);
@@ -84,6 +71,52 @@ public class TrecSearcher {
 				System.out.println();
 			}
 		}
+	}
+
+	public static void main(String[] args) throws Exception {
+		System.out.println("process begins.");
+		TrecSearcher tc = new TrecSearcher();
+		// tc.searchByQLD();
+		// tc.searchByKLD();
+		// tc.searchByKLDFB();
+		tc.searchByCBEEM();
+		// tc.searchByESA();
+		// tc.searchByWiki();
+		// tc.searchByAbbr();
+		evalute();
+
+		System.out.println("process ends.");
+	}
+
+	public void searchByAbbr() throws Exception {
+		System.out.println("search by Abbrs.");
+
+		IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(MIRPath.TREC_CDS_INDEX_DIR);
+
+		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
+
+		AbbrQueryExpander expander = new AbbrQueryExpander(analyzer, MIRPath.ABBREVIATION_FILTERED_FILE);
+
+		String resultFileName = MIRPath.TREC_CDS_OUTPUT_RESULT_2015_DIR + "abbrs.txt";
+
+		TextFileWriter writer = new TextFileWriter(resultFileName);
+
+		List<BaseQuery> bqs = QueryReader.readTrecCdsQueries(MIRPath.TREC_CDS_QUERY_2014_FILE);
+
+		for (int i = 0; i < bqs.size(); i++) {
+			BaseQuery bq = bqs.get(i);
+
+			String q = bq.getSearchText();
+			Counter<String> wWordCounts = expander.expand(q);
+
+			System.out.println(q);
+
+			Counter<String> qWordCounts = AnalyzerUtils.getWordCounts(q, analyzer);
+			Query lq = AnalyzerUtils.getQuery(qWordCounts);
+			SparseVector docScores = DocumentSearcher.search(lq, indexSearcher, 1000);
+			ResultWriter.write(writer, bq.getId(), docScores);
+		}
+		writer.close();
 	}
 
 	public void searchByCBEEM() throws Exception {
@@ -215,6 +248,115 @@ public class TrecSearcher {
 		writer.close();
 	}
 
+	public void searchByKLD() throws Exception {
+		System.out.println("search by KLD.");
+
+		IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(MIRPath.TREC_CDS_INDEX_DIR);
+
+		List<BaseQuery> bqs = QueryReader.readTrecCdsQueries(MIRPath.TREC_CDS_QUERY_2014_FILE);
+
+		String resultFileName = MIRPath.TREC_CDS_OUTPUT_RESULT_2015_DIR + "kld.txt";
+
+		TextFileWriter writer = new TextFileWriter(resultFileName);
+
+		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
+
+		for (int i = 0; i < bqs.size(); i++) {
+			BaseQuery bq = bqs.get(i);
+
+			// System.out.println(bq);
+
+			Counter<String> wordCounts = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
+
+			BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
+
+			SparseVector docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
+
+			Indexer<String> wordIndexer = new Indexer<String>();
+			SparseVector queryModel = VectorUtils.toSparseVector(wordCounts, wordIndexer, true);
+			queryModel.normalize();
+
+			WordCountBox wcb = WordCountBox.getWordCountBox(indexSearcher.getIndexReader(), docScores, wordIndexer);
+
+			KLDivergenceScorer scorer = new KLDivergenceScorer();
+			docScores = scorer.scoreDocuments(wcb, queryModel);
+
+			ResultWriter.write(writer, bq.getId(), docScores);
+		}
+		writer.close();
+	}
+
+	public void searchByKLDFB() throws Exception {
+		System.out.println("search by KLD FB.");
+
+		IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(MIRPath.TREC_CDS_INDEX_DIR);
+
+		List<BaseQuery> bqs = QueryReader.readTrecCdsQueries(MIRPath.TREC_CDS_QUERY_2014_FILE);
+
+		String resultFileName = MIRPath.TREC_CDS_OUTPUT_RESULT_2015_DIR + "kld_fb.txt";
+
+		TextFileWriter writer = new TextFileWriter(resultFileName);
+
+		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
+
+		for (int i = 0; i < bqs.size(); i++) {
+			BaseQuery bq = bqs.get(i);
+
+			// System.out.println(bq);
+
+			Counter<String> qWordCounts = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
+
+			BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
+			SparseVector docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
+			docScores.sortByValue();
+
+			Counter<String> fbWordCounts = new Counter<String>();
+
+			for (int j = 0; j < docScores.size() && j < 20; j++) {
+				int docId = docScores.indexAtLoc(j);
+				double score = docScores.valueAtLoc(j);
+				Document doc = indexSearcher.getIndexReader().document(docId);
+				String title = doc.get(IndexFieldName.TITLE);
+				String abs = doc.get(IndexFieldName.ABSTRACT);
+				fbWordCounts.incrementAll(AnalyzerUtils.getWordCounts(title, analyzer));
+				// fbWordCounts.incrementAll(AnalyzerUtils.getWordCounts(abs, analyzer));
+			}
+
+			List<String> words = fbWordCounts.getSortedKeys();
+
+			for (int j = 0; j < words.size() && j < 10; j++) {
+				String word = words.get(j);
+				double cnt = fbWordCounts.getCount(word);
+				qWordCounts.incrementCount(word, cnt);
+			}
+
+			docScores.sortByIndex();
+
+			Indexer<String> wordIndexer = new Indexer<String>();
+			SparseVector queryModel = VectorUtils.toSparseVector(qWordCounts, wordIndexer, true);
+			queryModel.normalize();
+
+			WordCountBox wcb = WordCountBox.getWordCountBox(indexSearcher.getIndexReader(), docScores, wordIndexer);
+
+			// RelevanceModelBuilder rmb = new RelevanceModelBuilder();
+			//
+			// SparseVector relevanceModel = rmb.getRelevanceModel(wcb, docScores);
+			//
+			// double mixture = 0.5;
+			//
+			// SparseVector expQueryModel = VectorMath.addAfterScale(queryModel, relevanceModel, 1 - mixture, mixture);
+
+			KLDivergenceScorer scorer = new KLDivergenceScorer();
+			docScores = scorer.scoreDocuments(wcb, queryModel);
+
+			// lbq = AnalyzerUtils.getQuery(qWordCounts);
+			// docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
+
+			ResultWriter.write(writer, bq.getId(), docScores);
+		}
+		writer.close();
+	}
+
 	public void searchByQLD() throws Exception {
 		System.out.println("search by QLD.");
 
@@ -231,94 +373,11 @@ public class TrecSearcher {
 		for (int i = 0; i < bqs.size(); i++) {
 			BaseQuery bq = bqs.get(i);
 
-			Counter<String> wordCounts = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
+			System.out.println(bq);
 
-			Query luceneQuery = AnalyzerUtils.getQuery(wordCounts);
-			bq.setLuceneQuery(luceneQuery);
-
-			SparseVector docScores1 = DocumentSearcher.search(bq.getLuceneQuery(), indexSearcher, 1000);
-
-			for (int j = 0; j < docScores1.size(); j++) {
-				int docId = docScores1.indexAtLoc(j);
-				double score = docScores1.valueAtLoc(j);
-				writer.write(bq.getId() + "\t" + docId + "\t" + score + "\n");
-			}
-		}
-		writer.close();
-	}
-
-	public void searchByKLD() throws Exception {
-		System.out.println("search by QLD.");
-
-		IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(MIRPath.TREC_CDS_INDEX_DIR);
-
-		List<BaseQuery> bqs = QueryReader.readTrecCdsQueries(MIRPath.TREC_CDS_QUERY_2014_FILE);
-
-		String resultFileName = MIRPath.TREC_CDS_OUTPUT_RESULT_2015_DIR + "kld.txt";
-
-		TextFileWriter writer = new TextFileWriter(resultFileName);
-
-		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
-
-		for (int i = 0; i < bqs.size(); i++) {
-			BaseQuery bq = bqs.get(i);
-
-			Counter<String> wordCounts = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
-
-			Query luceneQuery = AnalyzerUtils.getQuery(wordCounts);
-
-			SparseVector docScores1 = DocumentSearcher.search(luceneQuery, indexSearcher, 1000);
-
-			Indexer<String> wordIndexer = new Indexer<String>();
-			SparseVector queryModel = VectorUtils.toSparseVector(wordCounts, wordIndexer, true);
-
-			WordCountBox wcb = WordCountBox.getWordCountBox(indexSearcher.getIndexReader(), docScores1, wordIndexer);
-
-			KLDivergenceScorer scorer = new KLDivergenceScorer();
-			scorer.scoreDocuments(wcb, queryModel);
-
-			for (int j = 0; j < docScores1.size(); j++) {
-				int docId = docScores1.indexAtLoc(j);
-				double score = docScores1.valueAtLoc(j);
-				writer.write(bq.getId() + "\t" + docId + "\t" + score + "\n");
-			}
-		}
-		writer.close();
-	}
-
-	public void searchByAbbr() throws Exception {
-		System.out.println("search by Abbrs.");
-
-		IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(MIRPath.TREC_CDS_INDEX_DIR);
-
-		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
-
-		AbbrQueryExpander expander = new AbbrQueryExpander(analyzer, MIRPath.ABBREVIATION_FILTERED_FILE);
-
-		String resultFileName = MIRPath.TREC_CDS_OUTPUT_RESULT_2015_DIR + "abbrs.txt";
-
-		TextFileWriter writer = new TextFileWriter(resultFileName);
-
-		List<BaseQuery> bqs = QueryReader.readTrecCdsQueries(MIRPath.TREC_CDS_QUERY_2014_FILE);
-
-		for (int i = 0; i < bqs.size(); i++) {
-			BaseQuery bq = bqs.get(i);
-
-			String q = bq.getSearchText();
-			Counter<String> wWordCounts = expander.expand(q);
-
-			System.out.println(q);
-
-			Counter<String> qWordCounts = AnalyzerUtils.getWordCounts(q, analyzer);
-			Query lq = AnalyzerUtils.getQuery(qWordCounts);
-
-			SparseVector docScores1 = DocumentSearcher.search(lq, indexSearcher, 1000);
-
-			for (int j = 0; j < docScores1.size(); j++) {
-				int docId = docScores1.indexAtLoc(j);
-				double score = docScores1.valueAtLoc(j);
-				writer.write(bq.getId() + "\t" + docId + "\t" + score + "\n");
-			}
+			BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
+			SparseVector docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
+			ResultWriter.write(writer, bq.getId(), docScores);
 		}
 		writer.close();
 	}

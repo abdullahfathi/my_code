@@ -8,6 +8,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import ohs.lucene.common.IndexFieldName;
+import ohs.math.VectorUtils;
+import ohs.matrix.SparseMatrix;
+import ohs.matrix.SparseVector;
+import ohs.types.Counter;
+import ohs.types.DeepMap;
+import ohs.types.Indexer;
+import ohs.types.common.IntCounter;
+import ohs.types.common.IntCounterMap;
+
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.PostingsEnum;
@@ -16,20 +26,24 @@ import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.util.BytesRef;
 
-import ohs.lucene.common.IndexFieldName;
-import ohs.math.VectorUtils;
-import ohs.matrix.SparseMatrix;
-import ohs.matrix.SparseVector;
-import ohs.types.DeepMap;
-import ohs.types.Indexer;
-import ohs.types.common.IntCounter;
-import ohs.types.common.IntCounterMap;
-import ohs.types.common.IntIndexedList;
-import ohs.types.common.IntIndexedMap;
-
 public class WordCountBox {
 
+	public static Counter<String> getDocFreqs(IndexReader indexReader, String field, Counter<String> c) throws Exception {
+		Counter<String> ret = new Counter<String>();
+		for (String word : c.keySet()) {
+			Term term = new Term(field, word);
+			double df = indexReader.docFreq(term);
+			ret.setCount(word, df);
+		}
+		return ret;
+	}
+
 	public static WordCountBox getWordCountBox(IndexReader indexReader, SparseVector docScores, Indexer<String> wordIndexer)
+			throws Exception {
+		return getWordCountBox(indexReader, docScores, wordIndexer, IndexFieldName.CONTENT);
+	}
+
+	public static WordCountBox getWordCountBox(IndexReader indexReader, SparseVector docScores, Indexer<String> wordIndexer, String field)
 			throws Exception {
 		Set<Integer> fbWords = new HashSet<Integer>();
 
@@ -41,7 +55,7 @@ public class WordCountBox {
 			double score = docScores.valueAtLoc(j);
 			Document doc = indexReader.document(docId);
 
-			Terms termVector = indexReader.getTermVector(docId, IndexFieldName.CONTENT);
+			Terms termVector = indexReader.getTermVector(docId, field);
 
 			if (termVector == null) {
 				continue;
@@ -82,29 +96,41 @@ public class WordCountBox {
 
 		SparseMatrix docWordCounts = VectorUtils.toSpasreMatrix(cm);
 
-		IntCounter c = new IntCounter();
+		IntCounter c1 = new IntCounter();
+		IntCounter c2 = new IntCounter();
 
 		for (int w : fbWords) {
 			String word = wordIndexer.getObject(w);
-			Term termInstance = new Term(IndexFieldName.CONTENT, word);
-			double cnt = indexReader.totalTermFreq(termInstance);
-			c.setCount(w, cnt);
+			Term term = new Term(field, word);
+			double cnt = indexReader.totalTermFreq(term);
+			double df = indexReader.docFreq(term);
+			c1.setCount(w, cnt);
+			c2.setCount(w, df);
 		}
 
-		SparseVector collWordCounts = VectorUtils.toSparseVector(c);
+		SparseVector collWordCounts = VectorUtils.toSparseVector(c1);
+		SparseVector docFreqs = VectorUtils.toSparseVector(c2);
 
 		double cnt_sum_in_coll = indexReader.getSumTotalTermFreq(IndexFieldName.CONTENT);
 
-		WordCountBox ret = new WordCountBox(docWordCounts, collWordCounts, null, cnt_sum_in_coll, indexReader.maxDoc(), docWords);
+		WordCountBox ret = new WordCountBox(docWordCounts, collWordCounts, cnt_sum_in_coll, docFreqs, indexReader.maxDoc(), docWords);
 
+		return ret;
+	}
+
+	public static Counter<String> getWordCounts(IndexReader indexReader, String field, Counter<String> c) throws Exception {
+		Counter<String> ret = new Counter<String>();
+		for (String word : c.keySet()) {
+			Term term = new Term(field, word);
+			double cnt = indexReader.totalTermFreq(term);
+			ret.setCount(word, cnt);
+		}
 		return ret;
 	}
 
 	private SparseMatrix docWordCounts;
 
 	private SparseVector collWordCounts;
-
-	private SparseMatrix docCatCounts;
 
 	private double cnt_sum_in_coll;
 
@@ -114,13 +140,15 @@ public class WordCountBox {
 
 	private SparseMatrix wordToWordCounts;
 
-	public WordCountBox(SparseMatrix docWordCounts, SparseVector collWordCounts, SparseMatrix docCatCounts, double cnt_sum_in_coll,
+	private SparseVector collDocFreqs;
+
+	public WordCountBox(SparseMatrix docWordCounts, SparseVector collWordCounts, double cnt_sum_in_coll, SparseVector docFreqs,
 			double num_docs_in_coll, DeepMap<Integer, Integer, Integer> docWordLocs) {
 		super();
 		this.docWordCounts = docWordCounts;
 		this.collWordCounts = collWordCounts;
-		this.docCatCounts = docCatCounts;
 		this.cnt_sum_in_coll = cnt_sum_in_coll;
+		this.collDocFreqs = docFreqs;
 		this.num_docs_in_coll = num_docs_in_coll;
 		this.docWordLocs = docWordLocs;
 	}
@@ -147,16 +175,16 @@ public class WordCountBox {
 		wordToWordCounts = VectorUtils.toSpasreMatrix(cm);
 	}
 
+	public SparseVector getCollDocFreqs() {
+		return collDocFreqs;
+	}
+
 	public SparseVector getCollWordCounts() {
 		return collWordCounts;
 	}
 
 	public double getCountSumInCollection() {
 		return cnt_sum_in_coll;
-	}
-
-	public SparseMatrix getDocCatCountMap() {
-		return docCatCounts;
 	}
 
 	public SparseMatrix getDocWordCounts() {
@@ -177,10 +205,6 @@ public class WordCountBox {
 
 	public void setCountSumInCollection(double cnt_sum_in_col) {
 		this.cnt_sum_in_coll = cnt_sum_in_col;
-	}
-
-	public void setDocCatCountMap(SparseMatrix docCatCountMap) {
-		this.docCatCounts = docCatCountMap;
 	}
 
 	public void setDocWordCounts(SparseMatrix docWordCounts) {

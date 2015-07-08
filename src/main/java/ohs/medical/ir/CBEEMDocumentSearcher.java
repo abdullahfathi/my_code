@@ -868,94 +868,11 @@ public class CBEEMDocumentSearcher {
 	}
 
 	private void setWordCountBoxes() throws Exception {
-		Set<Integer> wordsInFB = new HashSet<Integer>();
-		List<IntCounterMap> wordCountData = new ArrayList<IntCounterMap>();
-		List<DeepMap<Integer, Integer, Integer>> wordData = new ArrayList<DeepMap<Integer, Integer, Integer>>();
-
 		for (int i = 0; i < num_colls; i++) {
 			SparseVector docScores = docScoreData[i];
 			IndexReader indexReader = indexSearchers[i].getIndexReader();
-
-			IntCounterMap docWordCountMap = new IntCounterMap();
-			DeepMap<Integer, Integer, Integer> docWords = new DeepMap<Integer, Integer, Integer>();
-
-			for (int j = 0; j < docScores.size(); j++) {
-				int docId = docScores.indexAtLoc(j);
-				double score = docScores.valueAtLoc(j);
-				Document doc = indexReader.document(docId);
-
-				Terms termVector = indexReader.getTermVector(docId, IndexFieldName.CONTENT);
-
-				if (termVector == null) {
-					continue;
-				}
-
-				TermsEnum termsEnum = null;
-				termsEnum = termVector.iterator(termsEnum);
-
-				BytesRef bytesRef = null;
-				PostingsEnum postingsEnum = null;
-				IntCounter wordCounts = new IntCounter();
-				Map<Integer, Integer> words = new TreeMap<Integer, Integer>();
-
-				while ((bytesRef = termsEnum.next()) != null) {
-					postingsEnum = termsEnum.postings(null, postingsEnum, PostingsEnum.ALL);
-
-					if (postingsEnum.nextDoc() != 0) {
-						throw new AssertionError();
-					}
-
-					String word = bytesRef.utf8ToString();
-					int w = wordIndexer.getIndex(word);
-					int freq = postingsEnum.freq();
-					wordCounts.incrementCount(w, freq);
-
-					for (int k = 0; k < freq; k++) {
-						final int position = postingsEnum.nextPosition();
-						words.put(position, w);
-					}
-				}
-				docWordCountMap.setCounter(docId, wordCounts);
-				docWords.put(docId, words);
-
-				for (int w : wordCounts.keySet()) {
-					wordsInFB.add(w);
-				}
-			}
-			wordCountData.add(docWordCountMap);
-			wordData.add(docWords);
+			docWordCountBoxes[i] = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer);
 		}
-
-		List<IntCounter> collWordCountData = new ArrayList<IntCounter>();
-		double[] cnt_sum_in_each_coll = new double[num_colls];
-		double[] num_docs_in_each_coll = new double[num_colls];
-
-		for (int i = 0; i < num_colls; i++) {
-			IndexReader indexReader = indexSearchers[i].getIndexReader();
-			IntCounter counter = new IntCounter();
-			for (int w : wordsInFB) {
-				String word = wordIndexer.getObject(w);
-				Term termInstance = new Term(IndexFieldName.CONTENT, word);
-				double count = indexReader.totalTermFreq(termInstance);
-				counter.setCount(w, count);
-			}
-			collWordCountData.add(counter);
-
-			cnt_sum_in_each_coll[i] = indexReader.getSumTotalTermFreq(IndexFieldName.CONTENT);
-			num_docs_in_each_coll[i] = indexReader.maxDoc();
-		}
-
-		WordCountBox[] ret = new WordCountBox[num_colls];
-
-		for (int i = 0; i < num_colls; i++) {
-			IntCounterMap counterMap = wordCountData.get(i);
-			IntCounter counter = collWordCountData.get(i);
-			DeepMap<Integer, Integer, Integer> docWords = wordData.get(i);
-			ret[i] = new WordCountBox(VectorUtils.toSpasreMatrix(counterMap), VectorUtils.toSparseVector(counter),
-					VectorUtils.toSpasreMatrix(new CounterMap<Integer, Integer>()), cnt_sum_in_each_coll[i], num_docs_in_each_coll[i],
-					docWords);
-		}
-		docWordCountBoxes = ret;
 	}
 
 	public void write(TextFileWriter writer, String queryId, SparseVector docScores) {

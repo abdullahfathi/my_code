@@ -123,6 +123,8 @@ public class MIRPath {
 
 	public static final String CLEF_EHEALTH_QUERY_DOC_FILE = CLEF_EHEALTH_DIR + "query_doc.txt";
 
+	public static final String CLEF_EHEALTH_CONCEPT_QUERY_DOC_FILE = CLEF_EHEALTH_DIR + "concept_query_doc.txt";
+
 	/*
 	 * TREC CDS
 	 */
@@ -174,6 +176,8 @@ public class MIRPath {
 	public static final String TREC_CDS_ABBREVIATION_FILE = TREC_CDS_DIR + "abbrs.txt";
 
 	public static final String TREC_CDS_QUERY_DOC_FILE = TREC_CDS_DIR + "query_doc.txt";
+
+	public static final String TREC_CDS_CONCEPT_QUERY_DOC_FILE = TREC_CDS_DIR + "concept_query_doc.txt";
 
 	public static final String TREC_CDS_OUTPUT_RESULT_2015_DIR = TREC_CDS_OUTPUT_DIR + "result-2015/";
 
@@ -228,6 +232,8 @@ public class MIRPath {
 	public static final String ABBREVIATION_FILTERED_FILE = DATA_DIR + "abbrs_filtered.txt";
 
 	public static final String OHSUMED_QUERY_DOC_FILE = OHSUMED_DIR + "query_doc.txt";
+
+	public static final String OHSUMED_CONCEPT_QUERY_DOC_FILE = OHSUMED_DIR + "concept_query_doc.txt";
 
 	/*
 	 * Common File Name Sets

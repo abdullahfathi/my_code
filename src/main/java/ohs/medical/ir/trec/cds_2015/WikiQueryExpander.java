@@ -141,7 +141,9 @@ public class WikiQueryExpander {
 
 		// conceptScores = KLDivergenceScorer.scoreDocuments(wcb, queryModel);
 
-		SparseVector relevanceModel = RelevanceModelBuilder.getRelevanceModel(wcb, conceptScores1);
+		RelevanceModelBuilder rmb = new RelevanceModelBuilder();
+
+		SparseVector relevanceModel = rmb.getRelevanceModel(wcb, conceptScores1);
 
 		SparseVector expQueryModel = VectorMath.addAfterScale(queryModel, relevanceModel, 1 - mixture_for_rm, mixture_for_rm);
 

@@ -9,28 +9,26 @@ import ohs.io.TextFileWriter;
 import ohs.lucene.common.AnalyzerUtils;
 import ohs.lucene.common.IndexFieldName;
 import ohs.lucene.common.MedicalEnglishAnalyzer;
+import ohs.math.ArrayMath;
+import ohs.math.VectorUtils;
+import ohs.matrix.SparseMatrix;
 import ohs.matrix.SparseVector;
 import ohs.types.Counter;
-import ohs.types.CounterMap;
+import ohs.types.Indexer;
 import ohs.types.common.StrBidMap;
-import ohs.types.common.StrCounter;
 import ohs.types.common.StrCounterMap;
+import ohs.utils.TermWeighting;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.PostingsEnum;
-import org.apache.lucene.index.Terms;
-import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.util.BytesRef;
 
-public class QueryRelevanceCollector {
+public class RelevanceCollector {
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 
-		QueryRelevanceCollector c = new QueryRelevanceCollector();
+		RelevanceCollector c = new RelevanceCollector();
 		c.collect();
 
 		System.out.println("process ends.");
@@ -51,16 +49,9 @@ public class QueryRelevanceCollector {
 
 		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
 
-		List<List<BaseQuery>> queryData = new ArrayList<List<BaseQuery>>();
-		List<List<SparseVector>> relevanceData = new ArrayList<List<SparseVector>>();
-
 		for (int i = 0; i < queryFileNames.length; i++) {
 			List<BaseQuery> bqs = new ArrayList<BaseQuery>();
 			StrCounterMap queryRels = new StrCounterMap();
-
-			// if (!queryFileNames[i].contains("ohsumed")) {
-			// continue;
-			// }
 
 			File queryFile = new File(queryFileNames[i]);
 			File relvFile = new File(relDataFileNames[i]);
@@ -76,22 +67,11 @@ public class QueryRelevanceCollector {
 				queryRels = RelevanceReader.readOhsumedRelevances(relDataFileNames[i]);
 			}
 
-			// int iii = 0;
-			//
-			// if (iii == 0) {
-			// continue;
-			// }
-
-			List<StrCounter> qcs = new ArrayList<StrCounter>();
+			List<Counter<String>> qs = new ArrayList<Counter<String>>();
 
 			for (int j = 0; j < bqs.size(); j++) {
 				BaseQuery bq = bqs.get(j);
-				List<String> words = AnalyzerUtils.getWords(bq.getSearchText(), analyzer);
-				StrCounter c = new StrCounter();
-				for (String word : words) {
-					c.incrementCount(word, 1);
-				}
-				qcs.add(c);
+				qs.add(AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer));
 			}
 
 			StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(docMapFileNames[i]);
@@ -100,15 +80,9 @@ public class QueryRelevanceCollector {
 
 			// baseQueries = QueryReader.filter(baseQueries, queryRelevances);
 
-			queryData.add(bqs);
-
 			List<SparseVector> docRelData = DocumentIdMapper.mapDocIdsToIndexIds(bqs, queryRels, docIdMap);
 
-			relevanceData.add(docRelData);
-
 			IndexReader indexReader = indexSearchers[i].getIndexReader();
-
-			// List<CounterMap<Integer, String>> dcms = setWordCountBoxes(indexReader, docRelevances);
 
 			if (bqs.size() != docRelData.size()) {
 				throw new Exception();
@@ -118,64 +92,80 @@ public class QueryRelevanceCollector {
 
 			for (int j = 0; j < bqs.size(); j++) {
 				BaseQuery bq = bqs.get(j);
-				StrCounter qwc = qcs.get(j);
 				SparseVector docRels = docRelData.get(j);
 
-				CounterMap<Integer, String> dcm = new CounterMap<Integer, String>();
+				Indexer<String> wordIndexer = new Indexer<String>();
+
+				Counter<String> qwcs = qs.get(j);
+
+				SparseVector q = VectorUtils.toSparseVector(qs.get(j), wordIndexer, true);
+
+				{
+					SparseVector docFreqs = VectorUtils.toSparseVector(
+							WordCountBox.getDocFreqs(indexReader, IndexFieldName.CONTENT, qs.get(j)), wordIndexer, true);
+					computeTFIDFs(q, docFreqs, indexReader.maxDoc());
+
+				}
+
+				WordCountBox wcb = WordCountBox.getWordCountBox(indexReader, docRels, wordIndexer);
+				SparseMatrix sm = wcb.getDocWordCounts();
+				SparseVector docFreqs = wcb.getCollDocFreqs();
+
+				for (int k = 0; k < sm.rowSize(); k++) {
+					int docId = sm.indexAtRowLoc(k);
+					SparseVector sv = sm.vectorAtRowLoc(k);
+					computeTFIDFs(sv, docFreqs, wcb.getNumDocsInCollection());
+				}
+
+				writer.write(String.format("#Query\t%d\t%s\n", j + 1, toString(VectorUtils.toCounter(q, wordIndexer))));
+
+				docRels.sortByValue();
 
 				for (int k = 0; k < docRels.size(); k++) {
 					int docId = docRels.indexAtLoc(k);
-					double relevance = docRels.valueAtLoc(k);
-					Document doc = indexReader.document(docId);
+					double rel = docRels.valueAtLoc(k);
+					SparseVector sv = sm.rowAlways(docId);
 
-					Terms terms = indexReader.getTermVector(docId, IndexFieldName.CONTENT);
-
-					if (terms == null) {
+					if (sv.size() == 0) {
 						continue;
 					}
 
-					TermsEnum termsEnum = terms.iterator(null);
-
-					BytesRef bytesRef = null;
-					PostingsEnum postingsEnum = null;
-					StrCounter c = new StrCounter();
-
-					while ((bytesRef = termsEnum.next()) != null) {
-						postingsEnum = termsEnum.postings(null, postingsEnum, PostingsEnum.ALL);
-
-						if (postingsEnum.nextDoc() != 0) {
-							throw new AssertionError();
-						}
-
-						String word = bytesRef.utf8ToString();
-
-						if (word.equals("null")) {
-							continue;
-						}
-						int freq = postingsEnum.freq();
-						c.incrementCount(word, freq);
-
-						// for (int k = 0; k < freq; k++) {
-						// final int position = postingsEnum.nextPosition();
-						// }
-					}
-					dcm.setCounter(docId, c);
-				}
-
-				writer.write(String.format("#Query\t%d\t%s\n", j + 1, qwc.toStringSortedByValues(true, false, qwc.size())));
-
-				List<Integer> docIds = new ArrayList<Integer>(dcm.keySet());
-				Collections.sort(docIds);
-
-				for (int k = 0; k < docIds.size(); k++) {
-					int docId = docIds.get(k);
-					Counter<String> c = dcm.getCounter(docId);
-					double relevance = docRels.valueAlways(docId);
-					writer.write(String.format("%d\t%d\t%s\n", docId, (int) relevance, c.toStringSortedByValues(true, false, c.size())));
+					writer.write(String.format("%d\t%d\t%s\n", docId, (int) rel, toString(VectorUtils.toCounter(sv, wordIndexer))));
 				}
 				writer.write("\n");
 			}
 		}
+	}
+
+	private void computeTFIDFs(SparseVector wcs, SparseVector docFreqs, double num_docs) {
+		double norm = 0;
+		for (int i = 0; i < wcs.size(); i++) {
+			int w = wcs.indexAtLoc(i);
+			double cnt = wcs.valueAtLoc(i);
+			double doc_freq = docFreqs.valueAlways(w);
+			double tf = Math.log(cnt) + 1;
+			double idf = Math.log((num_docs + 1) / doc_freq);
+			double tfidf = tf * idf;
+			wcs.setAtLoc(i, tfidf);
+
+			norm += (tfidf * tfidf);
+		}
+		norm = Math.sqrt(norm);
+		wcs.scale(1f / norm);
+	}
+
+	public String toString(Counter<String> c) {
+		StringBuffer sb = new StringBuffer();
+		List<String> keys = c.getSortedKeys();
+		for (int i = 0; i < keys.size(); i++) {
+			String key = keys.get(i);
+			double value = c.getCount(key);
+			sb.append(String.format("%s:%f", key, value));
+			if (i != keys.size() - 1) {
+				sb.append(" ");
+			}
+		}
+		return sb.toString();
 	}
 
 }
