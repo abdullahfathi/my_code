@@ -24,16 +24,7 @@ import ohs.types.Counter;
 
 public class StrUtils {
 
-	/**
-	 * Strings.java in mallet
-	 * 
-	 * 
-	 * @param s
-	 * @param t
-	 * @param normalize
-	 * @return
-	 */
-	public static double editDistance(String s, String t, boolean normalize) {
+	public static double DamerauLevenDistance(String s, String t, boolean normalize) {
 		int n = s.length();
 		int m = t.length();
 		int d[][]; // matrix
@@ -75,7 +66,16 @@ public class StrUtils {
 		return ret;
 	}
 
-	public static double DamerauLevenDistance(String s, String t, boolean normalize) {
+	/**
+	 * Strings.java in mallet
+	 * 
+	 * 
+	 * @param s
+	 * @param t
+	 * @param normalize
+	 * @return
+	 */
+	public static double editDistance(String s, String t, boolean normalize) {
 		int n = s.length();
 		int m = t.length();
 		int d[][]; // matrix

@@ -1,20 +1,17 @@
 package ohs.matrix;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
 import ohs.io.IOUtils;
-import ohs.math.ArrayMath;
 import ohs.math.ArrayUtils;
 import ohs.types.Counter;
 import ohs.types.Indexer;
@@ -65,8 +62,8 @@ public class SparseVector implements Vector {
 		return ret;
 	}
 
-	public static Map<Integer, SparseVector> readMap(String fileName) throws Exception {
-		Map<Integer, SparseVector> ret = new HashMap<Integer, SparseVector>();
+	public static ListMap<Integer, SparseVector> readMap(String fileName) throws Exception {
+		ListMap<Integer, SparseVector> ret = new ListMap<Integer, SparseVector>();
 		for (SparseVector vector : readList(fileName)) {
 			ret.put(vector.label(), vector);
 		}
@@ -691,6 +688,18 @@ public class SparseVector implements Vector {
 
 	public String toString() {
 		return toString(false, 20, null, null);
+	}
+
+	public String toSvmString() {
+		StringBuffer sb = new StringBuffer();
+		sb.append(label);
+		for (int i = 0; i < size(); i++) {
+			sb.append(String.format(" %d:%s", indexes[i], values[i] + ""));
+			if (i != size() - 1) {
+				sb.append(" ");
+			}
+		}
+		return sb.toString();
 	}
 
 	public String toString(boolean vertical, int numKeys, Indexer<String> labelIndexer, Indexer<String> featIndexer) {

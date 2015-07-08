@@ -27,12 +27,12 @@ public class VectorMath {
 		x.setSum(sum);
 	}
 
-	public static void add(Vector a, Vector b, Vector c) {
-		addAfterScale(a, b, 1, 1, c);
-	}
-
 	public static SparseVector add(Vector a, Vector b) {
 		return add(new Vector[] { a, b });
+	}
+
+	public static void add(Vector a, Vector b, Vector c) {
+		addAfterScale(a, b, 1, 1, c);
 	}
 
 	public static SparseVector add(Vector[] vs) {
@@ -43,18 +43,6 @@ public class VectorMath {
 
 	public static SparseVector addAfterScale(Vector a, Vector b, double aCoef, double bCoef) {
 		return addAfterScale(new Vector[] { a, b }, new double[] { aCoef, bCoef });
-	}
-
-	public static void subtract(Vector a, Vector b, Vector c) {
-		addAfterScale(a, b, 1, -1, c);
-	}
-
-	public static void subtract(Vector a, Vector b) {
-		addAfterScale(a, b, 1, -1);
-	}
-
-	public static void subtractAfterScale(Vector a, Vector b, double aCoef, double bCoef, SparseVector c) {
-		addAfterScale(a, b, aCoef, -bCoef, c);
 	}
 
 	public static void addAfterScale(Vector a, Vector b, double aCoef, double bCoef, Vector c) {
@@ -751,6 +739,18 @@ public class VectorMath {
 				x.setAtLoc(j, index, value);
 			}
 		}
+	}
+
+	public static void subtract(Vector a, Vector b) {
+		addAfterScale(a, b, 1, -1);
+	}
+
+	public static void subtract(Vector a, Vector b, Vector c) {
+		addAfterScale(a, b, 1, -1, c);
+	}
+
+	public static void subtractAfterScale(Vector a, Vector b, double aCoef, double bCoef, SparseVector c) {
+		addAfterScale(a, b, aCoef, -bCoef, c);
 	}
 
 	public static void unitVector(Vector x) {
