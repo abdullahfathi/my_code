@@ -252,6 +252,7 @@ public class OrganizationDisambiguationKernel implements Serializable {
 
 				Counter<Integer> c = new Counter<Integer>();
 				Gram[] grams = searcher.getGramGenerator().generate(name);
+				
 				for (int j = 0; j < grams.length; j++) {
 					int f = featIndexer.indexOf(grams[j].getString());
 					if (f < 0) {

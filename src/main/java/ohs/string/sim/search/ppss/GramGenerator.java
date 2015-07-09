@@ -1,5 +1,6 @@
 package ohs.string.sim.search.ppss;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,7 +12,7 @@ import ohs.string.sim.search.ppss.Gram.Type;
  * 
  * @author Heung-Seon Oh
  */
-public class GramGenerator {
+public class GramGenerator implements Serializable {
 
 	public static List<Gram[]> generate(GramGenerator gramGenerator, List<StringRecord> ss) {
 		StringSorter.sort(ss);

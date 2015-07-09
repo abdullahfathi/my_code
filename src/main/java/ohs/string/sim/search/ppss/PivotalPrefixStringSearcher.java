@@ -2,6 +2,9 @@ package ohs.string.sim.search.ppss;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -29,7 +32,7 @@ import ohs.types.Pair;
  * 
  * @author Heung-Seon Oh
  */
-public class PivotalPrefixStringSearcher {
+public class PivotalPrefixStringSearcher implements Serializable {
 
 	/**
 	 * @param args
@@ -75,29 +78,19 @@ public class PivotalPrefixStringSearcher {
 			}
 
 			Counter<String> gramWeights1 = GramWeighter.compute(new GramGenerator(2), ss);
-			Counter<String> gramWeights2 = GramWeighter.computeTFIDFs(new GramGenerator(2), ss);
-
-			for (String g : gramWeights2.keySet()) {
-				double w = gramWeights2.getCount(g);
-				gramWeights2.setCount(g, 1f / w);
-			}
-
-			double min = gramWeights2.min();
-			gramWeights2.scale(1f / min);
-
 			System.out.println(gramWeights1);
-			System.out.println(gramWeights2);
 			gramSorter.setGramWeights(gramWeights1);
 			// gramSorter.setIsAscendingOrder(false);
 		}
 
 		int q = 2;
-		int tau = 2;
+		int tau = 4;
 
 		PivotalPrefixStringSearcher ppss = new PivotalPrefixStringSearcher(q, tau, true);
 		ppss.setGramSorter(gramSorter);
 		ppss.index(strings);
-		ppss.write(ENTPath.PPSS_INDEX_FILE);
+		// ppss.write(ENTPath.PPSS_INDEX_FILE);
+		// ppss.writeObject(ENTPath.PPSS_OBJECT_FILE);
 
 		// {
 		// TextFileWriter writer = new TextFileWriter(ENTPath.DATA_DIR + "ppss_res.txt");
@@ -118,7 +111,7 @@ public class PivotalPrefixStringSearcher {
 
 		{
 
-			TextFileWriter writer = new TextFileWriter(ENTPath.DATA_DIR + "ppss_res.txt");
+			TextFileWriter writer = new TextFileWriter(ENTPath.PPSS_RESULT_FILE);
 			List<BilingualText> orgNameList = externalOrgCounts.getSortedKeys();
 
 			for (int i = 0; i < orgNameList.size(); i++) {
@@ -129,16 +122,16 @@ public class PivotalPrefixStringSearcher {
 				// continue;
 				// }
 
-				// if (!name.getKorean().contains("서울대")) {
-				// continue;
-				// }
+				if (!name.getKorean().contains("한양대학교 토목공학과")) {
+					continue;
+				}
 
 				System.out.println(name + "\n");
 				Counter<StringRecord> res = ppss.search(name.getKorean());
 				StringBuffer sb = new StringBuffer();
 				sb.append("Input:\n");
 				sb.append(name.toString() + "\n");
-				sb.append(String.format("Output:\t%s\n\n", res.toStringSortedByValues(false, false, 100)));
+				sb.append(String.format("Output:\t%s\n\n", res.toStringSortedByValues(true, true, res.size())));
 				writer.write(sb.toString());
 			}
 			writer.close();
@@ -588,15 +581,18 @@ public class PivotalPrefixStringSearcher {
 
 		Counter<StringRecord> A = new Counter<StringRecord>();
 
-		SmithWaterman sw = new SmithWaterman();
 		AffineGap ag = new AffineGap();
+		SmithWaterman sw = new SmithWaterman(2, -1, -1, true);
 
 		for (int loc : C) {
 			String r = ss.get(loc).getString();
 			// if (stringVerifier.verify(s, grams, r)) {
 
-			double ed = sw.getNormalizedScore(s, r);
-			// double ed = sw.getBestScore(s, r);
+			// double ed = sw.getNormalizedScore(s, r);
+			double ed = sw.getBestScore(s, r);
+			double min = Math.min(s.length(), r.length());
+			ed /= min;
+
 			// double long_len = Math.max(s.length(), r.length());
 			// double sim = 1 - (ed / long_len);
 
@@ -660,5 +656,11 @@ public class PivotalPrefixStringSearcher {
 		BufferedWriter writer = IOUtils.openBufferedWriter(fileName);
 		write(writer);
 		writer.close();
+	}
+
+	public void writeObject(String fileName) throws Exception {
+		ObjectOutputStream oos = IOUtils.openObjectOutputStream(fileName);
+		oos.writeObject(this);
+		oos.close();
 	}
 }

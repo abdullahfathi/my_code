@@ -1,4 +1,4 @@
-package ohs.medical.ir;
+package ohs.medical.ir.trec.cds_2015;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -10,6 +10,12 @@ import ohs.lucene.common.AnalyzerUtils;
 import ohs.lucene.common.IndexFieldName;
 import ohs.lucene.common.MedicalEnglishAnalyzer;
 import ohs.matrix.SparseVector;
+import ohs.medical.ir.BaseQuery;
+import ohs.medical.ir.DocumentIdMapper;
+import ohs.medical.ir.DocumentSearcher;
+import ohs.medical.ir.MIRPath;
+import ohs.medical.ir.QueryReader;
+import ohs.medical.ir.RelevanceReader;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.common.StrBidMap;

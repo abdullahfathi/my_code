@@ -1,4 +1,4 @@
-package ohs.entity;
+package ohs.entity.db;
 
 import java.io.File;
 import java.sql.Connection;
@@ -10,6 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import ohs.entity.ENTPath;
+import ohs.entity.PaperAttr;
+import ohs.entity.PaperDataFileIterator;
 import ohs.io.IOUtils;
 import ohs.io.TextFileWriter;
 import ohs.utils.StopWatch;
@@ -17,14 +20,14 @@ import ohs.utils.StrUtils;
 
 import com.mysql.jdbc.ResultSetMetaData;
 
-public class DataLoader {
+public class MySqlDataLoader {
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
-		DataLoader dl = new DataLoader();
+		MySqlDataLoader dl = new MySqlDataLoader();
 		// dbc.upload();
 		// dl.downloadReports();
-		dl.downloadPatents();
+		// dl.downloadPatents();
 
 		System.out.println("process ends.");
 
@@ -34,7 +37,7 @@ public class DataLoader {
 
 	private TextFileWriter logWriter;
 
-	public DataLoader() {
+	public MySqlDataLoader() {
 
 	}
 

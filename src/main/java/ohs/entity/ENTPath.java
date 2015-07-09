@@ -19,7 +19,13 @@ public class ENTPath {
 
 	public static final String PATENT_TEXT_FILE = DATA_DIR + "patent.txt";
 
+	public static final String PATENT_ORG_FILE = DATA_DIR + "patent_orgs.txt";
+
 	public static final String PPSS_INDEX_FILE = DATA_DIR + "ppss_index.txt";
+
+	public static final String PPSS_RESULT_FILE = DATA_DIR + "ppss_res.txt";
+
+	public static final String PPSS_OBJECT_FILE = DATA_DIR + "ppss_object.txt";
 
 	public static final String ODK_FILE = DATA_DIR + "odk.txt";
 

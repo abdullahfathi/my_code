@@ -16,19 +16,27 @@ public class Organization implements Serializable {
 
 	private Set<String> engVariants;
 
+	private int year;
+
 	private List<Organization> history;
 
 	private int id;
 
+	private OrganizationType type;
+
 	public Organization(int id, String sid, BilingualText name) {
-		this(id, sid, name, null, null, null);
+		this(id, sid, name, -1, OrganizationType.NONE, null, null, null);
 	}
 
-	public Organization(int id, String sid, BilingualText name, Set<String> korVariants, Set<String> engVariants, List<Organization> history) {
+	public Organization(int id, String sid, BilingualText name, int year, OrganizationType type,
+
+	Set<String> korVariants, Set<String> engVariants, List<Organization> history) {
 		super();
 		this.id = id;
 		this.sid = sid;
 		this.name = name;
+		this.year = year;
+		this.type = type;
 		this.korVariants = korVariants;
 		this.engVariants = engVariants;
 		this.history = history;
@@ -82,6 +90,14 @@ public class Organization implements Serializable {
 		return sid;
 	}
 
+	public OrganizationType getType() {
+		return type;
+	}
+
+	public int getYear() {
+		return year;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -92,8 +108,8 @@ public class Organization implements Serializable {
 		return result;
 	}
 
-	public void setEnglishVariants(Set<String> englishVariants) {
-		this.engVariants = englishVariants;
+	public void setEnglishVariants(Set<String> engVariants) {
+		this.engVariants = engVariants;
 	}
 
 	public void setHistory(List<Organization> history) {
@@ -104,8 +120,8 @@ public class Organization implements Serializable {
 		this.id = id;
 	}
 
-	public void setKoreanVariants(Set<String> koreanVariants) {
-		this.korVariants = koreanVariants;
+	public void setKoreanVariants(Set<String> korVariants) {
+		this.korVariants = korVariants;
 	}
 
 	public void setName(BilingualText name) {
@@ -114,6 +130,14 @@ public class Organization implements Serializable {
 
 	public void setStringId(String sid) {
 		this.sid = sid;
+	}
+
+	public void setType(OrganizationType type) {
+		this.type = type;
+	}
+
+	public void setYear(int year) {
+		this.year = year;
 	}
 
 	@Override

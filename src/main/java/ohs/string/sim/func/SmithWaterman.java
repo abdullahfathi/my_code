@@ -1,10 +1,19 @@
 package ohs.string.sim.func;
 
-import ohs.ling.struct.Token;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.hamcrest.core.Is;
+
+import ohs.entity.DataReader;
+import ohs.entity.ENTPath;
+import ohs.entity.data.struct.BilingualText;
 import ohs.math.ArrayMath;
-import ohs.types.common.IntPair;
+import ohs.types.Counter;
+import ohs.utils.KoreanUtils;
 
 public class SmithWaterman {
+
 	private class ScoreMatrix extends MemoMatrix {
 		public ScoreMatrix(String s, String t) {
 			super(s, t);
@@ -20,10 +29,37 @@ public class SmithWaterman {
 			char si = getSource().charAt(i - 1);
 			char tj = getTarget().charAt(j - 1);
 
-			double cost = si == tj ? match_cost : unmatch_cost;
+			double weight1 = 1;
+			double weight2 = 1;
+
+			if (chWeights != null) {
+				weight1 = chWeights.getCount(si);
+				weight2 = chWeights.getCount(tj);
+
+				if (weight1 == 0) {
+					weight1 = 1;
+				}
+
+				if (weight2 == 0) {
+					weight2 = 1;
+				}
+			}
+
+			double cost = 0;
+
+			if (si == tj) {
+				if (ignoreGap && si == ' ') {
+
+				} else {
+					cost = weight1 * match_cost;
+				}
+			} else {
+				cost = Math.max(weight2, weight1) * unmatch_cost;
+			}
+
 			double substitute_score = get(i - 1, j - 1) + cost;
-			double delete_score = get(i - 1, j) + gap_cost;
-			double insert_score = get(i, j - 1) + gap_cost;
+			double delete_score = get(i - 1, j) + weight1 * gap_cost;
+			double insert_score = get(i, j - 1) + weight2 * gap_cost;
 			double[] scores = new double[] { 0, substitute_score, delete_score, insert_score };
 			int index = ArrayMath.argMax(scores);
 			double ret = scores[index];
@@ -36,7 +72,43 @@ public class SmithWaterman {
 		}
 	}
 
-	static public void main(String[] argv) {
+	public static Counter<Character> getWeights() {
+		Counter<BilingualText> c = DataReader.readBilingualTextCounter(ENTPath.DOMESTIC_PAPER_ORG_NAME_FILE);
+
+		Counter<Character> ret = new Counter<Character>();
+		Counter<Character> docFreqs = new Counter<Character>();
+
+		for (BilingualText orgName : c.keySet()) {
+			String korName = orgName.getKorean();
+			Set<Character> set = new HashSet<Character>();
+
+			for (int i = 0; i < korName.length(); i++) {
+				ret.incrementCount(korName.charAt(i), 1);
+				set.add(korName.charAt(i));
+			}
+
+			for (char ch : set) {
+				docFreqs.incrementCount(ch, 1);
+			}
+		}
+
+		for (char ch : ret.keySet()) {
+			double tf = Math.log(ret.getCount(ch)) + 1;
+			double df = docFreqs.getCount(ch);
+			double num_docs = c.size();
+			double idf = Math.log((num_docs + 1) / df);
+			double tfidf = tf * idf;
+
+			if (tfidf < 0) {
+				System.out.println();
+			}
+			ret.setCount(ch, idf);
+		}
+
+		return ret;
+	}
+
+	public static void main(String[] argv) {
 		// doMain(new SmithWatermanAligner(), argv);
 
 		// String[] strs = { "William W. ‘Don’t call me Dubya’ Cohen", "William W. Cohen" };
@@ -46,14 +118,18 @@ public class SmithWaterman {
 		String s = strs[0];
 		String t = strs[1];
 
+		Counter<Character> chWeights = getWeights();
+
 		SmithWaterman sw = new SmithWaterman();
+		sw.setChWeight(chWeights);
+
 		MemoMatrix m = sw.compute(s, t);
 
 		Aligner al = new Aligner();
 		AlignResult ar = al.align(m);
 
-		System.out.println(m);
-		// System.out.println(m.getBestScore());
+		System.out.println();
+		System.out.println(m.toString());
 		System.out.println();
 		System.out.println(ar);
 
@@ -63,26 +139,35 @@ public class SmithWaterman {
 
 	}
 
+	private Counter<Character> chWeights;
+
 	private double match_cost;
 
 	private double unmatch_cost;
 
 	private double gap_cost;
 
+	private boolean ignoreGap;
+
 	public SmithWaterman() {
-		this(2, -1, -1);
+		this(2, -1, -1, false);
 	}
 
-	public SmithWaterman(double match_cost, double unmatch_cost, double gap_cost) {
+	public SmithWaterman(double match_cost, double unmatch_cost, double gap_cost, boolean ignoreGap) {
 		this.match_cost = match_cost;
 		this.unmatch_cost = unmatch_cost;
 		this.gap_cost = gap_cost;
+		this.ignoreGap = ignoreGap;
 	}
 
 	public MemoMatrix compute(String s, String t) {
 		ScoreMatrix ret = new ScoreMatrix(s, t);
 		ret.compute(s.length(), t.length());
 		return ret;
+	}
+
+	public double getBestScore(String s, String t) {
+		return compute(s, t).getBestScore();
 	}
 
 	public double getNormalizedScore(String s, String t) {
@@ -92,8 +177,8 @@ public class SmithWaterman {
 		return ret;
 	}
 
-	public double getBestScore(String s, String t) {
-		return compute(s, t).getBestScore();
+	public void setChWeight(Counter<Character> chWeights) {
+		this.chWeights = chWeights;
 	}
 
 	public String toString() {
