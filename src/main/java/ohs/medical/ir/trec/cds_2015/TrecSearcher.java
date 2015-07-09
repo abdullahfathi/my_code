@@ -22,7 +22,6 @@ import ohs.medical.ir.HyperParameter;
 import ohs.medical.ir.KLDivergenceScorer;
 import ohs.medical.ir.MIRPath;
 import ohs.medical.ir.QueryReader;
-import ohs.medical.ir.RelevanceModelBuilder;
 import ohs.medical.ir.RelevanceReader;
 import ohs.medical.ir.WordCountBox;
 import ohs.medical.ir.esa.ESA;
@@ -45,11 +44,13 @@ import org.apache.lucene.search.Query;
  */
 public class TrecSearcher {
 
-	public static void evalute() {
+	public static void evalute() throws Exception {
 		StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(MIRPath.TREC_CDS_DOCUMENT_ID_MAP_FILE);
 		StrCounterMap relevanceData = RelevanceReader.readTrecCdsRelevances(MIRPath.TREC_CDS_RELEVANCE_JUDGE_2014_FILE);
 
 		List<File> files = IOUtils.getFilesUnder(MIRPath.TREC_CDS_OUTPUT_RESULT_2015_DIR);
+
+		StringBuffer sb = new StringBuffer();
 
 		for (int i = 0; i < files.size(); i++) {
 			File file = files.get(i);
@@ -66,20 +67,23 @@ public class TrecSearcher {
 			List<Performance> perfs = eval.evalute(resultData, relevanceData);
 
 			System.out.println(file.getPath());
+			sb.append(file.getPath());
 			for (int j = 0; j < perfs.size(); j++) {
-				System.out.println(perfs.get(j).toString());
-				System.out.println();
+				sb.append("\n" + perfs.get(j).toString());
 			}
+			sb.append("\n");
 		}
+
+		IOUtils.write(MIRPath.TREC_CDS_OUTPUT_RESULT_2015_PERFORMANCE_FILE, sb.toString());
 	}
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 		TrecSearcher tc = new TrecSearcher();
-		// tc.searchByQLD();
+		tc.searchByQLD();
 		// tc.searchByKLD();
 		// tc.searchByKLDFB();
-		tc.searchByCBEEM();
+		// tc.searchByCBEEM();
 		// tc.searchByESA();
 		// tc.searchByWiki();
 		// tc.searchByAbbr();
@@ -152,7 +156,7 @@ public class TrecSearcher {
 			docPriorData[i] = docPriors;
 		}
 
-		MedicalEnglishAnalyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
+		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
 
 		List<BaseQuery> bqs = QueryReader.readTrecCdsQueries(MIRPath.TREC_CDS_QUERY_2014_FILE);
 
@@ -364,17 +368,12 @@ public class TrecSearcher {
 
 		List<BaseQuery> bqs = QueryReader.readTrecCdsQueries(MIRPath.TREC_CDS_QUERY_2014_FILE);
 
-		String resultFileName = MIRPath.TREC_CDS_OUTPUT_RESULT_2015_DIR + "qld.txt";
-
-		TextFileWriter writer = new TextFileWriter(resultFileName);
+		TextFileWriter writer = new TextFileWriter(MIRPath.TREC_CDS_OUTPUT_RESULT_2015_DIR + "qld.txt");
 
 		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
 
 		for (int i = 0; i < bqs.size(); i++) {
 			BaseQuery bq = bqs.get(i);
-
-			System.out.println(bq);
-
 			BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
 			SparseVector docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
 			ResultWriter.write(writer, bq.getId(), docScores);

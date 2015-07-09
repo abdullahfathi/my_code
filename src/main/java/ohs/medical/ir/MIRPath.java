@@ -181,6 +181,8 @@ public class MIRPath {
 
 	public static final String TREC_CDS_OUTPUT_RESULT_2015_DIR = TREC_CDS_OUTPUT_DIR + "result-2015/";
 
+	public static final String TREC_CDS_OUTPUT_RESULT_2015_PERFORMANCE_FILE = TREC_CDS_OUTPUT_DIR + "performance_2015.txt";
+
 	public static final String TREC_CDS_OUTPUT_RESULT_2015_QUERY_DOC_DIR = TREC_CDS_OUTPUT_RESULT_2015_DIR + "query-doc/";
 
 	public static final String TREC_CDS_OUTPUT_RESULT_2015_INIT_DIR = TREC_CDS_OUTPUT_RESULT_2015_DIR + "init/";
