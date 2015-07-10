@@ -11,6 +11,7 @@ import ohs.matrix.SparseMatrix;
 import ohs.matrix.SparseVector;
 import ohs.matrix.Vector;
 import ohs.types.Counter;
+import ohs.types.common.StrCounter;
 
 /**
  * @author Heung-Seon Oh
@@ -382,11 +383,18 @@ public class VectorMath {
 
 		Vector x1 = new SparseVector(indexes, values, -1);
 		Vector x2 = new SparseVector(indexes2, values2, -1);
+		Vector x3 = new SparseVector(0);
 
 		x1.summation();
 		x2.summation();
 
-		pointwiseMultiply(x1, x2);
+		x1.setDim(10);
+		x2.setDim(10);
+		x3.setDim(10);
+
+		pointwiseMultiply(x1, x2, x3);
+
+		System.out.println(x3);
 
 		System.out.println(x1.toString());
 		System.out.println(x2.toString());
@@ -529,82 +537,109 @@ public class VectorMath {
 		return ret;
 	}
 
-	public static void pointwiseMultiply(Matrix a, Matrix b) {
-		if (!VectorChecker.isProductable(a, b)) {
+	// public static void pointwiseMultiply(Matrix a, Matrix b) {
+	// if (!VectorChecker.isProductable(a, b)) {
+	// new IllegalArgumentException("different dimension");
+	// }
+	//
+	// if (isSparse(a) && isSparse(b)) {
+	// SparseMatrix m1 = (SparseMatrix) a;
+	// SparseMatrix m2 = (SparseMatrix) b;
+	// for (int i = 0; i < m1.rowSize(); i++) {
+	// int rowId = m1.indexAtRowLoc(i);
+	// Vector row1 = m1.vectorAtRowLoc(i);
+	// Vector row2 = m2.rowAlways(rowId);
+	//
+	// if (row2 == null) {
+	// row1.setAll(0);
+	// } else {
+	// pointwiseMultiply(row1, row2);
+	// }
+	// }
+	// } else if (!isSparse(a) && !isSparse(b)) {
+	// DenseMatrix m1 = (DenseMatrix) a;
+	// DenseMatrix m2 = (DenseMatrix) b;
+	// for (int i = 0; i < m1.rowDim(); i++) {
+	// pointwiseMultiply(m1.row(i), m2.row(i));
+	// }
+	// } else if (!isSparse(a) && isSparse(b)) {
+	// DenseMatrix m1 = (DenseMatrix) a;
+	// SparseMatrix m2 = (SparseMatrix) b;
+	//
+	// for (int i = 0; i < m1.rowDim(); i++) {
+	// Vector row1 = m1.row(i);
+	// Vector row2 = m2.rowAlways(i);
+	// if (row2 == null) {
+	// row1.setAll(0);
+	// } else {
+	// pointwiseMultiply(row1, row2);
+	// }
+	// }
+	// } else if (isSparse(a) && !isSparse(b)) {
+	// SparseMatrix m1 = (SparseMatrix) a;
+	// DenseMatrix m2 = (DenseMatrix) b;
+	//
+	// for (int i = 0; i < m1.rowSize(); i++) {
+	// int rowId = m1.indexAtRowLoc(i);
+	// Vector row1 = m1.vectorAtRowLoc(i);
+	// Vector row2 = m2.row(rowId);
+	// pointwiseMultiply(row1, row2);
+	// }
+	// }
+	// }
+
+	public static void pointwiseMultiply(Vector a, Vector b, Vector c) {
+		if (!VectorChecker.isSameDimension(a, b)) {
 			new IllegalArgumentException("different dimension");
 		}
 
-		if (isSparse(a) && isSparse(b)) {
-			SparseMatrix m1 = (SparseMatrix) a;
-			SparseMatrix m2 = (SparseMatrix) b;
-			for (int i = 0; i < m1.rowSize(); i++) {
-				int rowId = m1.indexAtRowLoc(i);
-				Vector row1 = m1.vectorAtRowLoc(i);
-				Vector row2 = m2.rowAlways(rowId);
-
-				if (row2 == null) {
-					row1.setAll(0);
-				} else {
-					pointwiseMultiply(row1, row2);
+		if (c instanceof SparseVector) {
+			Counter<Integer> counter = new Counter<Integer>();
+			int i = 0, j = 0;
+			while (i < a.size() && j < b.size()) {
+				int index1 = a.indexAtLoc(i);
+				int index2 = b.indexAtLoc(j);
+				double value1 = a.valueAtLoc(i);
+				double value2 = b.valueAtLoc(j);
+				if (index1 == index2) {
+					double product = value1 * value2;
+					if (product != 0) {
+						counter.incrementCount(index1, product);
+					}
+					i++;
+					j++;
+				} else if (index1 > index2) {
+					j++;
+				} else if (index1 < index2) {
+					i++;
 				}
 			}
-		} else if (!isSparse(a) && !isSparse(b)) {
-			DenseMatrix m1 = (DenseMatrix) a;
-			DenseMatrix m2 = (DenseMatrix) b;
-			for (int i = 0; i < m1.rowDim(); i++) {
-				pointwiseMultiply(m1.row(i), m2.row(i));
-			}
-		} else if (!isSparse(a) && isSparse(b)) {
-			DenseMatrix m1 = (DenseMatrix) a;
-			SparseMatrix m2 = (SparseMatrix) b;
-
-			for (int i = 0; i < m1.rowDim(); i++) {
-				Vector row1 = m1.row(i);
-				Vector row2 = m2.rowAlways(i);
-				if (row2 == null) {
-					row1.setAll(0);
-				} else {
-					pointwiseMultiply(row1, row2);
+			SparseVector cc = (SparseVector) c;
+			SparseVector temp = VectorUtils.toSparseVector(counter);
+			cc.setIndexes(temp.indexes());
+			cc.setValues(temp.values());
+			cc.setSum(counter.totalCount());
+		} else {
+			DenseVector cc = (DenseVector) c;
+			int i = 0, j = 0;
+			while (i < a.size() && j < b.size()) {
+				int index1 = a.indexAtLoc(i);
+				int index2 = b.indexAtLoc(j);
+				double value1 = a.valueAtLoc(i);
+				double value2 = b.valueAtLoc(j);
+				if (index1 == index2) {
+					double product = value1 * value2;
+					cc.increment(index1, product);
+					i++;
+					j++;
+				} else if (index1 > index2) {
+					j++;
+				} else if (index1 < index2) {
+					i++;
 				}
 			}
-		} else if (isSparse(a) && !isSparse(b)) {
-			SparseMatrix m1 = (SparseMatrix) a;
-			DenseMatrix m2 = (DenseMatrix) b;
-
-			for (int i = 0; i < m1.rowSize(); i++) {
-				int rowId = m1.indexAtRowLoc(i);
-				Vector row1 = m1.vectorAtRowLoc(i);
-				Vector row2 = m2.row(rowId);
-				pointwiseMultiply(row1, row2);
-			}
-		}
-	}
-
-	public static void pointwiseMultiply(Vector a, Vector b) {
-		if (!VectorChecker.isProductable(a, b)) {
-			new IllegalArgumentException("different dimension");
 		}
 
-		double sum = 0;
-		int i = 0, j = 0;
-		while (i < a.size() && j < b.size()) {
-			int index1 = a.indexAtLoc(i);
-			int index2 = b.indexAtLoc(j);
-			double value1 = a.valueAtLoc(i);
-			double value2 = b.valueAtLoc(j);
-			if (index1 == index2) {
-				a.setAtLoc(i, value1 * value2);
-				sum += a.valueAtLoc(i);
-				i++;
-				j++;
-			} else if (index1 > index2) {
-				j++;
-			} else if (index1 < index2) {
-				a.setAtLoc(i, 0);
-				i++;
-			}
-		}
-		a.setSum(sum);
 	}
 
 	public static void product(Matrix a, DenseVector b, DenseVector c) {

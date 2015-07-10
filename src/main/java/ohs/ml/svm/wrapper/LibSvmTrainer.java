@@ -20,6 +20,10 @@ public class LibSvmTrainer {
 	private Indexer<String> labelIndexer;
 
 	public LibSvmTrainer() {
+		setParameter(getDefaultParameters());
+	}
+
+	public static svm_parameter getDefaultParameters() {
 		svm_parameter param = new svm_parameter();
 		param.svm_type = svm_parameter.C_SVC;
 		param.kernel_type = svm_parameter.RBF;
@@ -36,7 +40,7 @@ public class LibSvmTrainer {
 		param.nr_weight = 0;
 		param.weight_label = new int[0];
 		param.weight = new double[0];
-		setParameter(param);
+		return param;
 	}
 
 	public LibSvmTrainer(svm_parameter param) {
@@ -56,16 +60,16 @@ public class LibSvmTrainer {
 		int max_index = featureIndexer.size();
 
 		for (int i = 0; i < trainData.size(); i++) {
-			SparseVector vector = trainData.get(i);
-			svm_node input[] = new svm_node[vector.size()];
-			for (int j = 0; j < vector.size(); j++) {
-				int index = vector.indexAtLoc(j) + 1; // add if feat index
+			SparseVector sv = trainData.get(i);
+			svm_node input[] = new svm_node[sv.size()];
+			for (int j = 0; j < sv.size(); j++) {
+				int index = sv.indexAtLoc(j) + 1; // add if feat index
 														// starts
 														// with 0.
 
 				assert index > 0;
 
-				double value = vector.valueAtLoc(j);
+				double value = sv.valueAtLoc(j);
 
 				input[j] = new svm_node();
 				input[j].index = index;
@@ -77,7 +81,7 @@ public class LibSvmTrainer {
 			}
 
 			problem.x[i] = input;
-			problem.y[i] = vector.label();
+			problem.y[i] = sv.label();
 		}
 
 		// int max_index = termIndexer.size();

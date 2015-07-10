@@ -2,6 +2,7 @@ package ohs.medical.ir.trec.cds_2015;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import ohs.io.IOUtils;
@@ -11,10 +12,12 @@ import ohs.ir.eval.PerformanceEvaluator;
 import ohs.lucene.common.AnalyzerUtils;
 import ohs.lucene.common.IndexFieldName;
 import ohs.lucene.common.MedicalEnglishAnalyzer;
+import ohs.math.ArrayMath;
 import ohs.math.VectorMath;
 import ohs.math.VectorUtils;
 import ohs.matrix.DenseVector;
 import ohs.matrix.SparseVector;
+import ohs.matrix.Vector;
 import ohs.medical.ir.BaseQuery;
 import ohs.medical.ir.DocumentIdMapper;
 import ohs.medical.ir.DocumentSearcher;
@@ -22,10 +25,12 @@ import ohs.medical.ir.HyperParameter;
 import ohs.medical.ir.KLDivergenceScorer;
 import ohs.medical.ir.MIRPath;
 import ohs.medical.ir.QueryReader;
+import ohs.medical.ir.RelevanceModelBuilder;
 import ohs.medical.ir.RelevanceReader;
 import ohs.medical.ir.WordCountBox;
 import ohs.medical.ir.esa.ESA;
 import ohs.types.Counter;
+import ohs.types.DeepMap;
 import ohs.types.Indexer;
 import ohs.types.common.StrBidMap;
 import ohs.types.common.StrCounterMap;
@@ -71,18 +76,19 @@ public class TrecSearcher {
 			for (int j = 0; j < perfs.size(); j++) {
 				sb.append("\n" + perfs.get(j).toString());
 			}
-			sb.append("\n");
+			sb.append("\n\n");
 		}
 
-		IOUtils.write(MIRPath.TREC_CDS_OUTPUT_RESULT_2015_PERFORMANCE_FILE, sb.toString());
+		IOUtils.write(MIRPath.TREC_CDS_OUTPUT_RESULT_2015_PERFORMANCE_FILE, sb.toString().trim());
 	}
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 		TrecSearcher tc = new TrecSearcher();
-		tc.searchByQLD();
+		// tc.searchByQLD();
 		// tc.searchByKLD();
 		// tc.searchByKLDFB();
+		tc.searchByKLDProximity();
 		// tc.searchByCBEEM();
 		// tc.searchByESA();
 		// tc.searchByWiki();
@@ -92,20 +98,26 @@ public class TrecSearcher {
 		System.out.println("process ends.");
 	}
 
+	private List<BaseQuery> bqs;
+
+	private IndexSearcher indexSearcher;
+
+	private Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
+
+	public TrecSearcher() throws Exception {
+		bqs = QueryReader.readTrecCdsQueries(MIRPath.TREC_CDS_QUERY_2014_FILE);
+
+		indexSearcher = DocumentSearcher.getIndexSearcher(MIRPath.TREC_CDS_INDEX_DIR);
+	}
+
 	public void searchByAbbr() throws Exception {
 		System.out.println("search by Abbrs.");
-
-		IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(MIRPath.TREC_CDS_INDEX_DIR);
-
-		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
 
 		AbbrQueryExpander expander = new AbbrQueryExpander(analyzer, MIRPath.ABBREVIATION_FILTERED_FILE);
 
 		String resultFileName = MIRPath.TREC_CDS_OUTPUT_RESULT_2015_DIR + "abbrs.txt";
 
 		TextFileWriter writer = new TextFileWriter(resultFileName);
-
-		List<BaseQuery> bqs = QueryReader.readTrecCdsQueries(MIRPath.TREC_CDS_QUERY_2014_FILE);
 
 		for (int i = 0; i < bqs.size(); i++) {
 			BaseQuery bq = bqs.get(i);
@@ -156,10 +168,6 @@ public class TrecSearcher {
 			docPriorData[i] = docPriors;
 		}
 
-		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
-
-		List<BaseQuery> bqs = QueryReader.readTrecCdsQueries(MIRPath.TREC_CDS_QUERY_2014_FILE);
-
 		HyperParameter hyperParameter = new HyperParameter();
 		hyperParameter.setTopK(1000);
 		hyperParameter.setMixtureForAllCollections(0.5);
@@ -180,19 +188,12 @@ public class TrecSearcher {
 
 	public void searchByESA() throws Exception {
 
-		QueryParser queryParser = DocumentSearcher.getQueryParser();
-
-		IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(MIRPath.TREC_CDS_INDEX_DIR);
-
-		List<BaseQuery> bqs = QueryReader.readTrecCdsQueries(MIRPath.TREC_CDS_QUERY_2014_FILE);
-
 		String resultFileName = MIRPath.TREC_CDS_OUTPUT_RESULT_2015_DIR + "esa.txt";
 
 		TextFileWriter writer = new TextFileWriter(resultFileName);
 
 		StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(MIRPath.TREC_CDS_DOCUMENT_ID_MAP_FILE);
 		StrCounterMap relevanceData = RelevanceReader.readTrecCdsRelevances(MIRPath.TREC_CDS_RELEVANCE_JUDGE_2014_FILE);
-		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
 
 		ESA esa = new ESA(analyzer);
 		esa.read(MIRPath.ICD10_ESA_FILE);
@@ -255,15 +256,9 @@ public class TrecSearcher {
 	public void searchByKLD() throws Exception {
 		System.out.println("search by KLD.");
 
-		IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(MIRPath.TREC_CDS_INDEX_DIR);
-
-		List<BaseQuery> bqs = QueryReader.readTrecCdsQueries(MIRPath.TREC_CDS_QUERY_2014_FILE);
-
 		String resultFileName = MIRPath.TREC_CDS_OUTPUT_RESULT_2015_DIR + "kld.txt";
 
 		TextFileWriter writer = new TextFileWriter(resultFileName);
-
-		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
 
 		for (int i = 0; i < bqs.size(); i++) {
 			BaseQuery bq = bqs.get(i);
@@ -274,16 +269,22 @@ public class TrecSearcher {
 
 			BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
 
-			SparseVector docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
+			SparseVector docScores1 = DocumentSearcher.search(lbq, indexSearcher, 1000);
+			docScores1.normalizeAfterSummation();
 
 			Indexer<String> wordIndexer = new Indexer<String>();
 			SparseVector queryModel = VectorUtils.toSparseVector(wordCounts, wordIndexer, true);
 			queryModel.normalize();
 
-			WordCountBox wcb = WordCountBox.getWordCountBox(indexSearcher.getIndexReader(), docScores, wordIndexer);
+			WordCountBox wcb = WordCountBox.getWordCountBox(indexSearcher.getIndexReader(), docScores1, wordIndexer);
 
 			KLDivergenceScorer scorer = new KLDivergenceScorer();
-			docScores = scorer.scoreDocuments(wcb, queryModel);
+			SparseVector docScores2 = scorer.scoreDocuments(wcb, queryModel);
+			docScores2.normalizeAfterSummation();
+
+			SparseVector docScores = docScores2.copy();
+			ArrayMath.multiply(docScores1.values(), docScores2.values(), docScores.values());
+			docScores.normalizeAfterSummation();
 
 			ResultWriter.write(writer, bq.getId(), docScores);
 		}
@@ -293,65 +294,274 @@ public class TrecSearcher {
 	public void searchByKLDFB() throws Exception {
 		System.out.println("search by KLD FB.");
 
-		IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(MIRPath.TREC_CDS_INDEX_DIR);
-
-		List<BaseQuery> bqs = QueryReader.readTrecCdsQueries(MIRPath.TREC_CDS_QUERY_2014_FILE);
+		IndexSearcher wikiIndexSearcher = DocumentSearcher.getIndexSearcher(MIRPath.WIKI_INDEX_DIR);
 
 		String resultFileName = MIRPath.TREC_CDS_OUTPUT_RESULT_2015_DIR + "kld_fb.txt";
 
 		TextFileWriter writer = new TextFileWriter(resultFileName);
 
-		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
+		for (int i = 0; i < bqs.size(); i++) {
+			BaseQuery bq = bqs.get(i);
+
+			Indexer<String> wordIndexer = new Indexer<String>();
+			StringBuffer qBuf = new StringBuffer(bq.getSearchText());
+			SparseVector docScores = null;
+
+			for (int j = 0; j < 1; j++) {
+
+				Counter<String> qWordCounts = AnalyzerUtils.getWordCounts(qBuf.toString(), analyzer);
+
+				Iterator<String> iter = qWordCounts.keySet().iterator();
+				while (iter.hasNext()) {
+					String word = iter.next();
+					if (word.startsWith("#")) {
+						iter.remove();
+					}
+				}
+
+				SparseVector queryModel = VectorUtils.toSparseVector(qWordCounts, wordIndexer, true);
+				queryModel.normalize();
+
+				BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
+				SparseVector docScores1 = DocumentSearcher.search(lbq, indexSearcher, 1000);
+				docScores1.normalize();
+
+				SparseVector wikiScores = DocumentSearcher.search(lbq, wikiIndexSearcher, 100);
+
+				// Counter<String> fbWordCounts = new Counter<String>();
+
+				// for (int k = 0; k < docScores1.size() && k < 10; k++) {
+				// int docId = docScores1.indexAtLoc(k);
+				// double score = docScores1.valueAtLoc(k);
+				// Document doc = indexSearcher.getIndexReader().document(docId);
+				// String title = doc.get(IndexFieldName.TITLE);
+				// String abs = doc.get(IndexFieldName.ABSTRACT);
+				// fbWordCounts.incrementAll(AnalyzerUtils.getWordCounts(title, analyzer));
+				// // fbWordCounts.incrementAll(AnalyzerUtils.getWordCounts(abs, analyzer));
+				// }
+
+				WordCountBox wcb1 = WordCountBox.getWordCountBox(indexSearcher.getIndexReader(), docScores1, wordIndexer,
+						IndexFieldName.TITLE);
+				WordCountBox wcb2 = WordCountBox.getWordCountBox(indexSearcher.getIndexReader(), docScores1, wordIndexer,
+						IndexFieldName.ABSTRACT);
+				WordCountBox wcb3 = WordCountBox.getWordCountBox(indexSearcher.getIndexReader(), docScores1, wordIndexer,
+						IndexFieldName.CONTENT);
+				WordCountBox wcb4 = WordCountBox.getWordCountBox(wikiIndexSearcher.getIndexReader(), wikiScores, wordIndexer,
+						IndexFieldName.CONTENT);
+
+				PromximityRelevanceModelBuilder ps = new PromximityRelevanceModelBuilder();
+				ps.score(wcb3, queryModel, wordIndexer);
+
+				RelevanceModelBuilder rmb = new RelevanceModelBuilder(10, 10, 2000);
+				SparseVector rm1 = rmb.getRelevanceModel(wcb1, docScores1);
+				SparseVector rm2 = rmb.getRelevanceModel(wcb2, docScores1);
+				SparseVector rm3 = rmb.getRelevanceModel(wcb3, docScores1);
+				SparseVector rm4 = rmb.getRelevanceModel(wcb4, wikiScores);
+
+				double mixture = 0.5;
+
+				double[] mixtures = { 0, 0, 0, 100 };
+
+				ArrayMath.normalize(mixtures);
+
+				SparseVector rm = VectorMath.addAfterScale(new Vector[] { rm1, rm2, rm3, rm4 }, mixtures);
+				rm.removeZeros();
+				rm.normalize();
+
+				SparseVector expQueryModel = VectorMath.addAfterScale(queryModel, rm, 1 - mixture, mixture);
+
+				qWordCounts = VectorUtils.toCounter(expQueryModel, wordIndexer);
+
+				iter = qWordCounts.keySet().iterator();
+				while (iter.hasNext()) {
+					String word = iter.next();
+					if (word.startsWith("#")) {
+						iter.remove();
+					}
+				}
+
+				System.out.printf("QM1:\t%s\n", VectorUtils.toCounter(queryModel, wordIndexer));
+				System.out.printf("QM2:\t%s\n", VectorUtils.toCounter(expQueryModel, wordIndexer));
+				System.out.printf("RM1:\t%s\n", VectorUtils.toCounter(rm1, wordIndexer));
+				System.out.printf("RM2:\t%s\n", VectorUtils.toCounter(rm2, wordIndexer));
+				System.out.printf("RM3:\t%s\n", VectorUtils.toCounter(rm3, wordIndexer));
+				System.out.printf("RM4:\t%s\n", VectorUtils.toCounter(rm4, wordIndexer));
+				System.out.printf("RM:\t%s\n", VectorUtils.toCounter(rm, wordIndexer));
+				System.out.println();
+
+				// List<String> words = fbWordCounts.getSortedKeys();
+
+				// for (int k = 0, l = 0; k < words.size() && l < 5; k++) {
+				// String word = words.get(k);
+				// double cnt = fbWordCounts.getCount(word);
+				// qWordCounts.incrementCount(word, 1);
+				// l++;
+				// }
+
+				lbq = AnalyzerUtils.getQuery(qWordCounts);
+
+				docScores1 = DocumentSearcher.search(lbq, indexSearcher, 1000);
+				docScores1.normalizeAfterSummation();
+
+				// WordCountBox wcb2 = WordCountBox.getWordCountBox(indexSearcher.getIndexReader(), docScores1, wordIndexer);
+
+				// RelevanceModelBuilder rmb = new RelevanceModelBuilder();
+				//
+				// SparseVector relevanceModel = rmb.getRelevanceModel(wcb, docScores);
+				//
+				// double mixture = 0.5;
+				//
+				// SparseVector expQueryModel = VectorMath.addAfterScale(queryModel, relevanceModel, 1 - mixture, mixture);
+
+				// SparseVector expQueryModel = VectorUtils.toSparseVector(qWordCounts, wordIndexer);
+
+				KLDivergenceScorer scorer = new KLDivergenceScorer();
+				SparseVector docScores2 = scorer.scoreDocuments(wcb3, expQueryModel);
+				docScores2.normalize();
+				//
+				docScores = docScores2.copy();
+
+			}
+
+			// lbq = AnalyzerUtils.getQuery(qWordCounts);
+			// docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
+
+			ResultWriter.write(writer, bq.getId(), docScores);
+		}
+		writer.close();
+	}
+
+	public void searchByKLDProximity() throws Exception {
+		System.out.println("search by KLD Proximity.");
+
+		IndexSearcher wikiIndexSearcher = DocumentSearcher.getIndexSearcher(MIRPath.WIKI_INDEX_DIR);
+
+		String resultFileName = MIRPath.TREC_CDS_OUTPUT_RESULT_2015_DIR + "kld_proximity.txt";
+
+		TextFileWriter writer = new TextFileWriter(resultFileName);
 
 		for (int i = 0; i < bqs.size(); i++) {
 			BaseQuery bq = bqs.get(i);
 
-			// System.out.println(bq);
-
-			Counter<String> qWordCounts = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
-
-			BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
-			SparseVector docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
-			docScores.sortByValue();
-
-			Counter<String> fbWordCounts = new Counter<String>();
-
-			for (int j = 0; j < docScores.size() && j < 20; j++) {
-				int docId = docScores.indexAtLoc(j);
-				double score = docScores.valueAtLoc(j);
-				Document doc = indexSearcher.getIndexReader().document(docId);
-				String title = doc.get(IndexFieldName.TITLE);
-				String abs = doc.get(IndexFieldName.ABSTRACT);
-				fbWordCounts.incrementAll(AnalyzerUtils.getWordCounts(title, analyzer));
-				// fbWordCounts.incrementAll(AnalyzerUtils.getWordCounts(abs, analyzer));
-			}
-
-			List<String> words = fbWordCounts.getSortedKeys();
-
-			for (int j = 0; j < words.size() && j < 10; j++) {
-				String word = words.get(j);
-				double cnt = fbWordCounts.getCount(word);
-				qWordCounts.incrementCount(word, cnt);
-			}
-
-			docScores.sortByIndex();
-
 			Indexer<String> wordIndexer = new Indexer<String>();
-			SparseVector queryModel = VectorUtils.toSparseVector(qWordCounts, wordIndexer, true);
-			queryModel.normalize();
+			StringBuffer qBuf = new StringBuffer(bq.getSearchText());
+			SparseVector docScores = null;
 
-			WordCountBox wcb = WordCountBox.getWordCountBox(indexSearcher.getIndexReader(), docScores, wordIndexer);
+			for (int j = 0; j < 1; j++) {
 
-			// RelevanceModelBuilder rmb = new RelevanceModelBuilder();
-			//
-			// SparseVector relevanceModel = rmb.getRelevanceModel(wcb, docScores);
-			//
-			// double mixture = 0.5;
-			//
-			// SparseVector expQueryModel = VectorMath.addAfterScale(queryModel, relevanceModel, 1 - mixture, mixture);
+				Counter<String> qWordCounts = AnalyzerUtils.getWordCounts(qBuf.toString(), analyzer);
 
-			KLDivergenceScorer scorer = new KLDivergenceScorer();
-			docScores = scorer.scoreDocuments(wcb, queryModel);
+				Iterator<String> iter = qWordCounts.keySet().iterator();
+				while (iter.hasNext()) {
+					String word = iter.next();
+					if (word.startsWith("#")) {
+						iter.remove();
+					}
+				}
+
+				SparseVector queryModel = VectorUtils.toSparseVector(qWordCounts, wordIndexer, true);
+				queryModel.normalize();
+
+				BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
+				SparseVector docScores1 = DocumentSearcher.search(lbq, indexSearcher, 1000);
+				docScores1.normalize();
+
+				SparseVector wikiScores = DocumentSearcher.search(lbq, wikiIndexSearcher, 100);
+
+				// Counter<String> fbWordCounts = new Counter<String>();
+
+				// for (int k = 0; k < docScores1.size() && k < 10; k++) {
+				// int docId = docScores1.indexAtLoc(k);
+				// double score = docScores1.valueAtLoc(k);
+				// Document doc = indexSearcher.getIndexReader().document(docId);
+				// String title = doc.get(IndexFieldName.TITLE);
+				// String abs = doc.get(IndexFieldName.ABSTRACT);
+				// fbWordCounts.incrementAll(AnalyzerUtils.getWordCounts(title, analyzer));
+				// // fbWordCounts.incrementAll(AnalyzerUtils.getWordCounts(abs, analyzer));
+				// }
+
+				WordCountBox wcb1 = WordCountBox.getWordCountBox(indexSearcher.getIndexReader(), docScores1, wordIndexer,
+						IndexFieldName.TITLE);
+				WordCountBox wcb2 = WordCountBox.getWordCountBox(indexSearcher.getIndexReader(), docScores1, wordIndexer,
+						IndexFieldName.ABSTRACT);
+				WordCountBox wcb3 = WordCountBox.getWordCountBox(indexSearcher.getIndexReader(), docScores1, wordIndexer,
+						IndexFieldName.CONTENT);
+				WordCountBox wcb4 = WordCountBox.getWordCountBox(wikiIndexSearcher.getIndexReader(), wikiScores, wordIndexer,
+						IndexFieldName.CONTENT);
+
+				PromximityRelevanceModelBuilder ps = new PromximityRelevanceModelBuilder();
+				ps.score(wcb3, queryModel, wordIndexer);
+
+				RelevanceModelBuilder rmb = new RelevanceModelBuilder(10, 10, 2000);
+				SparseVector rm1 = rmb.getRelevanceModel(wcb1, docScores1);
+				SparseVector rm2 = rmb.getRelevanceModel(wcb2, docScores1);
+				SparseVector rm3 = rmb.getRelevanceModel(wcb3, docScores1);
+				SparseVector rm4 = rmb.getRelevanceModel(wcb4, wikiScores);
+
+				double mixture = 0.5;
+
+				double[] mixtures = { 0, 0, 0, 100 };
+
+				ArrayMath.normalize(mixtures);
+
+				SparseVector rm = VectorMath.addAfterScale(new Vector[] { rm1, rm2, rm3, rm4 }, mixtures);
+				rm.removeZeros();
+				rm.normalize();
+
+				SparseVector expQueryModel = VectorMath.addAfterScale(queryModel, rm, 1 - mixture, mixture);
+
+				qWordCounts = VectorUtils.toCounter(expQueryModel, wordIndexer);
+
+				iter = qWordCounts.keySet().iterator();
+				while (iter.hasNext()) {
+					String word = iter.next();
+					if (word.startsWith("#")) {
+						iter.remove();
+					}
+				}
+
+				System.out.printf("QM1:\t%s\n", VectorUtils.toCounter(queryModel, wordIndexer));
+				System.out.printf("QM2:\t%s\n", VectorUtils.toCounter(expQueryModel, wordIndexer));
+				System.out.printf("RM1:\t%s\n", VectorUtils.toCounter(rm1, wordIndexer));
+				System.out.printf("RM2:\t%s\n", VectorUtils.toCounter(rm2, wordIndexer));
+				System.out.printf("RM3:\t%s\n", VectorUtils.toCounter(rm3, wordIndexer));
+				System.out.printf("RM4:\t%s\n", VectorUtils.toCounter(rm4, wordIndexer));
+				System.out.printf("RM:\t%s\n", VectorUtils.toCounter(rm, wordIndexer));
+				System.out.println();
+
+				// List<String> words = fbWordCounts.getSortedKeys();
+
+				// for (int k = 0, l = 0; k < words.size() && l < 5; k++) {
+				// String word = words.get(k);
+				// double cnt = fbWordCounts.getCount(word);
+				// qWordCounts.incrementCount(word, 1);
+				// l++;
+				// }
+
+				lbq = AnalyzerUtils.getQuery(qWordCounts);
+
+				docScores1 = DocumentSearcher.search(lbq, indexSearcher, 1000);
+				docScores1.normalizeAfterSummation();
+
+				// WordCountBox wcb2 = WordCountBox.getWordCountBox(indexSearcher.getIndexReader(), docScores1, wordIndexer);
+
+				// RelevanceModelBuilder rmb = new RelevanceModelBuilder();
+				//
+				// SparseVector relevanceModel = rmb.getRelevanceModel(wcb, docScores);
+				//
+				// double mixture = 0.5;
+				//
+				// SparseVector expQueryModel = VectorMath.addAfterScale(queryModel, relevanceModel, 1 - mixture, mixture);
+
+				// SparseVector expQueryModel = VectorUtils.toSparseVector(qWordCounts, wordIndexer);
+
+				KLDivergenceScorer scorer = new KLDivergenceScorer();
+				SparseVector docScores2 = scorer.scoreDocuments(wcb3, expQueryModel);
+				docScores2.normalize();
+				//
+				docScores = docScores2.copy();
+
+			}
 
 			// lbq = AnalyzerUtils.getQuery(qWordCounts);
 			// docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
@@ -364,13 +574,7 @@ public class TrecSearcher {
 	public void searchByQLD() throws Exception {
 		System.out.println("search by QLD.");
 
-		IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(MIRPath.TREC_CDS_INDEX_DIR);
-
-		List<BaseQuery> bqs = QueryReader.readTrecCdsQueries(MIRPath.TREC_CDS_QUERY_2014_FILE);
-
 		TextFileWriter writer = new TextFileWriter(MIRPath.TREC_CDS_OUTPUT_RESULT_2015_DIR + "qld.txt");
-
-		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
 
 		for (int i = 0; i < bqs.size(); i++) {
 			BaseQuery bq = bqs.get(i);
@@ -386,9 +590,6 @@ public class TrecSearcher {
 
 		IndexSearcher trecIndexSearcher = DocumentSearcher.getIndexSearcher(MIRPath.TREC_CDS_INDEX_DIR);
 		IndexSearcher wikiIndexSearcher = DocumentSearcher.getIndexSearcher(MIRPath.WIKI_INDEX_DIR);
-		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
-
-		List<BaseQuery> bqs = QueryReader.readTrecCdsQueries(MIRPath.TREC_CDS_QUERY_2014_FILE);
 
 		String resultFileName = MIRPath.TREC_CDS_OUTPUT_RESULT_2015_DIR + "wiki.txt";
 		String logFileName = MIRPath.TREC_CDS_OUTPUT_RESULT_2015_DIR + "wiki_log.txt";

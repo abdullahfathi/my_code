@@ -58,6 +58,10 @@ public class DeepListMap<K, V, F> implements Serializable {
 		return entries.keySet();
 	}
 
+	public void put(K key, ListMap<V, F> value) {
+		entries.put(key, value);
+	}
+
 	public void put(K key1, V key2, F value) {
 		ensure(key1, key2).add(value);
 	}

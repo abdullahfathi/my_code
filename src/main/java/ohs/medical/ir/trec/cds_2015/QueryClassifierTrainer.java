@@ -13,6 +13,8 @@ import ohs.math.VectorMath;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseVector;
 import ohs.medical.ir.MIRPath;
+import ohs.ml.svm.wrapper.LibSvmTrainer;
+import ohs.ml.svm.wrapper.LibSvmWrapper;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
@@ -140,7 +142,8 @@ public class QueryClassifierTrainer {
 
 		// splitData();
 
-		trainSVMs();
+		// trainLibSVMs();
+		trainLibLinear();
 
 		System.out.println("process ends.");
 	}
@@ -171,7 +174,7 @@ public class QueryClassifierTrainer {
 		SparseVector.write(TEST_DATA_FILE, testData);
 	}
 
-	public static void trainSVMs() throws Exception {
+	public static void trainLibLinear() throws Exception {
 		System.out.println("train SVMs.");
 
 		Indexer<String> featureIndexer = IOUtils.readIndexer(WORD_INDEXER_FILE);
@@ -252,6 +255,38 @@ public class QueryClassifierTrainer {
 		System.out.println(cm);
 
 		model.save(new File(MODEL_FILE));
+	}
+
+	public static void trainLibSVMs() throws Exception {
+		System.out.println("train LibSVMs.");
+
+		Indexer<String> featureIndexer = IOUtils.readIndexer(WORD_INDEXER_FILE);
+		Indexer<String> labelIndexer = new Indexer<String>();
+		labelIndexer.add("Non-Relevant");
+		labelIndexer.add("Relevant");
+
+		List<SparseVector> trainData = SparseVector.readList(TRAIN_DATA_FILE);
+		List<SparseVector> testData = SparseVector.readList(TEST_DATA_FILE);
+
+		Collections.shuffle(trainData);
+		Collections.shuffle(testData);
+
+		List[] lists = new List[] { trainData, testData };
+
+		for (int i = 0; i < lists.length; i++) {
+			List<SparseVector> list = lists[i];
+			for (int j = 0; j < list.size(); j++) {
+				SparseVector sv = list.get(j);
+				if (sv.label() > 0) {
+					sv.setLabel(1);
+				}
+			}
+		}
+
+		LibSvmTrainer trainer = new LibSvmTrainer();
+		LibSvmWrapper wrapper = trainer.train(labelIndexer, featureIndexer, trainData);
+		wrapper.evalute(testData);
+
 	}
 
 	private Indexer<String> labelIndexer;

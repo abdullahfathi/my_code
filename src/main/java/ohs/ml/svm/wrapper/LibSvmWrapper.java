@@ -1,6 +1,5 @@
 package ohs.ml.svm.wrapper;
 
-import java.io.File;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -25,8 +24,8 @@ public class LibSvmWrapper implements Serializable {
 		System.out.printf("read [%s]\n", fileName);
 
 		ObjectInputStream ois = IOUtils.openObjectInputStream(fileName);
-		Indexer<String> topicIndexer = IOUtils.readIndexer(ois);
-		Indexer<String> termIndexer = IOUtils.readIndexer(ois);
+		Indexer<String> labelIndexer = IOUtils.readIndexer(ois);
+		Indexer<String> featIndexer = IOUtils.readIndexer(ois);
 
 		svm_model model = new svm_model();
 		svm_parameter param = new svm_parameter();
@@ -156,7 +155,7 @@ public class LibSvmWrapper implements Serializable {
 
 		ois.close();
 
-		return new LibSvmWrapper(model, topicIndexer, termIndexer);
+		return new LibSvmWrapper(model, labelIndexer, featIndexer);
 	}
 
 	public static void sort(svm_node nodes[]) {
@@ -172,13 +171,13 @@ public class LibSvmWrapper implements Serializable {
 
 	private svm_model model;
 
-	private Indexer<String> topicIndexer;
+	private Indexer<String> labelIndexer;
 
 	private Indexer<String> termIndexer;
 
 	public LibSvmWrapper(svm_model model, Indexer<String> topicIndexer, Indexer<String> termIndexer) {
 		this.model = model;
-		this.topicIndexer = topicIndexer;
+		this.labelIndexer = topicIndexer;
 		this.termIndexer = termIndexer;
 	}
 
@@ -207,7 +206,7 @@ public class LibSvmWrapper implements Serializable {
 
 	public Counter<String> score(Counter<String> input) {
 		SparseVector vector = VectorUtils.toSparseVector(input, termIndexer);
-		return VectorUtils.toCounter(score(vector), topicIndexer);
+		return VectorUtils.toCounter(score(vector), labelIndexer);
 	}
 
 	public SparseVector score(SparseVector query) {
@@ -244,7 +243,7 @@ public class LibSvmWrapper implements Serializable {
 		System.out.printf("write to [%s].\n", fileName);
 		ObjectOutputStream oos = IOUtils.openObjectOutputStream(fileName);
 
-		IOUtils.write(oos, topicIndexer);
+		IOUtils.write(oos, labelIndexer);
 		IOUtils.write(oos, termIndexer);
 
 		oos.writeInt(model.param.svm_type);

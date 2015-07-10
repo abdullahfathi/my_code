@@ -784,7 +784,7 @@ public class CBEEMSearcher {
 			WordCountBox docWordCountBox = docWordCountBoxes[i];
 			SparseVector docScores = docScoreData[i];
 
-			DeepMap<Integer, Integer, Integer> docWords = docWordCountBox.getDocWordLocs();
+			DeepMap<Integer, Integer, Integer> docWords = docWordCountBox.getDocWords();
 			IntCounterMap counterMap = new IntCounterMap();
 
 			for (int docId : docWords.keySet()) {

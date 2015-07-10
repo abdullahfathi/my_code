@@ -1,12 +1,12 @@
 package ohs.medical.ir;
 
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 import ohs.lucene.common.IndexFieldName;
 import ohs.math.VectorUtils;
@@ -15,6 +15,7 @@ import ohs.matrix.SparseVector;
 import ohs.types.Counter;
 import ohs.types.DeepMap;
 import ohs.types.Indexer;
+import ohs.types.ListMap;
 import ohs.types.common.IntCounter;
 import ohs.types.common.IntCounterMap;
 
@@ -48,7 +49,7 @@ public class WordCountBox {
 		Set<Integer> fbWords = new HashSet<Integer>();
 
 		IntCounterMap cm = new IntCounterMap();
-		DeepMap<Integer, Integer, Integer> docWords = new DeepMap<Integer, Integer, Integer>();
+		ListMap<Integer, Integer> docWords = new ListMap<Integer, Integer>();
 
 		for (int j = 0; j < docScores.size(); j++) {
 			int docId = docScores.indexAtLoc(j);
@@ -67,7 +68,7 @@ public class WordCountBox {
 			BytesRef bytesRef = null;
 			PostingsEnum postingsEnum = null;
 			IntCounter wcs = new IntCounter();
-			Map<Integer, Integer> words = new TreeMap<Integer, Integer>();
+			Map<Integer, Integer> wordLocs = new HashMap<Integer, Integer>();
 
 			while ((bytesRef = termsEnum.next()) != null) {
 				postingsEnum = termsEnum.postings(null, postingsEnum, PostingsEnum.ALL);
@@ -77,17 +78,30 @@ public class WordCountBox {
 				}
 
 				String word = bytesRef.utf8ToString();
+				if (word.startsWith("#")) {
+					continue;
+				}
 				int w = wordIndexer.getIndex(word);
 				int freq = postingsEnum.freq();
 				wcs.incrementCount(w, freq);
 
 				for (int k = 0; k < freq; k++) {
 					final int position = postingsEnum.nextPosition();
-					words.put(position, w);
+					wordLocs.put(position, w);
 				}
 			}
 			cm.setCounter(docId, wcs);
-			docWords.put(docId, words);
+
+			List<Integer> locs = new ArrayList<Integer>(wordLocs.keySet());
+			Collections.sort(locs);
+
+			List<Integer> words = new ArrayList<Integer>();
+
+			for (int loc : locs) {
+				words.add(wordLocs.get(loc));
+			}
+
+			docWords.set(docId, words);
 
 			for (int w : wcs.keySet()) {
 				fbWords.add(w);
@@ -136,38 +150,34 @@ public class WordCountBox {
 
 	private double num_docs_in_coll;
 
-	private DeepMap<Integer, Integer, Integer> docWordLocs;
+	private ListMap<Integer, Integer> docWords;
 
 	private SparseMatrix wordToWordCounts;
 
 	private SparseVector collDocFreqs;
 
 	public WordCountBox(SparseMatrix docWordCounts, SparseVector collWordCounts, double cnt_sum_in_coll, SparseVector docFreqs,
-			double num_docs_in_coll, DeepMap<Integer, Integer, Integer> docWordLocs) {
+			double num_docs_in_coll, ListMap<Integer, Integer> docWords) {
 		super();
 		this.docWordCounts = docWordCounts;
 		this.collWordCounts = collWordCounts;
 		this.cnt_sum_in_coll = cnt_sum_in_coll;
 		this.collDocFreqs = docFreqs;
 		this.num_docs_in_coll = num_docs_in_coll;
-		this.docWordLocs = docWordLocs;
+		this.docWords = docWords;
 	}
 
 	public void computeWordCooccurrences(int window_size) {
 
 		IntCounterMap cm = new IntCounterMap();
 
-		for (int docId : docWordLocs.keySet()) {
-			Map<Integer, Integer> wordLocs = docWordLocs.get(docId);
-			List<Integer> locs = new ArrayList<Integer>(wordLocs.values());
+		for (int docId : docWords.keySet()) {
+			List<Integer> words = docWords.get(docId);
 
-			for (int j = 0; j < locs.size(); j++) {
-				int loc1 = locs.get(j);
-				int w1 = wordLocs.get(loc1);
-
-				for (int k = j + 1; k < window_size && k < locs.size(); k++) {
-					int loc2 = locs.get(k);
-					int w2 = wordLocs.get(k);
+			for (int j = 0; j < words.size(); j++) {
+				int w1 = words.get(j);
+				for (int k = j + 1; k < window_size && k < words.size(); k++) {
+					int w2 = words.get(k);
 					cm.incrementCount(w1, w2, 1);
 				}
 			}
@@ -191,8 +201,8 @@ public class WordCountBox {
 		return docWordCounts;
 	}
 
-	public DeepMap<Integer, Integer, Integer> getDocWordLocs() {
-		return docWordLocs;
+	public ListMap<Integer, Integer> getDocWords() {
+		return docWords;
 	}
 
 	public double getNumDocsInCollection() {

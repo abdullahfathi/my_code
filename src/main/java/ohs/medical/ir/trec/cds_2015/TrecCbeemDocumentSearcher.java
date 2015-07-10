@@ -230,14 +230,14 @@ public class TrecCbeemDocumentSearcher {
 		Counter<String> qwcs1 = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
 		bq.setLuceneQuery(AnalyzerUtils.getQuery(qwcs1));
 
-		String q = wikiQueryExpander.expand(wordIndexer, bq);
-		Counter<String> qWords2 = AnalyzerUtils.getWordCounts(q, analyzer);
-		BooleanQuery lbq = AnalyzerUtils.getQuery(qWords2);
+		// String q = wikiQueryExpander.expand(wordIndexer, bq);
+		// Counter<String> qWords2 = AnalyzerUtils.getWordCounts(q, analyzer);
+		// BooleanQuery lbq = AnalyzerUtils.getQuery(qWords2);
 
 		for (int i = 0; i < num_colls; i++) {
 			IndexSearcher indexSearcher = indexSearchers[i];
-			// SparseVector docScores = DocumentSearcher.search(bq.getLuceneQuery(), indexSearchers[i], hyperParam.getTopK());
-			collDocScores[i] = DocumentSearcher.search(lbq, indexSearcher, hyperParam.getTopK());
+			collDocScores[i] = DocumentSearcher.search(bq.getLuceneQuery(), indexSearchers[i], hyperParam.getTopK());
+			// collDocScores[i] = DocumentSearcher.search(lbq, indexSearcher, hyperParam.getTopK());
 		}
 
 		setWordCountBoxes();

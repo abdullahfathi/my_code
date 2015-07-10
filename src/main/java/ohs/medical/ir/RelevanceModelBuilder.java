@@ -53,9 +53,8 @@ public class RelevanceModelBuilder {
 			}
 		}
 		docScores.sortByIndex();
-		docScores.keepTopN(num_fb_words);
-		docScores.normalize();
-
+		ret.keepTopN(num_fb_words);
+		ret.normalize();
 		return ret;
 	}
 
