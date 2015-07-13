@@ -777,34 +777,6 @@ public class CBEEMSearcher {
 
 	}
 
-	private void setWordCocountData(int window_size, int top_k) {
-		SparseMatrix[] ret = new SparseMatrix[num_colls];
-
-		for (int i = 0; i < num_colls; i++) {
-			WordCountBox docWordCountBox = docWordCountBoxes[i];
-			SparseVector docScores = docScoreData[i];
-
-			DeepMap<Integer, Integer, Integer> docWords = docWordCountBox.getDocWords();
-			IntCounterMap counterMap = new IntCounterMap();
-
-			for (int docId : docWords.keySet()) {
-				Map<Integer, Integer> wordLocs = docWords.get(docId);
-				List<Integer> words = new ArrayList<Integer>(wordLocs.values());
-
-				for (int j = 0; j < words.size(); j++) {
-					int w1 = words.get(j);
-
-					for (int k = j + 1; k < window_size && k < words.size(); k++) {
-						int w2 = words.get(k);
-						counterMap.incrementCount(w1, w2, 1);
-					}
-				}
-			}
-			ret[i] = VectorUtils.toSpasreMatrix(counterMap);
-		}
-		wordCocountData = ret;
-	}
-
 	private void setWordCountBoxes() throws Exception {
 		Set<Integer> wordsInFB = new HashSet<Integer>();
 		List<IntCounterMap> wordCountData = new ArrayList<IntCounterMap>();

@@ -66,7 +66,7 @@ public class DocumentIndexer {
 		Matcher m = p.matcher(text);
 
 		StringBuffer sb = new StringBuffer();
-		
+
 		while (m.find()) {
 			m.appendReplacement(sb, "");
 		}
@@ -92,11 +92,11 @@ public class DocumentIndexer {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 		DocumentIndexer di = new DocumentIndexer();
-		di.indexTrecCds();
+		// di.indexTrecCds();
 		// di.indexClefEHealth();
 		// di.indexOhsumed();
 		// di.indexWiki();
-		di.makeDocumentIdMap();
+		di.makeTrecDocumentIdMap();
 
 		System.out.println("process ends.");
 	}
@@ -358,5 +358,41 @@ public class DocumentIndexer {
 			}
 			writer.close();
 		}
+	}
+
+	public void makeTrecDocumentIdMap() throws Exception {
+		String[] indexDirNames = MIRPath.IndexDirNames;
+		String[] docMapFileNames = MIRPath.DocIdMapFileNames;
+
+		String indexDirName = MIRPath.TREC_CDS_DIR + "index_old";
+		String docMapFileName = MIRPath.TREC_CDS_DIR + "document_id_map_old.txt";
+
+		File outputFile = new File(docMapFileName);
+
+		// if (outputFile.exists()) {
+		// return;
+		// }
+
+		IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(indexDirName);
+		IndexReader indexReader = indexSearcher.getIndexReader();
+
+		List<String> docIds = new ArrayList<String>();
+
+		for (int j = 0; j < indexReader.maxDoc(); j++) {
+			if ((j + 1) % 100000 == 0) {
+				System.out.printf("\r[%d/%d]", j + 1, indexReader.maxDoc());
+			}
+			Document doc = indexReader.document(j);
+			String docId = doc.getField(IndexFieldName.DOCUMENT_ID).stringValue();
+			docIds.add(docId);
+		}
+		System.out.printf("\r[%d/%d]\n", indexReader.maxDoc(), indexReader.maxDoc());
+
+		TextFileWriter writer = new TextFileWriter(docMapFileName);
+		for (int j = 0; j < docIds.size(); j++) {
+			String output = j + "\t" + docIds.get(j);
+			writer.write(output + "\n");
+		}
+		writer.close();
 	}
 }

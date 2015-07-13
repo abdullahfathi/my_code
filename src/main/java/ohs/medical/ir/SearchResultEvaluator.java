@@ -164,8 +164,8 @@ public class SearchResultEvaluator {
 		StringBuffer sb = new StringBuffer();
 		sb.append("Collection\tQuery\tModel\tTopN\tTopK\tWikiTopK\tFBDocs\tFBWords\tDIR\tAllCollMix\tUseDocPrior\tUseDoubleScoring\tUseWiki\tFBMix\tUseSmoothCollMix\tAdjustNumbers");
 		sb.append("\tRelevant_ALL");
-		sb.append("\tRetrieved");
-		sb.append("\tRelevant_In_RET");
+		sb.append("\tRetrieved All");
+		sb.append("\tRelevant_All_In_Retreived_All");
 		sb.append("\tRelevant_At");
 		sb.append("\tPrecision");
 		sb.append("\tMAP");

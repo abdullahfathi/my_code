@@ -1,10 +1,11 @@
 package ohs.medical.ir.trec.cds_2015;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
@@ -12,7 +13,10 @@ import ohs.io.TextFileWriter;
 import ohs.math.VectorMath;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseVector;
+import ohs.medical.ir.BaseQuery;
 import ohs.medical.ir.MIRPath;
+import ohs.medical.ir.QueryReader;
+import ohs.medical.ir.TrecCdsQuery;
 import ohs.ml.svm.wrapper.LibSvmTrainer;
 import ohs.ml.svm.wrapper.LibSvmWrapper;
 import ohs.types.Counter;
@@ -28,7 +32,6 @@ import de.bwaldvogel.liblinear.Parameter;
 import de.bwaldvogel.liblinear.Problem;
 import de.bwaldvogel.liblinear.SolverType;
 import edu.stanford.nlp.math.ArrayMath;
-import edu.stanford.nlp.util.ArrayMap;
 
 public class QueryClassifierTrainer {
 
@@ -42,7 +45,7 @@ public class QueryClassifierTrainer {
 
 	public static final String MODEL_FILE = MIRPath.TREC_CDS_DIR + "rel_model.txt";
 
-	public static void generateData() throws Exception {
+	public static void generateData1() throws Exception {
 		System.out.println("generate data.");
 
 		Indexer<String> wordIndexer = new Indexer<String>();
@@ -101,6 +104,89 @@ public class QueryClassifierTrainer {
 		IOUtils.write(WORD_INDEXER_FILE, wordIndexer);
 	}
 
+	public static void generateData2() throws Exception {
+		System.out.println("generate data.");
+
+		List<BaseQuery> bqs = QueryReader.readTrecCdsQueries(MIRPath.TREC_CDS_QUERY_2014_FILE);
+
+		Map<Integer, BaseQuery> queryMap = new HashMap<Integer, BaseQuery>();
+
+		for (BaseQuery bq : bqs) {
+			int qid = Integer.parseInt(bq.getId());
+			queryMap.put(qid, bq);
+		}
+
+		Indexer<String> wordIndexer = new Indexer<String>();
+		Indexer<String> typeIndexer = new Indexer<String>();
+
+		TextFileWriter writer = new TextFileWriter(DATA_FILE);
+
+		List<SparseVector> data = new ArrayList<SparseVector>();
+
+		TextFileReader reader = new TextFileReader(MIRPath.TREC_CDS_QUERY_DOC_FILE);
+		while (reader.hasNext()) {
+			List<String> lines = reader.getNextLines();
+			List<SparseVector> svs = new ArrayList<SparseVector>();
+			int qid = -1;
+
+			for (int i = 0; i < lines.size(); i++) {
+				String line = lines.get(i);
+				String[] parts = line.split("\t");
+
+				double relevance = -1;
+
+				if (i == 0) {
+					qid = Integer.parseInt(parts[1]);
+				} else {
+					relevance = Double.parseDouble(parts[1]);
+				}
+
+				Counter<String> c = new Counter<String>();
+				String[] toks = parts[2].split(" ");
+				for (int j = 0; j < toks.length; j++) {
+					String[] two = StrUtils.split2Two(":", toks[j]);
+					c.incrementCount(two[0], Double.parseDouble(two[1]));
+				}
+
+				SparseVector sv = VectorUtils.toSparseVector(c, wordIndexer, true);
+
+				if (i > 0) {
+					sv.setLabel((int) relevance);
+				}
+
+				svs.add(sv);
+			}
+
+			TrecCdsQuery tcq = (TrecCdsQuery) queryMap.get(qid);
+			String type = tcq.getType();
+			int typeId = typeIndexer.getIndex(type);
+
+			// SparseVector q = svs.get(0);
+
+			for (int i = 1; i < svs.size(); i++) {
+				SparseVector d = svs.get(i);
+				double relevance = d.label();
+
+				if (relevance > 0) {
+					d.setLabel(typeId);
+				} else {
+					d.setLabel(3);
+				}
+
+				// SparseVector qd = VectorMath.add(q, d);
+				// qd.setLabel(d.label());
+
+				data.add(d);
+			}
+
+		}
+		reader.close();
+		writer.close();
+
+		SparseVector.write(DATA_FILE, data);
+		IOUtils.write(WORD_INDEXER_FILE, wordIndexer);
+	}
+
 	public static Parameter getSVMParamter() {
 		Parameter param = new Parameter(SolverType.L2R_L2LOSS_SVC_DUAL, 1, Double.POSITIVE_INFINITY, 0.1);
 
@@ -138,12 +224,13 @@ public class QueryClassifierTrainer {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 
-		// generateData();
+		// generateData1();
+		// generateData2();
 
 		// splitData();
 
-		// trainLibSVMs();
-		trainLibLinear();
+		trainLibSVMs();
+		// trainLibLinear();
 
 		System.out.println("process ends.");
 	}
@@ -185,17 +272,17 @@ public class QueryClassifierTrainer {
 		Collections.shuffle(trainData);
 		Collections.shuffle(testData);
 
-		List[] lists = new List[] { trainData, testData };
-
-		for (int i = 0; i < lists.length; i++) {
-			List<SparseVector> list = lists[i];
-			for (int j = 0; j < list.size(); j++) {
-				SparseVector sv = list.get(j);
-				if (sv.label() > 0) {
-					sv.setLabel(1);
-				}
-			}
-		}
+		// List[] lists = new List[] { trainData, testData };
+		//
+		// for (int i = 0; i < lists.length; i++) {
+		// List<SparseVector> list = lists[i];
+		// for (int j = 0; j < list.size(); j++) {
+		// SparseVector sv = list.get(j);
+		// if (sv.label() > 0) {
+		// sv.setLabel(1);
+		// }
+		// }
+		// }
 
 		Problem prob = new Problem();
 		prob.l = trainData.size();
@@ -270,18 +357,6 @@ public class QueryClassifierTrainer {
 
 		Collections.shuffle(trainData);
 		Collections.shuffle(testData);
-
-		List[] lists = new List[] { trainData, testData };
-
-		for (int i = 0; i < lists.length; i++) {
-			List<SparseVector> list = lists[i];
-			for (int j = 0; j < list.size(); j++) {
-				SparseVector sv = list.get(j);
-				if (sv.label() > 0) {
-					sv.setLabel(1);
-				}
-			}
-		}
 
 		LibSvmTrainer trainer = new LibSvmTrainer();
 		LibSvmWrapper wrapper = trainer.train(labelIndexer, featureIndexer, trainData);
