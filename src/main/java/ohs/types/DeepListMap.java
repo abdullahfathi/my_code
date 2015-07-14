@@ -37,6 +37,10 @@ public class DeepListMap<K, V, F> implements Serializable {
 		return ensure(key1).get(key2, true);
 	}
 
+	public ListMap<V, F> get(K key1) {
+		return get(key1, true);
+	}
+
 	public ListMap<V, F> get(K key1, boolean createIfAbsent) {
 		return createIfAbsent ? ensure(key1) : entries.get(key1);
 	}

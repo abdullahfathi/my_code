@@ -30,7 +30,6 @@ import ohs.medical.ir.RelevanceReader;
 import ohs.medical.ir.WordCountBox;
 import ohs.medical.ir.esa.ESA;
 import ohs.types.Counter;
-import ohs.types.DeepMap;
 import ohs.types.Indexer;
 import ohs.types.common.StrBidMap;
 import ohs.types.common.StrCounterMap;
@@ -88,8 +87,8 @@ public class TrecSearcher {
 		// tc.searchByQLD();
 		// tc.searchByKLD();
 		// tc.searchByKLDFB();
-		tc.searchByKLDProximity();
-		// tc.searchByCBEEM();
+		// tc.searchByKLDProximity();
+		tc.searchByCBEEM();
 		// tc.searchByESA();
 		// tc.searchByWiki();
 		// tc.searchByAbbr();
@@ -442,120 +441,130 @@ public class TrecSearcher {
 
 			Indexer<String> wordIndexer = new Indexer<String>();
 			StringBuffer qBuf = new StringBuffer(bq.getSearchText());
-			SparseVector docScores = null;
 
-			for (int j = 0; j < 1; j++) {
+			Counter<String> qWordCounts = AnalyzerUtils.getWordCounts(qBuf.toString(), analyzer);
 
-				Counter<String> qWordCounts = AnalyzerUtils.getWordCounts(qBuf.toString(), analyzer);
-
-				Iterator<String> iter = qWordCounts.keySet().iterator();
-				while (iter.hasNext()) {
-					String word = iter.next();
-					if (word.startsWith("#")) {
-						iter.remove();
-					}
+			Iterator<String> iter = qWordCounts.keySet().iterator();
+			while (iter.hasNext()) {
+				String word = iter.next();
+				if (word.startsWith("#")) {
+					iter.remove();
 				}
-
-				SparseVector queryModel = VectorUtils.toSparseVector(qWordCounts, wordIndexer, true);
-				queryModel.normalize();
-
-				BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
-				SparseVector docScores1 = DocumentSearcher.search(lbq, indexSearcher, 1000);
-				docScores1.normalize();
-
-				SparseVector wikiScores = DocumentSearcher.search(lbq, wikiIndexSearcher, 100);
-
-				// Counter<String> fbWordCounts = new Counter<String>();
-
-				// for (int k = 0; k < docScores1.size() && k < 10; k++) {
-				// int docId = docScores1.indexAtLoc(k);
-				// double score = docScores1.valueAtLoc(k);
-				// Document doc = indexSearcher.getIndexReader().document(docId);
-				// String title = doc.get(IndexFieldName.TITLE);
-				// String abs = doc.get(IndexFieldName.ABSTRACT);
-				// fbWordCounts.incrementAll(AnalyzerUtils.getWordCounts(title, analyzer));
-				// // fbWordCounts.incrementAll(AnalyzerUtils.getWordCounts(abs, analyzer));
-				// }
-
-				// WordCountBox wcb1 = WordCountBox.getWordCountBox(indexSearcher.getIndexReader(), docScores1, wordIndexer,
-				// IndexFieldName.TITLE);
-				// WordCountBox wcb2 = WordCountBox.getWordCountBox(indexSearcher.getIndexReader(), docScores1, wordIndexer,
-				// IndexFieldName.ABSTRACT);
-				WordCountBox wcb3 = WordCountBox.getWordCountBox(indexSearcher.getIndexReader(), docScores1, wordIndexer,
-						IndexFieldName.CONTENT);
-				WordCountBox wcb4 = WordCountBox.getWordCountBox(wikiIndexSearcher.getIndexReader(), wikiScores, wordIndexer,
-						IndexFieldName.CONTENT);
-
-				PromximityRelevanceModelBuilder ps = new PromximityRelevanceModelBuilder(wordIndexer, 5, 20, 2000, 3, true);
-				ps.computeWordProximities(wcb4, queryModel);
-				// SparseVector rm = ps.getRelevanceModel(wcb3, docScores1);
-				SparseVector rm = ps.getRelevanceModel(wcb4, wikiScores);
-
-				// RelevanceModelBuilder rmb = new RelevanceModelBuilder(10, 10, 2000);
-				// SparseVector rm1 = rmb.getRelevanceModel(wcb1, docScores1);
-				// SparseVector rm2 = rmb.getRelevanceModel(wcb2, docScores1);
-				// SparseVector rm3 = rmb.getRelevanceModel(wcb3, docScores1);
-				// SparseVector rm4 = rmb.getRelevanceModel(wcb4, wikiScores);
-
-				double mixture = 0.5;
-
-				SparseVector expQueryModel = VectorMath.addAfterScale(queryModel, rm, 1 - mixture, mixture);
-
-				qWordCounts = VectorUtils.toCounter(expQueryModel, wordIndexer);
-
-				iter = qWordCounts.keySet().iterator();
-				while (iter.hasNext()) {
-					String word = iter.next();
-					if (word.startsWith("#")) {
-						iter.remove();
-					}
-				}
-
-				System.out.printf("QM1:\t%s\n", VectorUtils.toCounter(queryModel, wordIndexer));
-				System.out.printf("QM2:\t%s\n", VectorUtils.toCounter(expQueryModel, wordIndexer));
-				// System.out.printf("RM1:\t%s\n", VectorUtils.toCounter(rm1, wordIndexer));
-				// System.out.printf("RM2:\t%s\n", VectorUtils.toCounter(rm2, wordIndexer));
-				// System.out.printf("RM3:\t%s\n", VectorUtils.toCounter(rm3, wordIndexer));
-				// System.out.printf("RM4:\t%s\n", VectorUtils.toCounter(rm4, wordIndexer));
-				System.out.printf("RM:\t%s\n", VectorUtils.toCounter(rm, wordIndexer));
-				System.out.println();
-
-				// List<String> words = fbWordCounts.getSortedKeys();
-
-				// for (int k = 0, l = 0; k < words.size() && l < 5; k++) {
-				// String word = words.get(k);
-				// double cnt = fbWordCounts.getCount(word);
-				// qWordCounts.incrementCount(word, 1);
-				// l++;
-				// }
-
-				lbq = AnalyzerUtils.getQuery(qWordCounts);
-
-				docScores1 = DocumentSearcher.search(lbq, indexSearcher, 1000);
-				docScores1.normalizeAfterSummation();
-
-				WordCountBox wcb2 = WordCountBox.getWordCountBox(indexSearcher.getIndexReader(), docScores1, wordIndexer);
-
-				// RelevanceModelBuilder rmb = new RelevanceModelBuilder();
-				//
-				// SparseVector relevanceModel = rmb.getRelevanceModel(wcb, docScores);
-				//
-				// double mixture = 0.5;
-				//
-				// SparseVector expQueryModel = VectorMath.addAfterScale(queryModel, relevanceModel, 1 - mixture, mixture);
-
-				// SparseVector expQueryModel = VectorUtils.toSparseVector(qWordCounts, wordIndexer);
-
-				KLDivergenceScorer scorer = new KLDivergenceScorer();
-				SparseVector docScores2 = scorer.scoreDocuments(wcb2, expQueryModel);
-				docScores2.normalize();
-				//
-				docScores = docScores2.copy();
-
 			}
 
-			// lbq = AnalyzerUtils.getQuery(qWordCounts);
-			// docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
+			SparseVector queryModel = VectorUtils.toSparseVector(qWordCounts, wordIndexer, true);
+			queryModel.normalize();
+
+			BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
+			SparseVector docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
+			docScores.normalize();
+
+			SparseVector wikiScores = DocumentSearcher.search(lbq, wikiIndexSearcher, 100);
+			wikiScores.normalize();
+
+			// Counter<String> fbWordCounts = new Counter<String>();
+
+			// for (int k = 0; k < docScores1.size() && k < 10; k++) {
+			// int docId = docScores1.indexAtLoc(k);
+			// double score = docScores1.valueAtLoc(k);
+			// Document doc = indexSearcher.getIndexReader().document(docId);
+			// String title = doc.get(IndexFieldName.TITLE);
+			// String abs = doc.get(IndexFieldName.ABSTRACT);
+			// fbWordCounts.incrementAll(AnalyzerUtils.getWordCounts(title, analyzer));
+			// // fbWordCounts.incrementAll(AnalyzerUtils.getWordCounts(abs, analyzer));
+			// }
+
+			// WordCountBox wcb1 = WordCountBox.getWordCountBox(indexSearcher.getIndexReader(), docScores1, wordIndexer,
+			// IndexFieldName.TITLE);
+			// WordCountBox wcb2 = WordCountBox.getWordCountBox(indexSearcher.getIndexReader(), docScores1, wordIndexer,
+			// IndexFieldName.ABSTRACT);
+			WordCountBox wcb3 = WordCountBox
+					.getWordCountBox(indexSearcher.getIndexReader(), docScores, wordIndexer, IndexFieldName.CONTENT);
+			WordCountBox wcb4 = WordCountBox.getWordCountBox(wikiIndexSearcher.getIndexReader(), wikiScores, wordIndexer,
+					IndexFieldName.CONTENT);
+
+			// ProximityScorer pe = new ProximityScorer(wordIndexer);
+			// SparseVector docScores2 = pe.score(wcb3, queryModel);
+
+			// double mixture_for_prox = 0.01;
+			// docScores1 = VectorMath.addAfterScale(docScores1, docScores2, 1 - mixture_for_prox, mixture_for_prox);
+
+			ProximityRelevanceModelBuilder ps = new ProximityRelevanceModelBuilder(wordIndexer, 5, 30, 2000, 3, false);
+			ps.computeWordProximities(wcb3, queryModel);
+			SparseVector rm3 = ps.getRelevanceModel(wcb3, docScores);
+
+			ps.computeWordProximities(wcb4, queryModel);
+			SparseVector rm4 = ps.getRelevanceModel(wcb4, wikiScores);
+
+			// System.out.println(ps.getLogBuffer().toString());
+			// SparseVector rm = ps.getRelevanceModel(wcb4, wikiScores);
+
+			// RelevanceModelBuilder rmb = new RelevanceModelBuilder(5, 20, 2000);
+			// SparseVector rm1 = rmb.getRelevanceModel(wcb1, docScores1);
+			// SparseVector rm2 = rmb.getRelevanceModel(wcb2, docScores1);
+			// SparseVector rm3 = rmb.getRelevanceModel(wcb3, docScores1);
+			// SparseVector rm4 = rmb.getRelevanceModel(wcb4, wikiScores);
+
+			double mixture_for_rm = 0.5;
+			int num_query_words = queryModel.size();
+
+			Vector[] vs = new Vector[] { queryModel, rm3, rm4 };
+			double[] mixtures = new double[] { 50, 25, 25 };
+			ArrayMath.normalize(mixtures);
+
+			// SparseVector expQueryModel = VectorMath.addAfterScale(queryModel, rm, 1 - mixture_for_rm, mixture_for_rm);
+			SparseVector expQueryModel = VectorMath.addAfterScale(vs, mixtures);
+			// expQueryModel.keepTopN(num_query_words);
+			// expQueryModel.normalize();
+
+			// qWordCounts = VectorUtils.toCounter(expQueryModel, wordIndexer);
+			//
+			// iter = qWordCounts.keySet().iterator();
+			// while (iter.hasNext()) {
+			// String word = iter.next();
+			// if (word.startsWith("#")) {
+			// iter.remove();
+			// }
+			// }
+
+			System.out.printf("QM1:\t%s\n", VectorUtils.toCounter(queryModel, wordIndexer));
+			System.out.printf("QM2:\t%s\n", VectorUtils.toCounter(expQueryModel, wordIndexer));
+			// System.out.printf("RM1:\t%s\n", VectorUtils.toCounter(rm1, wordIndexer));
+			// System.out.printf("RM2:\t%s\n", VectorUtils.toCounter(rm2, wordIndexer));
+			System.out.printf("RM3:\t%s\n", VectorUtils.toCounter(rm3, wordIndexer));
+			System.out.printf("RM4:\t%s\n", VectorUtils.toCounter(rm4, wordIndexer));
+			// System.out.printf("RM:\t%s\n", VectorUtils.toCounter(rm, wordIndexer));
+			System.out.println();
+
+			// List<String> words = fbWordCounts.getSortedKeys();
+
+			// for (int k = 0, l = 0; k < words.size() && l < 5; k++) {
+			// String word = words.get(k);
+			// double cnt = fbWordCounts.getCount(word);
+			// qWordCounts.incrementCount(word, 1);
+			// l++;
+			// }
+
+			lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(expQueryModel, wordIndexer));
+
+			docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
+			docScores.normalizeAfterSummation();
+			//
+			// wcb3 = WordCountBox.getWordCountBox(indexSearcher.getIndexReader(), docScores, wordIndexer);
+			//
+			// RelevanceModelBuilder rmb = new RelevanceModelBuilder();
+			//
+			// rm3 = rmb.getRelevanceModel(wcb3, docScores);
+			//
+			// vs = new Vector[] { expQueryModel, rm3 };
+			// mixtures = new double[] { 50, 50 };
+			// ArrayMath.normalize(mixtures);
+			//
+			// expQueryModel = VectorMath.addAfterScale(vs, mixtures);
+			//
+			// KLDivergenceScorer scorer = new KLDivergenceScorer();
+			// docScores = scorer.scoreDocuments(wcb3, expQueryModel);
+			// docScores.normalize();
 
 			ResultWriter.write(writer, bq.getId(), docScores);
 		}

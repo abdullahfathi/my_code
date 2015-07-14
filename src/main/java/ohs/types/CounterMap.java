@@ -178,6 +178,17 @@ public class CounterMap<K, V> implements java.io.Serializable {
 		}
 	}
 
+	public void incrementAll(CounterMap<K, V> cMap, double scaleFactor) {
+		for (Map.Entry<K, Counter<V>> entry : cMap.counterMap.entrySet()) {
+			K key = entry.getKey();
+			Counter<V> innerCounter = entry.getValue();
+			for (Map.Entry<V, Double> innerEntry : innerCounter.entrySet()) {
+				V value = innerEntry.getKey();
+				incrementCount(key, value, scaleFactor * innerEntry.getValue());
+			}
+		}
+	}
+
 	public void incrementAll(Map<K, V> map, double count) {
 		for (Map.Entry<K, V> entry : map.entrySet()) {
 			incrementCount(entry.getKey(), entry.getValue(), count);

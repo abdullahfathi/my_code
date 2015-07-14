@@ -235,7 +235,6 @@ public class TrecCbeemDocumentSearcher {
 		// BooleanQuery lbq = AnalyzerUtils.getQuery(qWords2);
 
 		for (int i = 0; i < num_colls; i++) {
-			IndexSearcher indexSearcher = indexSearchers[i];
 			collDocScores[i] = DocumentSearcher.search(bq.getLuceneQuery(), indexSearchers[i], hyperParam.getTopK());
 			// collDocScores[i] = DocumentSearcher.search(lbq, indexSearcher, hyperParam.getTopK());
 		}
@@ -247,6 +246,9 @@ public class TrecCbeemDocumentSearcher {
 		queryModel.normalize();
 
 		SparseVector ret = search(colId, queryModel, docRels);
+
+		BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(queryModel, wordIndexer));
+
 		return ret;
 	}
 
@@ -340,7 +342,11 @@ public class TrecCbeemDocumentSearcher {
 		expQueryModel.removeZeros();
 		expQueryModel.normalize();
 
-		SparseVector ret = scoreDocuments(colId, expQueryModel);
+		// SparseVector ret = scoreDocuments(colId, expQueryModel);
+
+		BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(expQueryModel, wordIndexer));
+		SparseVector ret = DocumentSearcher.search(lbq, indexSearchers[colId], hyperParam.getTopK());
+		ret.normalize();
 
 		if (makeLog) {
 			logBuf.append(bq.toString() + "\n");

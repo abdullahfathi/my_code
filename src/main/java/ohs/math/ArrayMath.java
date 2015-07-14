@@ -98,6 +98,17 @@ public class ArrayMath {
 		}
 	}
 
+	public static double addAfterScale(double[] a, double[] coefs) {
+		if (!ArrayChecker.isSameDimension(a, coefs)) {
+			throw new IllegalArgumentException();
+		}
+		double ret = 0;
+		for (int i = 0; i < a.length; i++) {
+			ret += a[i] * coefs[i];
+		}
+		return ret;
+	}
+
 	/**
 	 * @param a
 	 * @param b
@@ -156,14 +167,7 @@ public class ArrayMath {
 	}
 
 	public static int argMax(double[] x, int start, int end) {
-		int ret = -1;
-		double max = -Double.MAX_VALUE;
-		for (int i = start; i < x.length && i < end; i++) {
-			if (x[i] > max) {
-				ret = i;
-				max = x[i];
-			}
-		}
+		int ret = argMinMax(x, start, end)[1];
 		return ret;
 	}
 
@@ -215,16 +219,8 @@ public class ArrayMath {
 		return argMin(x, 0, x.length);
 	}
 
-	public static int argMin(double[] x, int start, int end) {
-		int ret = -1;
-		double min = Double.MAX_VALUE;
-		for (int i = start; i < x.length && i < end; i++) {
-			if (x[i] < min) {
-				ret = i;
-				min = x[i];
-			}
-		}
-		return ret;
+	public static int argMin(double[] a, int start, int end) {
+		return argMinMax(a, start, end)[0];
 	}
 
 	public static int[] argMin(double[][] x) {
@@ -244,15 +240,7 @@ public class ArrayMath {
 	}
 
 	public static int argMin(int[] x) {
-		int ret = -1;
-		double min = Double.MAX_VALUE;
-		for (int i = 0; i < x.length; i++) {
-			if (x[i] < min) {
-				ret = i;
-				min = x[i];
-			}
-		}
-		return ret;
+		return argMinMax(x)[0];
 	}
 
 	public static int argMinAtColumn(double[][] x, int j) {
@@ -272,12 +260,40 @@ public class ArrayMath {
 	}
 
 	public static int[] argMinMax(double[] a) {
+		return argMinMax(a, 0, a.length);
+	}
+
+	public static int[] argMinMax(double[] a, int start, int end) {
 		int min_i = -1;
 		int max_i = -1;
 		double min = Double.MAX_VALUE;
 		double max = -Double.MAX_VALUE;
 
-		for (int i = 0; i < a.length; i++) {
+		for (int i = start; i < a.length && i < end; i++) {
+			if (a[i] < min) {
+				min_i = i;
+				min = a[i];
+			}
+
+			if (a[i] > max) {
+				max_i = i;
+				max = a[i];
+			}
+		}
+		return new int[] { min_i, max_i };
+	}
+
+	public static int[] argMinMax(int[] a) {
+		return argMinMax(a, 0, a.length);
+	}
+
+	public static int[] argMinMax(int[] a, int start, int end) {
+		int min_i = -1;
+		int max_i = -1;
+		int min = Integer.MAX_VALUE;
+		int max = -Integer.MAX_VALUE;
+
+		for (int i = start; i < a.length && i < end; i++) {
 			if (a[i] < min) {
 				min_i = i;
 				min = a[i];
@@ -902,8 +918,8 @@ public class ArrayMath {
 	}
 
 	public static double[] minMax(double[] a) {
-		int[] ii = argMinMax(a);
-		return new double[] { a[ii[0]], a[ii[1]] };
+		int[] index = argMinMax(a);
+		return new double[] { a[index[0]], a[index[1]] };
 	}
 
 	/**
