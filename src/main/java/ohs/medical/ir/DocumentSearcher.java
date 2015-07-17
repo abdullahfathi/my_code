@@ -1,14 +1,16 @@
 package ohs.medical.ir;
 
-import java.io.File;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
 import ohs.io.TextFileWriter;
+import ohs.lucene.common.AnalyzerUtils;
 import ohs.lucene.common.IndexFieldName;
 import ohs.lucene.common.MedicalEnglishAnalyzer;
+import ohs.math.VectorUtils;
 import ohs.matrix.SparseVector;
+import ohs.types.Indexer;
 import ohs.types.common.StrCounterMap;
 
 import org.apache.lucene.index.DirectoryReader;
@@ -19,7 +21,6 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.similarities.LMDirichletSimilarity;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.util.Version;
 
 /**
  * 
@@ -97,6 +98,12 @@ public class DocumentSearcher {
 		System.out.println("process ends.");
 	}
 
+	public static SparseVector search(SparseVector queryModel, Indexer<String> wordIndexer, IndexSearcher indexSearcher, int top_k)
+			throws Exception {
+		Query q = AnalyzerUtils.getQuery(VectorUtils.toCounter(queryModel, wordIndexer));
+		return search(q, indexSearcher, top_k);
+	}
+
 	public static SparseVector search(Query query, IndexSearcher indexSearcher, int top_k) throws Exception {
 		TopDocs topDocs = indexSearcher.search(query, top_k);
 		int num_docs = topDocs.scoreDocs.length;
@@ -108,7 +115,6 @@ public class DocumentSearcher {
 		}
 		ret.summation();
 		ret.sortByIndex();
-
 		return ret;
 	}
 

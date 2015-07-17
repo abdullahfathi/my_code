@@ -18,7 +18,7 @@ public class RelevanceModelBuilder {
 		this(5, 20, 2000);
 	}
 
-	public RelevanceModelBuilder(int num_fb_docs, int num_fb_words, int dirichlet_prior) {
+	public RelevanceModelBuilder(int num_fb_docs, int num_fb_words, double dirichlet_prior) {
 		this.num_fb_docs = num_fb_docs;
 		this.num_fb_words = num_fb_words;
 		this.dirichlet_prior = dirichlet_prior;

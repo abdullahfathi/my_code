@@ -53,6 +53,8 @@ public class ENTPath {
 
 	public static final String ORG_HISTORY_DIR = DATA_DIR + "org_history/";
 
-	public static final String ORG_HISTORY_SUBSET_FILE = ORG_HISTORY_DIR + "base_orgs_subset.txt";
+	public static final String BASE_ORG_HISTORY_FILE = DATA_DIR + "base_orgs_history.txt";
+
+	public static final String ORG_HISTORY_SUBSET_FILE_1 = ORG_HISTORY_DIR + "base_orgs_subset_1.txt";
 
 }

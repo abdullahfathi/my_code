@@ -26,6 +26,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
 
 /**
  * 
@@ -227,28 +228,26 @@ public class TrecCbeemDocumentSearcher {
 		collDocScores = new SparseVector[num_colls];
 		this.bq = bq;
 
-		Counter<String> qwcs1 = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
-		bq.setLuceneQuery(AnalyzerUtils.getQuery(qwcs1));
+		Counter<String> qWordCounts = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
+		bq.setLuceneQuery(AnalyzerUtils.getQuery(qWordCounts));
 
-		// String q = wikiQueryExpander.expand(wordIndexer, bq);
-		// Counter<String> qWords2 = AnalyzerUtils.getWordCounts(q, analyzer);
-		// BooleanQuery lbq = AnalyzerUtils.getQuery(qWords2);
+		SparseVector queryModel = VectorUtils.toSparseVector(qWordCounts, wordIndexer, true);
+		queryModel.normalize();
+
+		SparseVector expQueryModel = wikiQueryExpander.expand(wordIndexer, queryModel);
+		BooleanQuery expSearchQuery = AnalyzerUtils.getQuery(VectorUtils.toCounter(expQueryModel, wordIndexer));
 
 		for (int i = 0; i < num_colls; i++) {
-			collDocScores[i] = DocumentSearcher.search(bq.getLuceneQuery(), indexSearchers[i], hyperParam.getTopK());
-			// collDocScores[i] = DocumentSearcher.search(lbq, indexSearcher, hyperParam.getTopK());
+			Query searchQuery = bq.getLuceneQuery();
+			if (i == colId) {
+				searchQuery = expSearchQuery;
+			}
+			collDocScores[i] = DocumentSearcher.search(searchQuery, indexSearchers[i], hyperParam.getTopK());
 		}
 
 		setWordCountBoxes();
 
-		SparseVector queryModel = VectorUtils.toSparseVector(qwcs1, wordIndexer, true);
-		// SparseVector queryModel = VectorUtils.toSparseVector(qWords2, wordIndexer, true);
-		queryModel.normalize();
-
 		SparseVector ret = search(colId, queryModel, docRels);
-
-		BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(queryModel, wordIndexer));
-
 		return ret;
 	}
 

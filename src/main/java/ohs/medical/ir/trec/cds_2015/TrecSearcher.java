@@ -87,8 +87,8 @@ public class TrecSearcher {
 		// tc.searchByQLD();
 		// tc.searchByKLD();
 		// tc.searchByKLDFB();
-		// tc.searchByKLDProximity();
-		tc.searchByCBEEM();
+		tc.searchByKLDProximity();
+		// tc.searchByCBEEM();
 		// tc.searchByESA();
 		// tc.searchByWiki();
 		// tc.searchByAbbr();
@@ -440,9 +440,8 @@ public class TrecSearcher {
 			BaseQuery bq = bqs.get(i);
 
 			Indexer<String> wordIndexer = new Indexer<String>();
-			StringBuffer qBuf = new StringBuffer(bq.getSearchText());
 
-			Counter<String> qWordCounts = AnalyzerUtils.getWordCounts(qBuf.toString(), analyzer);
+			Counter<String> qWordCounts = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
 
 			Iterator<String> iter = qWordCounts.keySet().iterator();
 			while (iter.hasNext()) {
@@ -455,11 +454,10 @@ public class TrecSearcher {
 			SparseVector queryModel = VectorUtils.toSparseVector(qWordCounts, wordIndexer, true);
 			queryModel.normalize();
 
-			BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
-			SparseVector docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
+			SparseVector docScores = DocumentSearcher.search(queryModel, wordIndexer, indexSearcher, 1000);
 			docScores.normalize();
 
-			SparseVector wikiScores = DocumentSearcher.search(lbq, wikiIndexSearcher, 100);
+			SparseVector wikiScores = DocumentSearcher.search(queryModel, wordIndexer, wikiIndexSearcher, 100);
 			wikiScores.normalize();
 
 			// Counter<String> fbWordCounts = new Counter<String>();
@@ -480,8 +478,8 @@ public class TrecSearcher {
 			// IndexFieldName.ABSTRACT);
 			WordCountBox wcb3 = WordCountBox
 					.getWordCountBox(indexSearcher.getIndexReader(), docScores, wordIndexer, IndexFieldName.CONTENT);
-			WordCountBox wcb4 = WordCountBox.getWordCountBox(wikiIndexSearcher.getIndexReader(), wikiScores, wordIndexer,
-					IndexFieldName.CONTENT);
+			// WordCountBox wcb4 = WordCountBox.getWordCountBox(wikiIndexSearcher.getIndexReader(), wikiScores, wordIndexer,
+			// IndexFieldName.CONTENT);
 
 			// ProximityScorer pe = new ProximityScorer(wordIndexer);
 			// SparseVector docScores2 = pe.score(wcb3, queryModel);
@@ -493,8 +491,8 @@ public class TrecSearcher {
 			ps.computeWordProximities(wcb3, queryModel);
 			SparseVector rm3 = ps.getRelevanceModel(wcb3, docScores);
 
-			ps.computeWordProximities(wcb4, queryModel);
-			SparseVector rm4 = ps.getRelevanceModel(wcb4, wikiScores);
+			// ps.computeWordProximities(wcb4, queryModel);
+			// SparseVector rm4 = ps.getRelevanceModel(wcb4, wikiScores);
 
 			// System.out.println(ps.getLogBuffer().toString());
 			// SparseVector rm = ps.getRelevanceModel(wcb4, wikiScores);
@@ -508,8 +506,8 @@ public class TrecSearcher {
 			double mixture_for_rm = 0.5;
 			int num_query_words = queryModel.size();
 
-			Vector[] vs = new Vector[] { queryModel, rm3, rm4 };
-			double[] mixtures = new double[] { 50, 25, 25 };
+			Vector[] vs = new Vector[] { queryModel, rm3 };
+			double[] mixtures = new double[] { 50, 50 };
 			ArrayMath.normalize(mixtures);
 
 			// SparseVector expQueryModel = VectorMath.addAfterScale(queryModel, rm, 1 - mixture_for_rm, mixture_for_rm);
@@ -532,7 +530,7 @@ public class TrecSearcher {
 			// System.out.printf("RM1:\t%s\n", VectorUtils.toCounter(rm1, wordIndexer));
 			// System.out.printf("RM2:\t%s\n", VectorUtils.toCounter(rm2, wordIndexer));
 			System.out.printf("RM3:\t%s\n", VectorUtils.toCounter(rm3, wordIndexer));
-			System.out.printf("RM4:\t%s\n", VectorUtils.toCounter(rm4, wordIndexer));
+			// System.out.printf("RM4:\t%s\n", VectorUtils.toCounter(rm4, wordIndexer));
 			// System.out.printf("RM:\t%s\n", VectorUtils.toCounter(rm, wordIndexer));
 			System.out.println();
 
@@ -545,9 +543,7 @@ public class TrecSearcher {
 			// l++;
 			// }
 
-			lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(expQueryModel, wordIndexer));
-
-			docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
+			docScores = DocumentSearcher.search(expQueryModel, wordIndexer, indexSearcher, 1000);
 			docScores.normalizeAfterSummation();
 			//
 			// wcb3 = WordCountBox.getWordCountBox(indexSearcher.getIndexReader(), docScores, wordIndexer);
@@ -597,17 +593,30 @@ public class TrecSearcher {
 		StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(MIRPath.TREC_CDS_DOCUMENT_ID_MAP_FILE);
 		StrCounterMap relevanceData = RelevanceReader.readTrecCdsRelevances(MIRPath.TREC_CDS_RELEVANCE_JUDGE_2014_FILE);
 
-		WikiQueryExpander ex = new WikiQueryExpander(wikiIndexSearcher, analyzer, true, 2000, 0.5, 20, 100);
+		WikiQueryExpander expander = new WikiQueryExpander(wikiIndexSearcher, analyzer, true, 2000, 0.5, 5, 15);
 
 		TextFileWriter writer = new TextFileWriter(resultFileName);
 		TextFileWriter logWriter = new TextFileWriter(logFileName);
 
 		for (int i = 0; i < bqs.size(); i++) {
 			BaseQuery bq = bqs.get(i);
-			String q = ex.expand(bq);
-			BooleanQuery lbq = AnalyzerUtils.getQuery(q, analyzer);
-			SparseVector docScores = DocumentSearcher.search(lbq, trecIndexSearcher, 1000);
-			logWriter.write(ex.getLogBuffer().toString() + "\n\n");
+			Indexer<String> wordIndexer = new Indexer<String>();
+
+			Counter<String> qWordCounts = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
+			SparseVector queryModel = VectorUtils.toSparseVector(qWordCounts, wordIndexer, true);
+			queryModel.normalize();
+
+			SparseVector expQueryModel = expander.expand(wordIndexer, queryModel);
+
+			System.out.println(expander.getLogBuffer().toString());
+			System.out.println();
+			SparseVector docScores = DocumentSearcher.search(expQueryModel, wordIndexer, trecIndexSearcher, 1000);
+			// KLDivergenceScorer kldScorer = new KLDivergenceScorer();
+			// WordCountBox wcb = WordCountBox.getWordCountBox(trecIndexSearcher.getIndexReader(), docScores, wordIndexer);
+			//
+			// docScores = kldScorer.scoreDocuments(wcb, expQueryModel);
+
+			// logWriter.write(ex.getLogBuffer().toString() + "\n\n");
 			ResultWriter.write(writer, bq.getId(), docScores);
 		}
 

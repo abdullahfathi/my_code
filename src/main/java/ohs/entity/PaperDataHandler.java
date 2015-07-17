@@ -32,14 +32,15 @@ public class PaperDataHandler {
 		// dh.extractKoreanAuthorNames();
 		// dh.process2();
 
-		dh.selectSubsetForOrgHistory();
-
+		// dh.selectSubsetForOrgHistory();
+		//
+		
 		System.out.println("process ends.");
 	}
 
 	public void selectSubsetForOrgHistory() throws Exception {
 		List<String> lines = IOUtils.readLines(ENTPath.ORG_HISTORY_DIR + "base_orgs.txt", IOUtils.EUC_KR, Integer.MAX_VALUE);
-		// TextFileWriter writer = new TextFileWriter(ENTPath.ORG_HISTORY_SUBSET_FILE);
+		// TextFileWriter writer = new TextFileWriter(ENTPath.ORG_HISTORY_SUBSET_FILE_1);
 
 		List<Integer> locs = new ArrayList<Integer>();
 
@@ -103,8 +104,7 @@ public class PaperDataHandler {
 			sublines.add(line);
 		}
 
-		IOUtils.write(ENTPath.ORG_HISTORY_SUBSET_FILE, StrUtils.join("\n", sublines));
-
+		IOUtils.write(ENTPath.ORG_HISTORY_SUBSET_FILE_1, StrUtils.join("\n", sublines));
 	}
 
 	public void process() throws Exception {

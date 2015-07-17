@@ -6,7 +6,26 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.sun.org.apache.xpath.internal.operations.Or;
+
+import ohs.io.TextFileReader;
+
 public class Organization implements Serializable {
+
+	public static List<Organization> read(String fileName) {
+		List<Organization> ret = new ArrayList<Organization>();
+
+		TextFileReader reader = new TextFileReader(fileName);
+		while (reader.hasNext()) {
+			if (reader.getNumLines() == 1) {
+				continue;
+			}
+			String line = reader.next();
+		}
+		reader.close();
+
+		return ret;
+	}
 
 	private String sid;
 
@@ -24,13 +43,15 @@ public class Organization implements Serializable {
 
 	private OrganizationType type;
 
+	private String homepage;
+
 	public Organization(int id, String sid, BilingualText name) {
-		this(id, sid, name, -1, OrganizationType.NONE, null, null, null);
+		this(id, sid, name, -1, OrganizationType.NONE, new HashSet<String>(), new HashSet<String>(), new ArrayList<Organization>(), null);
 	}
 
 	public Organization(int id, String sid, BilingualText name, int year, OrganizationType type,
 
-	Set<String> korVariants, Set<String> engVariants, List<Organization> history) {
+	Set<String> korVariants, Set<String> engVariants, List<Organization> history, String homepage) {
 		super();
 		this.id = id;
 		this.sid = sid;
@@ -40,6 +61,7 @@ public class Organization implements Serializable {
 		this.korVariants = korVariants;
 		this.engVariants = engVariants;
 		this.history = history;
+		this.homepage = homepage;
 	}
 
 	@Override
@@ -72,6 +94,10 @@ public class Organization implements Serializable {
 
 	public List<Organization> getHistory() {
 		return history;
+	}
+
+	public String getHomepage() {
+		return homepage;
 	}
 
 	public int getId() {
@@ -116,6 +142,10 @@ public class Organization implements Serializable {
 		this.history = history;
 	}
 
+	public void setHomepage(String homepage) {
+		this.homepage = homepage;
+	}
+
 	public void setId(int id) {
 		this.id = id;
 	}
@@ -143,10 +173,20 @@ public class Organization implements Serializable {
 	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
-		sb.append(String.format("ID = %s\n", sid));
-		sb.append(String.format("Korean ORG = %s\n", name.getKorean()));
-		sb.append(String.format("English ORG = %s\n", name.getEnglish()));
-		return sb.toString();
+		// sb.append(String.format("ID = %d\n", id));
+		// sb.append(String.format("SID = %s\n", sid));
+		sb.append(String.format("Korean Name = %s\n", name.getKorean()));
+		// sb.append(String.format("English Name = %s\n", name.getEnglish()));
+		sb.append(String.format("Year = %d\n", year));
+		// sb.append(String.format("Korean Variants = %s\n", korVariants));
+		// sb.append(String.format("English Variants = %s\n", engVariants));
+		// sb.append(String.format("Homepage = %s\n", homepage));
+		sb.append(String.format("History\n"));
+		for (int i = 0; i < history.size(); i++) {
+			Organization org = history.get(i);
+			sb.append(String.format("%d\t%s\t%d\n", i + 1, org.getName().getKorean(), org.getYear()));
+		}
+		return sb.toString().trim();
 	}
 
 }
