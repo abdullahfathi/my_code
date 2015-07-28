@@ -129,8 +129,8 @@ public class ProximityRelevanceModelBuilder {
 						}
 
 						if (context_loc != current_loc) {
-							double score = window_size - Math.abs(context_loc - current_loc) + 1;
-							cm.incrementCount(qw, cw, score);
+							double distance = window_size - Math.abs(context_loc - current_loc) + 1;
+							cm.incrementCount(qw, cw, distance);
 						}
 					}
 
@@ -214,10 +214,15 @@ public class ProximityRelevanceModelBuilder {
 			for (int k = 0; k < docScores.size() && k < num_fb_docs; k++) {
 				int docId = docScores.indexAtLoc(k);
 				SparseMatrix wordProxes = docWordProximities.get(docId);
-				SparseVector localProxes = wordProxes.rowAlways(qw);
-				SparseVector fbProxes = fbWordProximities.rowAlways(qw);
-
 				double doc_weight = docScores.valueAtLoc(k);
+				double local_weight = 0;
+				if (wordProxes != null) {
+					SparseVector localProxes = wordProxes.rowAlways(qw);
+					local_weight = localProxes.sum();
+				}
+				local_weight = Math.exp(local_weight);
+
+				// SparseVector fbProxes = fbWordProximities.rowAlways(qw);
 
 				SparseVector wordCounts = wcb.getDocWordCounts().rowAlways(docId);
 				double cnt_w_in_doc = wordCounts.valueAlways(qw);
@@ -226,8 +231,7 @@ public class ProximityRelevanceModelBuilder {
 				double prob_w_in_doc = cnt_w_in_doc / cnt_sum_in_doc;
 				prob_w_in_doc = (1 - mixture_for_coll) * prob_w_in_doc + mixture_for_coll * prob_w_in_coll;
 				double doc_prior = 1;
-				double local_weight = localProxes.sum();
-				double fb_weight = fbProxes.sum();
+				// double fb_weight = fbProxes.sum();
 				local_weight = FuncMath.sigmoid(local_weight);
 				double prob_w_in_fb_model = doc_weight * prob_w_in_doc * doc_prior * local_weight;
 
@@ -236,7 +240,7 @@ public class ProximityRelevanceModelBuilder {
 				}
 			}
 		}
-		
+
 		docScores.sortByIndex();
 		ret.keepTopN(num_fb_words);
 		ret.normalize();

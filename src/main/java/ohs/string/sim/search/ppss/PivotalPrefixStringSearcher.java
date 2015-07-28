@@ -2,10 +2,10 @@ package ohs.string.sim.search.ppss;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +15,7 @@ import ohs.entity.DataReader;
 import ohs.entity.ENTPath;
 import ohs.entity.data.struct.BilingualText;
 import ohs.io.IOUtils;
+import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.string.sim.func.AffineGap;
 import ohs.string.sim.func.SmithWaterman;
@@ -41,14 +42,116 @@ public class PivotalPrefixStringSearcher implements Serializable {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 		// test0();
-		test1();
+		// test1();
 		// test2();
+		test3();
 		System.out.println("process ends.");
 	}
 
 	public static void test0() throws Exception {
 		PivotalPrefixStringSearcher ppss = new PivotalPrefixStringSearcher();
 		ppss.read(ENTPath.PPSS_INDEX_FILE);
+	}
+
+	public static void test3() throws Exception {
+		List<BilingualText> orgNames = DataReader.readBaseOrgNames(ENTPath.BASE_ORG_NAME_FILE);
+		Counter<BilingualText> externalOrgCounts = DataReader.readBilingualTextCounter(ENTPath.DOMESTIC_PAPER_ORG_NAME_FILE);
+
+		List<StringRecord> strings = new ArrayList<StringRecord>();
+		List<StringRecord> strings2 = new ArrayList<StringRecord>();
+
+		for (int i = 0; i < orgNames.size(); i++) {
+			strings.add(new StringRecord(i, orgNames.get(i).getKorean()));
+			strings2.add(new StringRecord(i, orgNames.get(i).getKorean()));
+		}
+
+		GramSorter gramSorter = new GramSorter();
+
+		{
+			List<StringRecord> ss = new ArrayList<StringRecord>();
+
+			for (BilingualText orgName : externalOrgCounts.keySet()) {
+				String korName = orgName.getKorean();
+				if (korName.length() == 0) {
+					continue;
+				}
+				ss.add(new StringRecord(ss.size(), korName));
+			}
+
+			Counter<String> gramWeights1 = GramWeighter.compute(new GramGenerator(2), ss);
+			System.out.println(gramWeights1);
+			gramSorter.setGramWeights(gramWeights1);
+			// gramSorter.setIsAscendingOrder(false);
+		}
+
+		int q = 2;
+		int tau = 4;
+
+		PivotalPrefixStringSearcher ppss = new PivotalPrefixStringSearcher(q, tau, true);
+		ppss.setGramSorter(gramSorter);
+		ppss.index(strings);
+		// ppss.write(ENTPath.PPSS_INDEX_FILE);
+		// ppss.writeObject(ENTPath.PPSS_OBJECT_FILE);
+
+		// {
+		// TextFileWriter writer = new TextFileWriter(ENTPath.DATA_DIR + "ppss_res.txt");
+		// for (int i = 0; i < strings2.size(); i++) {
+		// String str = strings2.get(i);
+		// System.out.println(str);
+		//
+		// // if (!str.contains("경남양돈산업클러스터사업단")) {
+		// // continue;
+		// // }
+		// Counter<String> res = ext.search(str);
+		// writer.write(String.format("Input:\t%s\n", str));
+		// writer.write(String.format("Output:\t%s\n\n", res.toStringSortedByValues(false, false, res.size())));
+		// }
+		//
+		// writer.close();
+		// }
+
+		ListMap<String, String> listMap = new ListMap<String, String>();
+
+		{
+			TextFileReader reader = new TextFileReader(ENTPath.DATA_DIR + "patent_orgs_2.txt");
+			while (reader.hasNext()) {
+				if (reader.getNumLines() == 1) {
+					continue;
+				}
+				String line = reader.next();
+				String[] parts = line.split("\t");
+				String korName = parts[0];
+
+				if (parts.length == 2) {
+					String[] engNames = parts[1].split(" # ");
+					for (String engName : engNames) {
+						listMap.put(korName, engName);
+					}
+				}
+			}
+			reader.close();
+		}
+
+		{
+
+			List<String> korNames = new ArrayList<String>(listMap.keySet());
+			Collections.sort(korNames);
+
+			TextFileWriter writer = new TextFileWriter(ENTPath.PPSS_RESULT_FILE);
+
+			for (int i = 0; i < korNames.size(); i++) {
+				String korName = korNames.get(i);
+				System.out.println(korName);
+
+				Counter<StringRecord> res = ppss.search(korName);
+				StringBuffer sb = new StringBuffer();
+				sb.append("Input:\n");
+				sb.append(korName.toString() + "\n");
+				sb.append(String.format("Output:\t%s\n\n", res.toStringSortedByValues(true, true, 10)));
+				writer.write(sb.toString());
+			}
+			writer.close();
+		}
 	}
 
 	public static void test1() throws Exception {

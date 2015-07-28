@@ -144,7 +144,6 @@ public class TrecCbeemDocumentSearcher {
 				}
 			}
 			docScores.sortByIndex();
-
 			rm.removeZeros();
 			rm.normalize();
 
@@ -228,20 +227,22 @@ public class TrecCbeemDocumentSearcher {
 		collDocScores = new SparseVector[num_colls];
 		this.bq = bq;
 
+		List<String> words = AnalyzerUtils.getWords(bq.getSearchText(), analyzer);
+
 		Counter<String> qWordCounts = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
-		bq.setLuceneQuery(AnalyzerUtils.getQuery(qWordCounts));
+		bq.setLuceneQuery(AnalyzerUtils.getQuery(words));
 
 		SparseVector queryModel = VectorUtils.toSparseVector(qWordCounts, wordIndexer, true);
 		queryModel.normalize();
 
-		SparseVector expQueryModel = wikiQueryExpander.expand(wordIndexer, queryModel);
-		BooleanQuery expSearchQuery = AnalyzerUtils.getQuery(VectorUtils.toCounter(expQueryModel, wordIndexer));
+		// SparseVector expQueryModel = wikiQueryExpander.expand(wordIndexer, queryModel);
+		BooleanQuery expSearchQuery = AnalyzerUtils.getQuery(VectorUtils.toCounter(queryModel, wordIndexer));
 
 		for (int i = 0; i < num_colls; i++) {
 			Query searchQuery = bq.getLuceneQuery();
-			if (i == colId) {
-				searchQuery = expSearchQuery;
-			}
+			// if (i == colId) {
+			// searchQuery = expSearchQuery;
+			// }
 			collDocScores[i] = DocumentSearcher.search(searchQuery, indexSearchers[i], hyperParam.getTopK());
 		}
 

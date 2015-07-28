@@ -4,15 +4,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 import ohs.entity.data.struct.BilingualText;
 import ohs.entity.data.struct.Organization;
 import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
 import ohs.types.Counter;
-import ohs.types.ListMap;
-import ohs.types.common.StrCounter;
+import ohs.utils.StrUtils;
 
 public class DataReader {
 
@@ -20,13 +18,12 @@ public class DataReader {
 		System.out.println("process begins.");
 
 		List<Organization> orgs = readOrganizations(ENTPath.BASE_ORG_NAME_FILE);
-		readOrganizationHistories(ENTPath.BASE_ORG_HISTORY_FILE);
+		// readOrganizationHistories(ENTPath.BASE_ORG_HISTORY_FILE);
 
 		System.out.println("process ends.");
 	}
 
 	public static List<BilingualText> readBaseOrgNames(String fileName) {
-		System.out.printf("read [%s].\n", fileName);
 		List<BilingualText> ret = new ArrayList<BilingualText>();
 		List<Organization> orgs = readOrganizations(fileName);
 		for (Organization org : orgs) {
@@ -64,17 +61,7 @@ public class DataReader {
 			}
 
 			String line = reader.next();
-			String[] parts = line.replace("\t", "\t_").split("\t");
-
-			for (int i = 0; i < parts.length; i++) {
-				if (parts[i].startsWith("_")) {
-					parts[i] = parts[i].substring(1);
-				}
-
-				if (parts[i].equals("empty")) {
-					parts[i] = "";
-				}
-			}
+			String[] parts = split(line);
 
 			int id = Integer.parseInt(parts[0]);
 			String country = parts[1];
@@ -84,18 +71,45 @@ public class DataReader {
 			String engName = parts[4].trim();
 			BilingualText orgName = new BilingualText(korName, engName);
 
-			String korAbbr = parts[5];
-			String engAbbr = parts[6];
+			String korAbbrs = parts[5];
+			String engAbbrs = parts[6];
 
 			String homepage = parts[9];
 
 			Organization org = new Organization(id, null, orgName);
-			org.getKoreanVariants().add(korAbbr);
-			org.getEnglishVariants().add(engAbbr);
 			org.setHomepage(homepage);
+
+			if (korAbbrs.length() > 0) {
+				String[] abbrs = korAbbrs.split(",");
+				for (String abbr : abbrs) {
+					org.getKoreanVariants().add(abbr.trim());
+				}
+			}
+
+			if (engAbbrs.length() > 0) {
+				String[] abbrs = engAbbrs.split(",");
+				for (String abbr : abbrs) {
+					org.getEnglishVariants().add(abbr.trim());
+				}
+			}
+
 			ret.add(org);
 		}
 		reader.close();
+		return ret;
+	}
+
+	public static String[] split(String line) {
+		String[] ret = line.replace("\t", "\t_").split("\t");
+		for (int j = 0; j < ret.length; j++) {
+			if (ret[j].startsWith("_")) {
+				ret[j] = ret[j].substring(1);
+			}
+
+			if (ret[j].equals("empty")) {
+				ret[j] = "";
+			}
+		}
 		return ret;
 	}
 
@@ -106,6 +120,7 @@ public class DataReader {
 		// List<Organization> lines = new ArrayList<Organization>();
 
 		List<String[]> lines = new ArrayList<String[]>();
+		int num_orgs = 0;
 
 		TextFileReader reader = new TextFileReader(fileName, IOUtils.EUC_KR);
 		while (reader.hasNext()) {
@@ -115,18 +130,7 @@ public class DataReader {
 				continue;
 			}
 
-			String[] parts = line.replace("\t", "\t_").split("\t");
-			// String[] parts = line.split("\t");
-
-			for (int j = 0; j < parts.length; j++) {
-				if (parts[j].startsWith("_")) {
-					parts[j] = parts[j].substring(1);
-				}
-
-				if (parts[j].equals("empty")) {
-					parts[j] = "";
-				}
-			}
+			String[] parts = split(line);
 
 			// try {
 			if (parts[3].length() == 0) {
@@ -137,6 +141,8 @@ public class DataReader {
 				// } catch (Exception e) {
 				// e.printStackTrace();
 				// }
+
+				num_orgs++;
 
 				lines = new ArrayList<String[]>();
 
@@ -149,6 +155,9 @@ public class DataReader {
 
 		}
 		reader.close();
+
+		System.out.println(num_orgs);
+
 		return ret;
 	}
 
@@ -186,7 +195,7 @@ public class DataReader {
 				org.setHomepage(homepage);
 				map.put(korName, org);
 			} else {
-				System.out.println();
+				// System.out.println();
 			}
 
 			if (korHistory.length() == 0) {
@@ -196,8 +205,14 @@ public class DataReader {
 				String[] eventYears = eventYears = year.split(";");
 
 				if (events.length != eventYears.length) {
-					System.out.println("errors");
-					System.exit(0);
+					System.out.println(StrUtils.join("\t", parts));
+					// System.out.println("errors");
+					// System.exit(0);
+					continue;
+				}
+
+				if (events.length > 1) {
+					System.out.println();
 				}
 
 				for (int j = 0; j < events.length; j++) {
@@ -218,7 +233,7 @@ public class DataReader {
 						if (member == null) {
 							member = new Organization(-1, null, new BilingualText(memberName, ""));
 						} else {
-							System.out.println();
+							// System.out.println();
 						}
 
 						org.getHistory().add(member);
@@ -247,7 +262,6 @@ public class DataReader {
 				int loc = locs.get(i);
 				orgs.add(temp.get(loc));
 			}
-
 		}
 
 		for (int i = 0; i < orgs.size(); i++) {

@@ -1,11 +1,21 @@
 package ohs.entity;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
 
+import ohs.entity.data.struct.BilingualText;
 import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
+import ohs.io.TextFileWriter;
 import ohs.types.BidMap;
 import ohs.types.Counter;
+import ohs.types.CounterMap;
+import ohs.types.ListMap;
+import ohs.utils.StrUtils;
 
 public class PatentDataHandler {
 
@@ -17,86 +27,78 @@ public class PatentDataHandler {
 		System.out.println("process begins.");
 
 		PatentDataHandler dh = new PatentDataHandler();
-		dh.process();
+		// dh.process();
+		dh.process2();
 
 		System.out.println("process ends.");
 	}
 
-	public void process() throws Exception {
-		File[] dirs = new File(ENTPath.DATA_DIR + "raw-data/patent").listFiles();
+	public void process2() throws Exception {
+		// ListMap<String, String> listMap = new ListMap<String, String>();
+		CounterMap<String, String> cm = new CounterMap<String, String>();
 
-		int num_patents = 0;
+		TextFileReader reader = new TextFileReader(ENTPath.PATENT_ORG_FILE);
+		while (reader.hasNext()) {
+			String line = reader.next();
 
-		Counter<String> c = new Counter<String>();
-
-		for (int i = 0; i < dirs.length; i++) {
-			File dir = dirs[i];
-			if (!dir.getName().contains("patent")) {
+			if (reader.getNumLines() == 1) {
 				continue;
 			}
+			String[] parts = line.split("\t");
+			String korLong = parts[2].trim();
+			String korShort = parts[3].trim();
+			String engLong = parts[4].trim();
+			String engShort = parts[5].trim();
+			String title = parts[6];
 
-			File[] files = dir.listFiles();
+			// if (engLong.equals("null")) {
+			// engLong = "";
+			// }
 
-			for (int j = 0; j < files.length; j++) {
-				File file = files[j];
+			// listMap.put(korShort, engLong);
 
-				System.out.printf("read [%s]\n", file.getPath());
-
-				TextFileReader reader = new TextFileReader(file.getPath(), IOUtils.EUC_KR);
-
-				BidMap<Integer, String> attrMap = new BidMap<Integer, String>();
-
-				while (reader.hasNext()) {
-					String line = reader.next();
-
-					if (reader.getNumLines() == 1) {
-						String[] attrs = line.split("\t");
-						for (int k = 0; k < attrs.length; k++) {
-							attrMap.put(k, attrs[k]);
-						}
-					} else {
-						num_patents++;
-
-						BidMap<String, String> map = new BidMap<String, String>();
-
-						String[] values = line.replace("\t", "#\t").split("\t");
-						for (int l = 0; l < values.length; l++) {
-							String v = values[l];
-							v = v.replace("#", "");
-							values[l] = v;
-							String attr = attrMap.getValue(l);
-							map.put(attr, v);
-						}
-
-						String pak = map.getValue("PAK");
-						String ink = map.getValue("INK");
-
-						String pae = map.getValue("PAE");
-						String ine = map.getValue("INE");
-
-						if (pak == null || ink == null || pak.length() == 0 || ink.length() == 0) {
-							continue;
-						}
-
-						if (pae == null || ine == null || pae.length() == 0 || ine.length() == 0) {
-							continue;
-						}
-
-						if (pak.equals(ink)) {
-							c.incrementCount(pak, 1);
-						} else if (pae.equals(ine)) {
-							c.incrementCount(pak, 1);
-						}
-					}
-				}
-				reader.close();
-
-			}
+			cm.incrementCount(korShort, engLong, 1);
 		}
+		reader.close();
 
-		System.out.println(c.toString());
-		System.out.println(num_patents);
-		System.out.println(c.size());
+		IOUtils.write(ENTPath.DATA_DIR + "patent_orgs_2.txt", cm);
+
+		// List<String> korNames = new ArrayList<String>(listMap.keySet());
+		// Collections.sort(korNames);
+
+		// TextFileWriter writer = new TextFileWriter(ENTPath.DATA_DIR + "patent_orgs_2.txt");
+		//
+		// for (int i = 0; i < korNames.size(); i++) {
+		// String korName = korNames.get(i);
+		// List<String> engNames = listMap.get(korName);
+		// Iterator<String> iter = engNames.iterator();
+		// while (iter.hasNext()) {
+		// String engName = iter.next();
+		// if (engName.equals("null")) {
+		// iter.remove();
+		// }
+		// }
+		//
+		// String output = "null";
+		//
+		// if (engNames.size() > 0) {
+		// output = StrUtils.join(" ; ", engNames);
+		// }
+		// writer.write(korName + "\t" + output);
+		// if (i != korNames.size() - 1) {
+		// writer.write("\n");
+		// }
+		// }
+		// writer.close();
 
 	}
+
+	class MyCom implements Comparator<BilingualText> {
+		@Override
+		public int compare(BilingualText o1, BilingualText o2) {
+			return o1.getKorean().compareTo(o2.getKorean());
+		}
+
+	}
+
 }

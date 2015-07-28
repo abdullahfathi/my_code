@@ -40,8 +40,13 @@ public class OrganizationNormalizer {
 			if (orgName.getKorean() == null || orgName.getEnglish() == null) {
 				continue;
 			}
+			BilingualText orgName2 = n.normalize(orgName);
 
-			n.normalizeEnglish(engOrg);
+			if (!orgName.equals(orgName2)) {
+				System.out.println(orgName);
+				System.out.println(orgName2);
+				System.out.println();
+			}
 
 		}
 		reader.close();

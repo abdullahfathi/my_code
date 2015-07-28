@@ -48,7 +48,7 @@ public class OrganizationDisambiguationKernel implements Serializable {
 
 		OrganizationDisambiguationKernel odk = new OrganizationDisambiguationKernel();
 		odk.createOrganizationNormalizer(abbrFileName);
-		odk.createSearchers(orgFileName, extOrgFileName);
+		odk.createSearchers(orgFileName, null);
 		// odk.createClassifiers();
 		// odk.write(ENTPath.ODK_FILE);
 

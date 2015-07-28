@@ -13,7 +13,7 @@ import ohs.math.VectorUtils;
 import ohs.matrix.SparseMatrix;
 import ohs.matrix.SparseVector;
 import ohs.types.Counter;
-import ohs.types.DeepMap;
+import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.types.ListMap;
 import ohs.types.common.IntCounter;
@@ -48,7 +48,7 @@ public class WordCountBox {
 			throws Exception {
 		Set<Integer> fbWords = new HashSet<Integer>();
 
-		IntCounterMap cm = new IntCounterMap();
+		CounterMap<Integer, Integer> cm = new CounterMap<Integer, Integer>();
 		ListMap<Integer, Integer> docWords = new ListMap<Integer, Integer>();
 
 		for (int j = 0; j < docScores.size(); j++) {

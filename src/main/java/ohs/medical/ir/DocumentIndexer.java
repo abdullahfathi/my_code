@@ -96,7 +96,7 @@ public class DocumentIndexer {
 		// di.indexClefEHealth();
 		// di.indexOhsumed();
 		// di.indexWiki();
-		di.makeTrecDocumentIdMap();
+//		di.makeTrecDocumentIdMap();
 
 		System.out.println("process ends.");
 	}
