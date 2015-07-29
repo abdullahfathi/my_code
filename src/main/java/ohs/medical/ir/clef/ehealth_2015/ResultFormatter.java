@@ -70,7 +70,7 @@ public class ResultFormatter {
 			}
 
 			System.out.printf("%s -> %s\n", inputFile.getName(), outputFileName);
-			StrCounterMap searchResults = PerformanceEvaluator.readSearchResults(inputFile.getPath());
+			CounterMap<String, String> searchResults = PerformanceEvaluator.readSearchResults(inputFile.getPath());
 			searchResults = DocumentIdMapper.mapIndexIdsToDocIds(searchResults, docIdMap);
 
 			writeResults(outputFile, searchResults);

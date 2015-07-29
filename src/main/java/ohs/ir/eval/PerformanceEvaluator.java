@@ -63,7 +63,7 @@ public class PerformanceEvaluator {
 
 	public int[] top_n_for_each_eval = { 5, 10, 20 };
 
-	public List<Performance> evalute(StrCounterMap resultData, StrCounterMap relevanceData) {
+	public List<Performance> evalute(CounterMap<String, String>  resultData, CounterMap<String, String>  relevanceData) {
 		List<Performance> ret = new ArrayList<Performance>();
 
 		for (int top_n : top_n_for_each_eval) {

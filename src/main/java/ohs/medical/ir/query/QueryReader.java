@@ -1,4 +1,4 @@
-package ohs.medical.ir;
+package ohs.medical.ir.query;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -16,7 +16,9 @@ import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
 import ohs.lucene.common.AnalyzerUtils;
 import ohs.lucene.common.MedicalEnglishAnalyzer;
+import ohs.medical.ir.MIRPath;
 import ohs.types.Counter;
+import ohs.types.CounterMap;
 import ohs.types.common.StrCounterMap;
 
 import org.w3c.dom.Document;
@@ -87,7 +89,7 @@ public class QueryReader {
 		return ret;
 	}
 
-	public static List<BaseQuery> filter(List<BaseQuery> baseQueries, StrCounterMap relevanceData) {
+	public static List<BaseQuery> filter(List<BaseQuery> baseQueries, CounterMap<String, String>  relevanceData) {
 		List<BaseQuery> ret = new ArrayList<BaseQuery>();
 		for (int i = 0; i < baseQueries.size(); i++) {
 			BaseQuery q = baseQueries.get(i);

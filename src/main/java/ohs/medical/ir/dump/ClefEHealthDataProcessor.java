@@ -1,4 +1,4 @@
-package ohs.medical.ir;
+package ohs.medical.ir.dump;
 
 import java.io.File;
 import java.io.StringReader;
@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
+import ohs.medical.ir.MIRPath;
 import ohs.utils.StrUtils;
 
 import org.jsoup.Jsoup;
@@ -24,7 +25,7 @@ import edu.stanford.nlp.process.DocumentPreprocessor;
 import edu.stanford.nlp.process.PTBTokenizer;
 import edu.stanford.nlp.process.TokenizerFactory;
 
-public class ClefEHealthDataHandler {
+public class ClefEHealthDataProcessor {
 
 	public static Set<String> getStopFileExtensions() {
 		Set<String> ret = new HashSet<String>();
@@ -42,30 +43,10 @@ public class ClefEHealthDataHandler {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 
-		ClefEHealthDataHandler dh = new ClefEHealthDataHandler();
+		ClefEHealthDataProcessor dh = new ClefEHealthDataProcessor();
 		dh.makeTextDump();
 
 		System.out.println("process ends.");
-	}
-
-	public static String tokenize(String text) {
-		TokenizerFactory<? extends HasWord> tf = PTBTokenizer.factory(new CoreLabelTokenFactory(),
-				"ptb3Escaping=false,normalizeParentheses=false,normalizeOtherBrackets=false");
-		DocumentPreprocessor documentPreprocessor = new DocumentPreprocessor(new StringReader(text));
-		documentPreprocessor.setTokenizerFactory(tf);
-
-		StringBuffer sb = new StringBuffer();
-		for (List<HasWord> item : documentPreprocessor) {
-
-			for (int i = 0; i < item.size(); i++) {
-				sb.append(item.get(i).word());
-				if (i != item.size() - 1) {
-					sb.append(" ");
-				}
-			}
-			sb.append("\n");
-		}
-		return sb.toString().trim();
 	}
 
 	public void makeTextDump() {
@@ -84,7 +65,6 @@ public class ClefEHealthDataHandler {
 		}
 
 		TextFileWriter writer = new TextFileWriter(MIRPath.CLEF_EHEALTH_COLLECTION_FILE, IOUtils.UTF_8, true);
-		TextFileWriter logWriter = new TextFileWriter(MIRPath.CLEF_EHEALTH_COLLECTION_DIR, IOUtils.UTF_8, true);
 
 		int numDocsInCollection = 0;
 
@@ -134,8 +114,6 @@ public class ClefEHealthDataHandler {
 						date = date.substring(6);
 						url = url.substring(5);
 
-						logWriter.write(uid + "\n");
-
 						if (docIdSet.contains(uid)) {
 							lines = new ArrayList<String>();
 							continue;
@@ -171,7 +149,6 @@ public class ClefEHealthDataHandler {
 		}
 
 		writer.close();
-		logWriter.close();
 
 		System.out.printf("Total documents: %d\n", numDocsInCollection);
 	}

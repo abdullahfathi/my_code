@@ -20,6 +20,9 @@ import ohs.math.VectorUtils;
 import ohs.matrix.DenseVector;
 import ohs.matrix.SparseMatrix;
 import ohs.matrix.SparseVector;
+import ohs.medical.ir.query.BaseQuery;
+import ohs.medical.ir.query.QueryReader;
+import ohs.medical.ir.query.RelevanceReader;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.DeepMap;
@@ -120,7 +123,7 @@ public class CBEEMDocumentSearcher {
 
 		for (int i = 0; i < queryFileNames.length; i++) {
 			List<BaseQuery> baseQueries = new ArrayList<BaseQuery>();
-			StrCounterMap queryRelevances = new StrCounterMap();
+			CounterMap<String, String>  queryRelevances = new CounterMap<String, String> ();
 
 			if (i == 0) {
 				baseQueries = QueryReader.readTrecCdsQueries(queryFileNames[i]);

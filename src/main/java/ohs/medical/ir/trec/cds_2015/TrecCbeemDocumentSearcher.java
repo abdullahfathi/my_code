@@ -14,11 +14,11 @@ import ohs.matrix.DenseVector;
 import ohs.matrix.SparseMatrix;
 import ohs.matrix.SparseVector;
 import ohs.matrix.Vector;
-import ohs.medical.ir.BaseQuery;
 import ohs.medical.ir.DocumentSearcher;
 import ohs.medical.ir.HyperParameter;
 import ohs.medical.ir.MIRPath;
 import ohs.medical.ir.WordCountBox;
+import ohs.medical.ir.query.BaseQuery;
 import ohs.types.Counter;
 import ohs.types.Indexer;
 

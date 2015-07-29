@@ -64,6 +64,8 @@ public class MIRPath {
 
 	public static final String ICD10_ESA_DIR = ICD10_DIR + "esa/";
 
+	public static final String WIKI_PROXIMITY_DIR = WIKI_DIR + "proximity/";
+
 	/*
 	 * CLEF eHealth
 	 */
@@ -125,6 +127,8 @@ public class MIRPath {
 
 	public static final String CLEF_EHEALTH_CONCEPT_QUERY_DOC_FILE = CLEF_EHEALTH_DIR + "concept_query_doc.txt";
 
+	public static final String CLEF_EHEALTH_PROXIMITY_DIR = CLEF_EHEALTH_DIR + "proximity/";
+
 	/*
 	 * TREC CDS
 	 */
@@ -183,6 +187,8 @@ public class MIRPath {
 
 	public static final String TREC_CDS_OUTPUT_RESULT_2015_PERFORMANCE_FILE = TREC_CDS_OUTPUT_DIR + "performance_2015.txt";
 
+	public static final String TREC_CDS_OUTPUT_RESULT_2015_PERFORMANCE_COMPACT_FILE = TREC_CDS_OUTPUT_DIR + "performance_2015_compact.txt";
+
 	public static final String TREC_CDS_OUTPUT_RESULT_2015_QUERY_DOC_DIR = TREC_CDS_OUTPUT_RESULT_2015_DIR + "query-doc/";
 
 	public static final String TREC_CDS_OUTPUT_RESULT_2015_INIT_DIR = TREC_CDS_OUTPUT_RESULT_2015_DIR + "init/";
@@ -192,6 +198,8 @@ public class MIRPath {
 	public static final String TREC_CDS_OUTPUT_RESULT_2015_QUERY_MODEL_DIR = TREC_CDS_OUTPUT_RESULT_2015_DIR + "query_model/";
 
 	public static final String TREC_CDS_OUTPUT_RESULT_2015_LOG_DIR = TREC_CDS_OUTPUT_RESULT_2015_DIR + "log/";
+
+	public static final String TREC_CDS_PROXIMITY_DIR = TREC_CDS_DIR + "proximity/";
 
 	/*
 	 * OHSUMED
@@ -236,6 +244,8 @@ public class MIRPath {
 	public static final String OHSUMED_QUERY_DOC_FILE = OHSUMED_DIR + "query_doc.txt";
 
 	public static final String OHSUMED_CONCEPT_QUERY_DOC_FILE = OHSUMED_DIR + "concept_query_doc.txt";
+
+	public static final String OHSUMED_PROXIMITY_DIR = OHSUMED_DIR + "proximity/";
 
 	/*
 	 * Common File Name Sets

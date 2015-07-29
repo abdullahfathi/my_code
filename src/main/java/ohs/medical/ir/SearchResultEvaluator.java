@@ -16,6 +16,7 @@ import ohs.ir.eval.MetricType;
 import ohs.ir.eval.Metrics;
 import ohs.ir.eval.Performance;
 import ohs.ir.eval.PerformanceEvaluator;
+import ohs.medical.ir.query.RelevanceReader;
 import ohs.types.BidMap;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
@@ -199,7 +200,7 @@ public class SearchResultEvaluator {
 
 			StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(docMapFileName);
 
-			StrCounterMap relevanceData = new StrCounterMap();
+			CounterMap<String, String> relevanceData = new CounterMap<String, String>();
 			if (i == 0) {
 				relevanceData = RelevanceReader.readTrecCdsRelevances(relevFileName);
 			} else if (i == 1) {
@@ -236,7 +237,7 @@ public class SearchResultEvaluator {
 
 			for (int j = 0; j < resultFiles.size(); j++) {
 				File resultFile = resultFiles.get(j);
-				StrCounterMap resultData = DocumentIdMapper.mapIndexIdsToDocIds(
+				CounterMap<String, String> resultData = DocumentIdMapper.mapIndexIdsToDocIds(
 						PerformanceEvaluator.readSearchResults(resultFile.getPath()), docIdMap);
 
 				String paramStr = resultFile.getName().replace(".txt", "");

@@ -18,18 +18,19 @@ import ohs.math.VectorUtils;
 import ohs.matrix.DenseVector;
 import ohs.matrix.SparseVector;
 import ohs.matrix.Vector;
-import ohs.medical.ir.BaseQuery;
 import ohs.medical.ir.DocumentIdMapper;
 import ohs.medical.ir.DocumentSearcher;
 import ohs.medical.ir.HyperParameter;
 import ohs.medical.ir.KLDivergenceScorer;
 import ohs.medical.ir.MIRPath;
-import ohs.medical.ir.QueryReader;
 import ohs.medical.ir.RelevanceModelBuilder;
-import ohs.medical.ir.RelevanceReader;
 import ohs.medical.ir.WordCountBox;
 import ohs.medical.ir.esa.ESA;
+import ohs.medical.ir.query.BaseQuery;
+import ohs.medical.ir.query.QueryReader;
+import ohs.medical.ir.query.RelevanceReader;
 import ohs.types.Counter;
+import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.types.common.StrBidMap;
 import ohs.types.common.StrCounterMap;
@@ -52,7 +53,7 @@ public class OldTrecSearcher {
 
 	public static void evalute() throws Exception {
 		StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(MIRPath.TREC_CDS_DOCUMENT_ID_MAP_FILE);
-		StrCounterMap relevanceData = RelevanceReader.readTrecCdsRelevances(MIRPath.TREC_CDS_RELEVANCE_JUDGE_2014_FILE);
+		CounterMap<String, String>  relevanceData = RelevanceReader.readTrecCdsRelevances(MIRPath.TREC_CDS_RELEVANCE_JUDGE_2014_FILE);
 
 		List<File> files = IOUtils.getFilesUnder(MIRPath.TREC_CDS_OUTPUT_RESULT_2015_DIR);
 
@@ -66,7 +67,7 @@ public class OldTrecSearcher {
 			}
 
 			StrCounterMap res = PerformanceEvaluator.readSearchResults(file.getPath());
-			StrCounterMap resultData = DocumentIdMapper.mapIndexIdsToDocIds(res, docIdMap);
+			CounterMap<String, String> resultData = DocumentIdMapper.mapIndexIdsToDocIds(res, docIdMap);
 
 			PerformanceEvaluator eval = new PerformanceEvaluator();
 			eval.setTopNs(new int[] { 10 });
@@ -195,7 +196,7 @@ public class OldTrecSearcher {
 		TextFileWriter writer = new TextFileWriter(resultFileName);
 
 		StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(MIRPath.TREC_CDS_DOCUMENT_ID_MAP_FILE);
-		StrCounterMap relevanceData = RelevanceReader.readTrecCdsRelevances(MIRPath.TREC_CDS_RELEVANCE_JUDGE_2014_FILE);
+		CounterMap<String, String>  relevanceData = RelevanceReader.readTrecCdsRelevances(MIRPath.TREC_CDS_RELEVANCE_JUDGE_2014_FILE);
 
 		ESA esa = new ESA(analyzer);
 		esa.read(MIRPath.ICD10_ESA_FILE);
@@ -539,7 +540,7 @@ public class OldTrecSearcher {
 		String logFileName = MIRPath.TREC_CDS_OUTPUT_RESULT_2015_DIR + "wiki_log.txt";
 
 		StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(MIRPath.TREC_CDS_DOCUMENT_ID_MAP_FILE);
-		StrCounterMap relevanceData = RelevanceReader.readTrecCdsRelevances(MIRPath.TREC_CDS_RELEVANCE_JUDGE_2014_FILE);
+		CounterMap<String, String>  relevanceData = RelevanceReader.readTrecCdsRelevances(MIRPath.TREC_CDS_RELEVANCE_JUDGE_2014_FILE);
 
 		WikiQueryExpander expander = new WikiQueryExpander(wikiIndexSearcher, analyzer, true, 2000, 0.5, 5, 15);
 
@@ -586,7 +587,7 @@ public class OldTrecSearcher {
 		TextFileWriter writer = new TextFileWriter(resultFileName);
 
 		StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(MIRPath.TREC_CDS_DOCUMENT_ID_MAP_FILE);
-		StrCounterMap relevanceData = RelevanceReader.readTrecCdsRelevances(MIRPath.TREC_CDS_RELEVANCE_JUDGE_2014_FILE);
+		CounterMap<String, String>  relevanceData = RelevanceReader.readTrecCdsRelevances(MIRPath.TREC_CDS_RELEVANCE_JUDGE_2014_FILE);
 		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
 
 		for (int i = 0; i < bqs.size(); i++) {

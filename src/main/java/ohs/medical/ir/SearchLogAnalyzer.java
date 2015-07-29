@@ -12,6 +12,9 @@ import ohs.io.TextFileWriter;
 import ohs.lucene.common.IndexFieldName;
 import ohs.math.ArrayMath;
 import ohs.matrix.SparseVector;
+import ohs.medical.ir.query.BaseQuery;
+import ohs.medical.ir.query.QueryReader;
+import ohs.medical.ir.query.RelevanceReader;
 import ohs.types.CounterMap;
 import ohs.types.common.StrBidMap;
 import ohs.types.common.StrCounterMap;
@@ -275,7 +278,7 @@ public class SearchLogAnalyzer {
 
 		for (int i = 0; i < queryFileNames.length; i++) {
 			List<BaseQuery> baseQueries = new ArrayList<BaseQuery>();
-			StrCounterMap queryRelevances = new StrCounterMap();
+			CounterMap<String, String>  queryRelevances = new CounterMap<String, String> ();
 
 			File queryFile = new File(queryFileNames[i]);
 			File relvFile = new File(relevanceDataFileNames[i]);

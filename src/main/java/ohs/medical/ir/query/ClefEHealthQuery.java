@@ -1,4 +1,4 @@
-package ohs.medical.ir;
+package ohs.medical.ir.query;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -13,6 +13,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import ohs.io.IOUtils;
 import ohs.matrix.SparseVector;
+import ohs.medical.ir.MIRPath;
 import ohs.types.common.IntHashMap;
 
 import org.apache.lucene.search.Query;

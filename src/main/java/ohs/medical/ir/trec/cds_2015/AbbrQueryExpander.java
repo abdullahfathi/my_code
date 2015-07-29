@@ -5,9 +5,9 @@ import java.util.List;
 import ohs.io.TextFileReader;
 import ohs.lucene.common.AnalyzerUtils;
 import ohs.lucene.common.MedicalEnglishAnalyzer;
-import ohs.medical.ir.BaseQuery;
 import ohs.medical.ir.MIRPath;
-import ohs.medical.ir.QueryReader;
+import ohs.medical.ir.query.BaseQuery;
+import ohs.medical.ir.query.QueryReader;
 import ohs.types.Counter;
 import ohs.types.common.StrCounterMap;
 

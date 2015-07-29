@@ -1,12 +1,12 @@
 package ohs.medical.ir.trec.cds_2015;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.List;
 
 import ohs.io.IOUtils;
+import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.ir.eval.Performance;
 import ohs.ir.eval.PerformanceEvaluator;
@@ -20,32 +20,28 @@ import ohs.math.VectorUtils;
 import ohs.matrix.DenseVector;
 import ohs.matrix.SparseVector;
 import ohs.matrix.Vector;
-import ohs.medical.ir.BaseQuery;
 import ohs.medical.ir.DocumentIdMapper;
 import ohs.medical.ir.DocumentSearcher;
 import ohs.medical.ir.HyperParameter;
 import ohs.medical.ir.KLDivergenceScorer;
 import ohs.medical.ir.MIRPath;
-import ohs.medical.ir.QueryReader;
 import ohs.medical.ir.RelevanceModelBuilder;
-import ohs.medical.ir.RelevanceReader;
 import ohs.medical.ir.WordCountBox;
-import ohs.medical.ir.esa.ESA;
+import ohs.medical.ir.query.BaseQuery;
+import ohs.medical.ir.query.QueryReader;
+import ohs.medical.ir.query.RelevanceReader;
 import ohs.types.Counter;
+import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.types.common.StrBidMap;
 import ohs.types.common.StrCounterMap;
-import ohs.utils.KoreanUtils;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
 
-import edu.stanford.nlp.io.EncodingPrintWriter.out;
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils.IO;
 
 /**
  * 
@@ -56,7 +52,7 @@ public class TrecSearcher {
 
 	public static void evalute() throws Exception {
 		StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(MIRPath.TREC_CDS_DOCUMENT_ID_MAP_FILE);
-		StrCounterMap relevanceData = RelevanceReader.readTrecCdsRelevances(MIRPath.TREC_CDS_RELEVANCE_JUDGE_2014_FILE);
+		CounterMap<String, String> relevanceData = RelevanceReader.readTrecCdsRelevances(MIRPath.TREC_CDS_RELEVANCE_JUDGE_2014_FILE);
 
 		List<File> files = IOUtils.getFilesUnder(MIRPath.TREC_CDS_OUTPUT_RESULT_2015_DIR);
 
@@ -69,8 +65,8 @@ public class TrecSearcher {
 				continue;
 			}
 
-			StrCounterMap res = PerformanceEvaluator.readSearchResults(file.getPath());
-			StrCounterMap resultData = DocumentIdMapper.mapIndexIdsToDocIds(res, docIdMap);
+			CounterMap<String, String> res = PerformanceEvaluator.readSearchResults(file.getPath());
+			CounterMap<String, String> resultData = DocumentIdMapper.mapIndexIdsToDocIds(res, docIdMap);
 
 			PerformanceEvaluator eval = new PerformanceEvaluator();
 			eval.setTopNs(new int[] { 10 });
@@ -92,12 +88,139 @@ public class TrecSearcher {
 		TrecSearcher tc = new TrecSearcher();
 		// tc.searchByQLD();
 		// tc.searchByKLD();
-		tc.searchByKLDMultiFieldFB();
+		// tc.searchByKLDMultiFieldFB();
 		// tc.searchByKLDProximityFB();
 		// tc.searchByCBEEM();
-		evalute();
+		// evalute();
+		// analyze();
+		format();
 
 		System.out.println("process ends.");
+	}
+
+	public static void format() throws Exception {
+		List<File> files = IOUtils.getFilesUnder(MIRPath.TREC_CDS_OUTPUT_RESULT_2015_DIR);
+		StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(MIRPath.TREC_CDS_DOCUMENT_ID_MAP_FILE);
+
+		for (File file : files) {
+			String fileName = file.getName();
+			fileName = IOUtils.removeExtension(fileName);
+
+			if (fileName.equals("qld") || fileName.equals("cbeem") || fileName.equals("kld_fb_1_0.5_50_30_20_15_10")) {
+				if (fileName.startsWith("kld_fb")) {
+					fileName = "kld_fb";
+				} else {
+
+				}
+			} else {
+				continue;
+			}
+
+			String runId = "";
+
+			if (fileName.equals("qld")) {
+				runId = "KISTI001";
+			} else if (fileName.equals("cbeem")) {
+				runId = "KISTI002";
+			} else if (fileName.equals("kld_fb")) {
+				runId = "KISTI003";
+			}
+
+			CounterMap<String, String> cm = PerformanceEvaluator.readSearchResults(file.getPath());
+
+			cm = DocumentIdMapper.mapIndexIdsToDocIds(cm, docIdMap);
+
+			List<Integer> qIds = new ArrayList<Integer>();
+
+			for (String qId : cm.keySet()) {
+				qIds.add(Integer.parseInt(qId));
+			}
+
+			Collections.sort(qIds);
+
+			StringBuffer sb = new StringBuffer();
+
+			for (int i = 0; i < qIds.size(); i++) {
+				String qId = qIds.get(i) + "";
+
+				Counter<String> docScores = cm.getCounter(qId);
+				List<String> docIds = docScores.getSortedKeys();
+
+				for (int j = 0; j < docIds.size(); j++) {
+					String docId = docIds.get(j);
+					double score = docScores.getCount(docId);
+					int rank = j + 1;
+
+					sb.append(String.format("%s\t%s\t%s\t%d\t%s\t%s\n", qId, "Q0", docId, rank, score, runId));
+				}
+
+			}
+
+			String outputFileName = String.format("%s.txt", runId);
+			File outputFile = new File(MIRPath.TREC_CDS_OUTPUT_DIR + "/result-2015-submit", outputFileName);
+			IOUtils.write(outputFile.getPath(), sb.toString().trim());
+
+		}
+
+	}
+
+	public static void analyze() {
+		TextFileReader reader = new TextFileReader(MIRPath.TREC_CDS_OUTPUT_RESULT_2015_PERFORMANCE_FILE);
+		TextFileWriter writer = new TextFileWriter(MIRPath.TREC_CDS_OUTPUT_RESULT_2015_PERFORMANCE_COMPACT_FILE);
+
+		writer.write("ModelName\tFbIters\tFbMix\tTitleMix\tAbsMix\tContentMix\tFbDocs\tFbWords\tP\tMap\tNDCG\n");
+
+		while (reader.hasNext()) {
+			List<String> lines = reader.getNextLines();
+
+			File file = new File(lines.get(0));
+			String fileName = file.getName();
+			fileName = IOUtils.removeExtension(fileName);
+			fileName = fileName.replace("kld_fb", "kld-fb");
+
+			int num_fb_iters = 0;
+			double mixture_for_fb_model = 0;
+			double[] mixtures_for_field_rms = new double[] { 0, 0, 0 };
+			int num_fb_docs = 0;
+			int num_fb_words = 0;
+
+			String modelName = fileName;
+
+			if (fileName.equals("qld") || fileName.equals("kld") || fileName.equals("cbeem")) {
+
+			} else {
+				String[] toks = fileName.split("_");
+				modelName = toks[0];
+				num_fb_iters = Integer.parseInt(toks[1]);
+				mixture_for_fb_model = Double.parseDouble(toks[2]);
+				mixtures_for_field_rms[0] = Double.parseDouble(toks[3]);
+				mixtures_for_field_rms[1] = Double.parseDouble(toks[4]);
+				mixtures_for_field_rms[2] = Double.parseDouble(toks[5]);
+				num_fb_docs = Integer.parseInt(toks[6]);
+				num_fb_words = Integer.parseInt(toks[7]);
+			}
+
+			int num_relevant_all = Integer.parseInt(lines.get(3).split("\t")[1]);
+			int num_retrieved_all = Integer.parseInt(lines.get(4).split("\t")[1]);
+			int num_relevant_all_in_retrieved_all = Integer.parseInt(lines.get(5).split("\t")[1]);
+			int num_relevant_at = Integer.parseInt(lines.get(6).split("\t")[1]);
+			double p = Double.parseDouble(lines.get(7).split("\t")[1]);
+			double map = Double.parseDouble(lines.get(8).split("\t")[1]);
+			double ndcg = Double.parseDouble(lines.get(9).split("\t")[1]);
+
+			String output = String.format("%s\t%d\t%f\t%f\t%f\t%f\t%d\t%d\t%f\t%f\t%f",
+
+			modelName, num_fb_iters, mixture_for_fb_model, mixtures_for_field_rms[0], mixtures_for_field_rms[1], mixtures_for_field_rms[2],
+
+			num_fb_docs, num_fb_words,
+
+			p, map, ndcg);
+
+			writer.write(output + "\n");
+
+		}
+		reader.close();
+		writer.close();
 	}
 
 	private List<BaseQuery> bqs;
@@ -109,7 +232,7 @@ public class TrecSearcher {
 	private Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
 
 	public TrecSearcher() throws Exception {
-		bqs = QueryReader.readTrecCdsQueries(MIRPath.TREC_CDS_QUERY_2014_FILE);
+		bqs = QueryReader.readTrecCdsQueries(MIRPath.TREC_CDS_QUERY_2015_FILE);
 
 		indexSearcher = DocumentSearcher.getIndexSearcher(MIRPath.TREC_CDS_INDEX_DIR);
 
@@ -201,11 +324,18 @@ public class TrecSearcher {
 	public void searchByKLDMultiFieldFB() throws Exception {
 		System.out.println("search by KLD Multi-fields FB.");
 
-		double[][] mixture_for_field_rms = { { 0, 0, 100 }, { 0, 100, 0 }, { 100, 0, 0 }, { 50, 50, 50 }, { 50, 30, 20 }, { 20, 30, 50 } };
-		int[] num_fb_iters = { 1, 2 };
+		// double[][] mixture_for_field_rms = { { 0, 0, 100 }, { 0, 100, 0 }, { 100, 0, 0 }, { 50, 50, 50 }, { 50, 30, 20 }, { 20, 30, 50 }
+		// };
+		// int[] num_fb_iters = { 1, 2 };
+		// double[] mixture_for_fb_model = { 0.5 };
+		// int[] num_fb_docs = { 5, 10, 15 };
+		// int[] num_fb_words = { 10, 15, 20 };
+
+		double[][] mixture_for_field_rms = { { 50, 30, 20 } };
+		int[] num_fb_iters = { 1 };
 		double[] mixture_for_fb_model = { 0.5 };
-		int[] num_fb_docs = { 5, 10, 15 };
-		int[] num_fb_words = { 10, 15, 20 };
+		int[] num_fb_docs = { 15 };
+		int[] num_fb_words = { 10 };
 
 		for (int l1 = 0; l1 < num_fb_iters.length; l1++) {
 			for (int l2 = 0; l2 < mixture_for_fb_model.length; l2++) {

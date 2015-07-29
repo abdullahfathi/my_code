@@ -6,10 +6,10 @@ import java.util.List;
 import ohs.io.IOUtils;
 import ohs.io.TextFileWriter;
 import ohs.matrix.SparseVector;
-import ohs.medical.ir.BaseQuery;
 import ohs.medical.ir.DocumentSearcher;
 import ohs.medical.ir.MIRPath;
-import ohs.medical.ir.QueryReader;
+import ohs.medical.ir.query.BaseQuery;
+import ohs.medical.ir.query.QueryReader;
 
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;

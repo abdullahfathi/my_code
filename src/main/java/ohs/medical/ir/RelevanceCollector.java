@@ -13,7 +13,11 @@ import ohs.math.ArrayMath;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseMatrix;
 import ohs.matrix.SparseVector;
+import ohs.medical.ir.query.BaseQuery;
+import ohs.medical.ir.query.QueryReader;
+import ohs.medical.ir.query.RelevanceReader;
 import ohs.types.Counter;
+import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.types.common.StrBidMap;
 import ohs.types.common.StrCounterMap;
@@ -51,7 +55,7 @@ public class RelevanceCollector {
 
 		for (int i = 0; i < queryFileNames.length; i++) {
 			List<BaseQuery> bqs = new ArrayList<BaseQuery>();
-			StrCounterMap queryRels = new StrCounterMap();
+			CounterMap<String, String>  queryRels = new CounterMap<String, String> ();
 
 			File queryFile = new File(queryFileNames[i]);
 			File relvFile = new File(relDataFileNames[i]);

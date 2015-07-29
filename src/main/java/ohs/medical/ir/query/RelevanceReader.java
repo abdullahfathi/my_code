@@ -1,16 +1,13 @@
-package ohs.medical.ir;
-
-import java.io.File;
+package ohs.medical.ir.query;
 
 import ohs.io.TextFileReader;
-import ohs.types.BidMap;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.common.StrBidMap;
 import ohs.types.common.StrCounterMap;
 
 public class RelevanceReader {
-	public static StrCounterMap filter(StrCounterMap relevanceData, StrBidMap docIdMap) {
+	public static CounterMap<String, String> filter(CounterMap<String, String> relevanceData, StrBidMap docIdMap) {
 		StrCounterMap ret = new StrCounterMap();
 
 		int num_pairs = 0;
@@ -59,7 +56,7 @@ public class RelevanceReader {
 		return ret;
 	}
 
-	public static StrCounterMap readClefEHealthRelevances(String fileName) {
+	public static CounterMap<String, String> readClefEHealthRelevances(String fileName) {
 		StrCounterMap ret = new StrCounterMap();
 		TextFileReader reader = new TextFileReader(fileName);
 		while (reader.hasNext()) {
@@ -78,7 +75,7 @@ public class RelevanceReader {
 		return ret;
 	}
 
-	public static StrCounterMap readOhsumedRelevances(String fileName) {
+	public static CounterMap<String, String> readOhsumedRelevances(String fileName) {
 		StrCounterMap ret = new StrCounterMap();
 		TextFileReader reader = new TextFileReader(fileName);
 		while (reader.hasNext()) {
@@ -119,7 +116,7 @@ public class RelevanceReader {
 		return ret;
 	}
 
-	public static StrCounterMap readTrecCdsRelevances(String fileName) {
+	public static CounterMap<String, String> readTrecCdsRelevances(String fileName) {
 		StrCounterMap ret = new StrCounterMap();
 		TextFileReader reader = new TextFileReader(fileName);
 		while (reader.hasNext()) {

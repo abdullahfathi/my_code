@@ -10,12 +10,12 @@ import ohs.lucene.common.AnalyzerUtils;
 import ohs.lucene.common.IndexFieldName;
 import ohs.lucene.common.MedicalEnglishAnalyzer;
 import ohs.matrix.SparseVector;
-import ohs.medical.ir.BaseQuery;
 import ohs.medical.ir.DocumentIdMapper;
 import ohs.medical.ir.DocumentSearcher;
 import ohs.medical.ir.MIRPath;
-import ohs.medical.ir.QueryReader;
-import ohs.medical.ir.RelevanceReader;
+import ohs.medical.ir.query.BaseQuery;
+import ohs.medical.ir.query.QueryReader;
+import ohs.medical.ir.query.RelevanceReader;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.common.StrBidMap;
@@ -62,7 +62,7 @@ public class ConceptRelevanceCollector {
 
 		for (int i = 0; i < queryFileNames.length; i++) {
 			List<BaseQuery> bqs = new ArrayList<BaseQuery>();
-			StrCounterMap queryRels = new StrCounterMap();
+			CounterMap<String, String> queryRels = new CounterMap<String, String>();
 
 			// if (!queryFileNames[i].contains("ohsumed")) {
 			// continue;

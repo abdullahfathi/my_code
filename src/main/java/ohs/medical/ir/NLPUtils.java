@@ -14,6 +14,8 @@ public class NLPUtils {
 	public static TokenizerFactory<? extends HasWord> tf = PTBTokenizer.factory(new CoreLabelTokenFactory(),
 			"ptb3Escaping=false,normalizeParentheses=false,normalizeOtherBrackets=false");
 
+	// ptb3Escaping=false,normalizeParentheses=false,normalizeOtherBrackets=false
+
 	public static String tokenize(String text) {
 
 		DocumentPreprocessor documentPreprocessor = new DocumentPreprocessor(new StringReader(text));

@@ -1,4 +1,4 @@
-package ohs.medical.ir;
+package ohs.medical.ir.query;
 
 import java.util.List;
 

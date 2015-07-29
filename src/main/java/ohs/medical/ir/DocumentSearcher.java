@@ -10,6 +10,8 @@ import ohs.lucene.common.IndexFieldName;
 import ohs.lucene.common.MedicalEnglishAnalyzer;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseVector;
+import ohs.medical.ir.query.BaseQuery;
+import ohs.medical.ir.query.QueryReader;
 import ohs.types.Indexer;
 import ohs.types.common.StrCounterMap;
 

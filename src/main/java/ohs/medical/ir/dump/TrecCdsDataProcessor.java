@@ -1,4 +1,4 @@
-package ohs.medical.ir;
+package ohs.medical.ir.dump;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -14,6 +14,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
+import ohs.medical.ir.MIRPath;
 import ohs.utils.StrUtils;
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
@@ -25,14 +26,25 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-public class TrecCdsDataHandler {
+public class TrecCdsDataProcessor {
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
-		TrecCdsDataHandler dh = new TrecCdsDataHandler();
+		TrecCdsDataProcessor dh = new TrecCdsDataProcessor();
 		dh.makeRawTextDump();
 		dh.makeTextDump();
 		System.out.println("process ends.");
+	}
+
+	public static Set<String> readValidDocIDs() {
+		Set<String> ret = new TreeSet<String>();
+		TextFileReader reader = new TextFileReader(MIRPath.TREC_CDS_VALID_DOC_ID_FILE);
+		while (reader.hasNext()) {
+			String line = reader.next();
+			ret.add(line.trim());
+		}
+		reader.close();
+		return ret;
 	}
 
 	public void makeRawTextDump() throws Exception {
@@ -81,17 +93,6 @@ public class TrecCdsDataHandler {
 		writer.close();
 		System.out.println(num_files);
 
-	}
-
-	public static Set<String> readValidDocIDs() {
-		Set<String> ret = new TreeSet<String>();
-		TextFileReader reader = new TextFileReader(MIRPath.TREC_CDS_VALID_DOC_ID_FILE);
-		while (reader.hasNext()) {
-			String line = reader.next();
-			ret.add(line.trim());
-		}
-		reader.close();
-		return ret;
 	}
 
 	public void makeTextDump() throws Exception {

@@ -8,14 +8,15 @@ import java.util.Map;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.lucene.common.IndexFieldName;
-import ohs.medical.ir.BaseQuery;
 import ohs.medical.ir.DocumentIdMapper;
 import ohs.medical.ir.DocumentSearcher;
 import ohs.medical.ir.MIRPath;
 import ohs.medical.ir.NLPUtils;
-import ohs.medical.ir.QueryReader;
-import ohs.medical.ir.RelevanceReader;
+import ohs.medical.ir.query.BaseQuery;
+import ohs.medical.ir.query.QueryReader;
+import ohs.medical.ir.query.RelevanceReader;
 import ohs.types.Counter;
+import ohs.types.CounterMap;
 import ohs.types.common.StrBidMap;
 import ohs.types.common.StrCounterMap;
 
@@ -36,7 +37,7 @@ public class DataHandler {
 		String docMapFileName = MIRPath.CLEF_EHEALTH_DOCUMENT_ID_MAP_FIE;
 
 		List<BaseQuery> baseQueries = QueryReader.readClefEHealthQueries(queryFileName);
-		StrCounterMap relvData = RelevanceReader.readClefEHealthRelevances(revFileName);
+		CounterMap<String, String>  relvData = RelevanceReader.readClefEHealthRelevances(revFileName);
 		StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(docMapFileName);
 
 		IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(MIRPath.CLEF_EHEALTH_INDEX_DIR);

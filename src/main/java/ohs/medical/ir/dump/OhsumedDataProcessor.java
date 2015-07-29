@@ -32,6 +32,8 @@ import org.xml.sax.SAXException;
 
 public class OhsumedDataProcessor {
 
+	public static final String[] TAGS = { ".I", ".U", ".M", ".T", ".P", ".W", ".A", ".S" };
+
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 		OhsumedDataProcessor dh = new OhsumedDataProcessor();
@@ -54,8 +56,6 @@ public class OhsumedDataProcessor {
 
 		return output;
 	}
-
-	public static final String[] TAGS = { ".I", ".U", ".M", ".T", ".P", ".W", ".A", ".S" };
 
 	public void makeTextDump() throws Exception {
 		System.out.println("make text dump from OHSUMED.");

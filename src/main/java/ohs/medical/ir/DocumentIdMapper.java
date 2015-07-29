@@ -7,6 +7,7 @@ import java.util.List;
 import ohs.io.TextFileReader;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseVector;
+import ohs.medical.ir.query.BaseQuery;
 import ohs.types.BidMap;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
@@ -16,7 +17,8 @@ import ohs.types.common.StrCounterMap;
 
 public class DocumentIdMapper {
 
-	public static List<SparseVector> mapDocIdsToIndexIds(List<BaseQuery> baseQueries, StrCounterMap relevanceData, StrBidMap docIdMap) {
+	public static List<SparseVector> mapDocIdsToIndexIds(List<BaseQuery> baseQueries, CounterMap<String, String> relevanceData,
+			StrBidMap docIdMap) {
 		List<SparseVector> ret = new ArrayList<SparseVector>();
 		for (BaseQuery bq : baseQueries) {
 			String queryId = bq.getId();
@@ -40,8 +42,8 @@ public class DocumentIdMapper {
 		return ret;
 	}
 
-	public static StrCounterMap mapIndexIdsToDocIds(StrCounterMap resultData, StrBidMap docIdMap) {
-		StrCounterMap ret = new StrCounterMap();
+	public static CounterMap<String, String> mapIndexIdsToDocIds(CounterMap<String, String> resultData, StrBidMap docIdMap) {
+		CounterMap<String, String> ret = new CounterMap<String, String>();
 		for (String queryId : resultData.keySet()) {
 			Counter<String> indexScores = resultData.getCounter(queryId);
 			for (String indexId : indexScores.keySet()) {

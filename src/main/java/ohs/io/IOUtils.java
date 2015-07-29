@@ -347,6 +347,7 @@ public class IOUtils {
 			ret.setCount(parts[0], Double.parseDouble(parts[1]));
 		}
 		br.close();
+		System.out.printf("read a counter with [%d] entries from [%s]\n", ret.size(), fileName);
 		return ret;
 	}
 

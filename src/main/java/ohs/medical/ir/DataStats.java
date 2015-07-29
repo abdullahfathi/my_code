@@ -7,6 +7,10 @@ import java.util.List;
 import ohs.lucene.common.AnalyzerUtils;
 import ohs.lucene.common.IndexFieldName;
 import ohs.lucene.common.MedicalEnglishAnalyzer;
+import ohs.medical.ir.query.BaseQuery;
+import ohs.medical.ir.query.QueryReader;
+import ohs.medical.ir.query.RelevanceReader;
+import ohs.types.CounterMap;
 import ohs.types.common.StrCounterMap;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -56,7 +60,7 @@ public class DataStats {
 				File relvFile = new File(relevanceDataFileNames[i]);
 
 				List<BaseQuery> baseQueries = new ArrayList<BaseQuery>();
-				StrCounterMap relevanceData = new StrCounterMap();
+				CounterMap<String, String> relevanceData = new CounterMap<String, String>();
 
 				if (i == 0) {
 					baseQueries = QueryReader.readTrecCdsQueries(queryFileNames[i]);
