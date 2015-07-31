@@ -24,6 +24,7 @@ public class WikiDataHandler {
 
 		TextFileReader reader = new TextFileReader(ENTPath.KOREAN_WIKI_TEXT_FILE);
 		TextFileWriter writer = new TextFileWriter(ENTPath.KOREAN_WIKI_REDIRECT_FILE);
+		TextFileWriter writer2 = new TextFileWriter(ENTPath.KOREAN_WIKI_TITLE_FILE);
 
 		reader.setPrintNexts(false);
 
@@ -45,6 +46,8 @@ public class WikiDataHandler {
 			String title = parts[0];
 			String wikiText = parts[1].replace("<NL>", "\n").trim();
 
+			writer2.write(title + "\n");
+
 			Matcher m = p.matcher(wikiText);
 
 			if (m.find()) {
@@ -57,6 +60,8 @@ public class WikiDataHandler {
 		reader.printLast();
 		reader.close();
 		writer.close();
+		writer2.close();
+
 	}
 
 	public static void main(String[] args) throws Exception {

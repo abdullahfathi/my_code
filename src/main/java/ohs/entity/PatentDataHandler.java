@@ -27,13 +27,12 @@ public class PatentDataHandler {
 		System.out.println("process begins.");
 
 		PatentDataHandler dh = new PatentDataHandler();
-		// dh.process();
-		dh.process2();
+		dh.removeDuplications();
 
 		System.out.println("process ends.");
 	}
 
-	public void process2() throws Exception {
+	public void removeDuplications() throws Exception {
 		// ListMap<String, String> listMap = new ListMap<String, String>();
 		CounterMap<String, String> cm = new CounterMap<String, String>();
 
@@ -61,7 +60,7 @@ public class PatentDataHandler {
 		}
 		reader.close();
 
-		IOUtils.write(ENTPath.DATA_DIR + "patent_orgs_2.txt", cm);
+		IOUtils.write(ENTPath.PATENT_ORG_FILE_2, cm);
 
 		// List<String> korNames = new ArrayList<String>(listMap.keySet());
 		// Collections.sort(korNames);

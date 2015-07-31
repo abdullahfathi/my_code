@@ -95,14 +95,42 @@ public class DocumentIndexer {
 		// di.indexTrecCds();
 		// di.indexClefEHealth();
 		// di.indexOhsumed();
+		di.indexTrecGeonomics();
 		// di.indexWiki();
-//		di.makeTrecDocumentIdMap();
+		// di.makeTrecDocumentIdMap();
 
 		System.out.println("process ends.");
 	}
 
 	public DocumentIndexer() {
 
+	}
+
+	public void indexTrecGeonomics() throws Exception {
+		IndexWriter indexWriter = getIndexWriter(MIRPath.TREC_GENOMICS_INDEX_DIR);
+		TextFileReader reader = new TextFileReader(MIRPath.TREC_GENOMICS_COLLECTION_FILE);
+		reader.setPrintNexts(false);
+
+		while (reader.hasNext()) {
+			reader.print(5000);
+			String line = reader.next();
+			String[] parts = line.split("\t");
+
+			String id = parts[0];
+			String content = parts[1];
+
+			int start = id.lastIndexOf("/");
+			int end = id.lastIndexOf(".");
+			id = id.substring(start + 1, end);
+
+			Document doc = new Document();
+			doc.add(new StringField(IndexFieldName.DOCUMENT_ID, id, Field.Store.YES));
+			doc.add(new MyTextField(IndexFieldName.CONTENT, content, Store.YES));
+
+			indexWriter.addDocument(doc);
+		}
+		reader.close();
+		indexWriter.close();
 	}
 
 	public void indexClefEHealth() throws Exception {

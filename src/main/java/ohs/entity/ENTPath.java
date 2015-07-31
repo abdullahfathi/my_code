@@ -19,7 +19,11 @@ public class ENTPath {
 
 	public static final String PATENT_TEXT_FILE = DATA_DIR + "patent.txt";
 
-	public static final String PATENT_ORG_FILE = DATA_DIR + "patent_orgs.txt";
+	public static final String PATENT_ORG_FILE = DATA_DIR + "orgs_patents_특허정보원.txt";
+
+	public static final String PATENT_ORG_FILE_2 = DATA_DIR + "orgs_patents_특허정보원_2.txt";
+
+	public static final String PATENT_ORG_FILE_3 = DATA_DIR + "orgs_patents_특허정보원_3.txt";
 
 	public static final String PPSS_INDEX_FILE = DATA_DIR + "ppss_index.txt";
 
@@ -50,7 +54,7 @@ public class ENTPath {
 	public static final String KOREAN_WIKI_TEXT_FILE = DATA_DIR + "wiki/kowiki-20150602-pages-articles.txt.bz2";
 
 	public static final String KOREAN_WIKI_REDIRECT_FILE = DATA_DIR + "wiki/redirects.txt";
-	
+
 	public static final String KOREAN_WIKI_TITLE_FILE = DATA_DIR + "wiki/titles.txt";
 
 	public static final String ORG_HISTORY_DIR = DATA_DIR + "org_history/";
