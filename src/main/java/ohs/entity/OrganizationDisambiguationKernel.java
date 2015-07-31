@@ -3,13 +3,16 @@ package ohs.entity;
 import java.io.BufferedWriter;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import ohs.classifier.centroid.CentroidClassifier;
 import ohs.entity.OrganizationDetector.UnivComponent;
 import ohs.entity.data.struct.BilingualText;
+import ohs.entity.data.struct.Organization;
 import ohs.io.IOUtils;
 import ohs.io.TextFileWriter;
 import ohs.math.VectorMath;
@@ -23,6 +26,7 @@ import ohs.string.sim.search.ppss.PivotalPrefixStringSearcher;
 import ohs.string.sim.search.ppss.StringRecord;
 import ohs.types.BidMap;
 import ohs.types.Counter;
+import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.types.ListMap;
 import ohs.types.common.IntPair;
@@ -47,8 +51,9 @@ public class OrganizationDisambiguationKernel implements Serializable {
 		String abbrFileName = ENTPath.COMMON_DEPT_ABBR_DICT_FILE;
 
 		OrganizationDisambiguationKernel odk = new OrganizationDisambiguationKernel();
+		odk.readOrganizations(orgFileName);
 		odk.createOrganizationNormalizer(abbrFileName);
-		odk.createSearchers(orgFileName, null);
+		odk.createSearchers(null);
 		// odk.createClassifiers();
 		// odk.write(ENTPath.ODK_FILE);
 
@@ -75,9 +80,11 @@ public class OrganizationDisambiguationKernel implements Serializable {
 
 	private OrganizationDetector detector = new OrganizationDetector();
 
-	private BidMap<BilingualText, Integer> baseOrgMap;
-
 	private TextFileWriter logWriter = new TextFileWriter(ENTPath.ODK_LOG_FILE);
+
+	private List<Organization> orgs;
+
+	private Map<Integer, Organization> orgMap;
 
 	public OrganizationDisambiguationKernel() {
 
@@ -130,46 +137,56 @@ public class OrganizationDisambiguationKernel implements Serializable {
 		normalizer = new OrganizationNormalizer(fileName);
 	}
 
-	public void createSearchers(String orgFileName, String extOrgFileName) {
-		List<BilingualText> orgNames = DataReader.readBaseOrgNames(orgFileName);
+	private Map<Integer, Integer>[] recordToOrgMaps = new Map[2];
 
-		baseOrgMap = new BidMap<BilingualText, Integer>();
-
-		for (int i = 0; i < orgNames.size(); i++) {
-			BilingualText orgName = orgNames.get(i);
-			orgName = normalizer.normalize(orgName);
-			orgNames.set(i, orgName);
-			baseOrgMap.put(orgName, i);
-		}
-
+	public void createSearchers(String extOrgFileName) {
 		Counter<BilingualText> c = null;
 
 		if (extOrgFileName != null) {
 			c = DataReader.readBilingualTextCounter(extOrgFileName);
 		}
 
-		for (int i = 0; i < searchers.length; i++) {
+		for (int i = 0, rid = 0; i < searchers.length; i++) {
 			List<StringRecord> srs = new ArrayList<StringRecord>();
+			Map<Integer, Integer> recordToOrgMap = new HashMap<Integer, Integer>();
+			recordToOrgMaps[i] = recordToOrgMap;
 
 			int q = 2;
 			int tau = 3;
 
-			for (int j = 0; j < orgNames.size(); j++) {
-				BilingualText orgName = orgNames.get(j);
-				int id = baseOrgMap.getValue(orgName);
+			for (int j = 0; j < orgs.size(); j++) {
+				Organization org = orgs.get(j);
 
 				String name = null;
+				Set<String> variants = null;
+
 				if (i == 0) {
-					name = orgName.getKorean();
+					name = org.getName().getKorean();
+					name = normalizer.normalizeKorean(name);
+					variants = org.getKoreanVariants();
 				} else {
-					name = orgName.getEnglish();
+					name = org.getName().getEnglish();
+					name = normalizer.normalizeEnglish(name);
+					variants = org.getEnglishVariants();
 				}
 
 				if (name.length() == 0 || name.length() < q) {
 					continue;
 				}
 
-				srs.add(new StringRecord(id, name));
+				srs.add(new StringRecord(rid, name));
+				recordToOrgMap.put(rid, org.getId());
+				rid++;
+
+				for (String variant : variants) {
+					if (variant.length() == 0 || variant.length() < q) {
+						continue;
+					}
+					srs.add(new StringRecord(rid, variant));
+					recordToOrgMap.put(rid, org.getId());
+					rid++;
+				}
+
 			}
 
 			GramSorter gramSorter = new GramSorter();
@@ -210,11 +227,11 @@ public class OrganizationDisambiguationKernel implements Serializable {
 		ListMap<UnivComponent, IntPair>[] labelMaps = detector.detect(orgName);
 
 		String[] names = new String[] { orgName.getKorean(), orgName.getEnglish() };
-		Counter<StringRecord>[] searchSoreData = new Counter[2];
+		Counter<StringRecord>[] searchScoreData = new Counter[2];
 		Counter<StringRecord>[] classifierScoreData = new Counter[2];
 
-		for (int i = 0; i < searchSoreData.length; i++) {
-			searchSoreData[i] = new Counter<StringRecord>();
+		for (int i = 0; i < searchScoreData.length; i++) {
+			searchScoreData[i] = new Counter<StringRecord>();
 			classifierScoreData[i] = new Counter<StringRecord>();
 		}
 
@@ -238,21 +255,49 @@ public class OrganizationDisambiguationKernel implements Serializable {
 			PivotalPrefixStringSearcher searcher = searchers[i];
 			CentroidClassifier classifier = classifiers[i];
 
-			Counter<StringRecord> orgScores1 = searcher.search(subName);
-			Counter<StringRecord> orgScores2 = new Counter<StringRecord>(orgScores1);
+			Counter<StringRecord> searchScore = searcher.search(subName);
+
+			{
+				Map<Integer, Integer> recordToOrgMap = recordToOrgMaps[i];
+				CounterMap<Integer, Integer> cm1 = new CounterMap<Integer, Integer>();
+				// CounterMap<String, String> cm2 = new CounterMap<String, String>();
+
+				Counter<StringRecord> tempScores = new Counter<StringRecord>();
+
+				for (StringRecord sr : searchScore.keySet()) {
+					double score = searchScore.getCount(sr);
+					int rid = sr.getId();
+					int orgid = recordToOrgMap.get(rid);
+					// Organization org = orgMap.get(orgid);
+					cm1.incrementCount(orgid, rid, score);
+					// cm2.incrementCount(org.getName().getKorean(), sr.getString(), score);
+				}
+
+				for (int orgid : cm1.keySet()) {
+					Counter<Integer> c = cm1.getCounter(orgid);
+					Organization org = orgMap.get(orgid);
+					tempScores.setCount(new StringRecord(orgid, org.getName().getKorean()), c.max());
+				}
+
+				searchScore = tempScores;
+				// System.out.println(cm);
+
+			}
+
+			Counter<StringRecord> classifierScores = new Counter<StringRecord>(searchScore);
 
 			if (classifier != null) {
 				Indexer<String> featIndexer = classifier.getFeatureIndexer();
 
 				Set<Integer> labelSet = new HashSet<Integer>();
 
-				for (StringRecord sr : orgScores1.keySet()) {
+				for (StringRecord sr : searchScore.keySet()) {
 					labelSet.add(sr.getId());
 				}
 
 				Counter<Integer> c = new Counter<Integer>();
 				Gram[] grams = searcher.getGramGenerator().generate(name);
-				
+
 				for (int j = 0; j < grams.length; j++) {
 					int f = featIndexer.indexOf(grams[j].getString());
 					if (f < 0) {
@@ -273,19 +318,19 @@ public class OrganizationDisambiguationKernel implements Serializable {
 					int orgId = output.indexAtLoc(j);
 					StringRecord sr = idMap.getKey(orgId);
 					double score = output.valueAtLoc(j);
-					orgScores2.setCount(sr, score);
+					classifierScores.setCount(sr, score);
 				}
 			}
 
-			searchSoreData[i] = orgScores1;
-			classifierScoreData[i] = orgScores2;
+			searchScoreData[i] = searchScore;
+			classifierScoreData[i] = classifierScores;
 		}
 
 		logWriter.write(orgName.toString() + "\n");
 
-		for (int i = 0; i < searchSoreData.length; i++) {
-			logWriter.write(searchSoreData[i].toString());
-			if (i != searchSoreData.length - 1) {
+		for (int i = 0; i < searchScoreData.length; i++) {
+			logWriter.write(searchScoreData[i].toString());
+			if (i != searchScoreData.length - 1) {
 				logWriter.write("\n");
 			}
 		}
@@ -297,6 +342,17 @@ public class OrganizationDisambiguationKernel implements Serializable {
 		Counter<StringRecord> ret = new Counter<StringRecord>();
 
 		return ret;
+	}
+
+	public void readOrganizations(String orgFileName) {
+		orgs = DataReader.readOrganizations(orgFileName);
+		orgMap = new HashMap<Integer, Organization>();
+
+		for (int i = 0; i < orgs.size(); i++) {
+			Organization org = orgs.get(i);
+			org.setId(i);
+			orgMap.put(org.getId(), org);
+		}
 	}
 
 	public void write(String fileName) throws Exception {

@@ -27,7 +27,7 @@ public class TrecCdsQuery implements BaseQuery {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 
-		List<BaseQuery> queries = QueryReader.readTrecCdsQueries(MIRPath.TREC_CDS_QUERY_2014_FILE);
+		List<BaseQuery> queries = QueryReader.readTrecCdsQueries(MIRPath.TREC_CDS_QUERY_2015_B_FILE);
 
 		for (int i = 0; i < queries.size(); i++) {
 			System.out.println(queries.get(i));
@@ -49,14 +49,17 @@ public class TrecCdsQuery implements BaseQuery {
 
 	private SparseVector queryModel;
 
+	private String diagnosis;
+
 	private List<Integer> words;
 
-	public TrecCdsQuery(String id, String description, String summary, String type) {
+	public TrecCdsQuery(String id, String description, String summary, String type, String diagnosis) {
 		super();
 		this.id = id;
 		this.description = description;
 		this.summary = summary;
 		this.type = type;
+		this.diagnosis = diagnosis;
 	}
 
 	@Override
@@ -105,9 +108,9 @@ public class TrecCdsQuery implements BaseQuery {
 	}
 
 	public String getSearchText() {
-		String ret = description;
+		String ret = description + "\n" + diagnosis;
 		ret = ret.replaceAll("[\\p{Punct}]+", " ");
-		return ret;
+		return ret.trim();
 	}
 
 	public String getType() {
@@ -149,7 +152,8 @@ public class TrecCdsQuery implements BaseQuery {
 		sb.append(String.format("qid:\t%s\n", id));
 		sb.append(String.format("type:\t%s\n", type));
 		sb.append(String.format("description:\t%s\n", description));
-		sb.append(String.format("summary:\t%s", summary));
+		sb.append(String.format("summary:\t%s\n", summary));
+		sb.append(String.format("diagnosis:\t%s", diagnosis));
 		return sb.toString();
 	}
 }

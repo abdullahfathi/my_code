@@ -159,7 +159,9 @@ public class MIRPath {
 
 	public static final String TREC_CDS_QUERY_2014_FILE = TREC_CDS_QUERY_2014_DIR + "topics2014.xml";
 
-	public static final String TREC_CDS_QUERY_2015_FILE = TREC_CDS_QUERY_2015_DIR + "topics2015A.xml";
+	public static final String TREC_CDS_QUERY_2015_A_FILE = TREC_CDS_QUERY_2015_DIR + "topics2015A.xml";
+
+	public static final String TREC_CDS_QUERY_2015_B_FILE = TREC_CDS_QUERY_2015_DIR + "topics2015B.xml";
 
 	public static final String TREC_CDS_RELEVANCE_JUDGE_2014_FILE = TREC_CDS_QUERY_2014_DIR + "qrels2014.txt";
 
@@ -200,6 +202,22 @@ public class MIRPath {
 	public static final String TREC_CDS_OUTPUT_RESULT_2015_LOG_DIR = TREC_CDS_OUTPUT_RESULT_2015_DIR + "log/";
 
 	public static final String TREC_CDS_PROXIMITY_DIR = TREC_CDS_DIR + "proximity/";
+
+	/*
+	 * TREC Genomics
+	 */
+
+	public static final String TREC_GENOMICS_DIR = DATA_DIR + "trec_genomics/";
+
+	public static final String TREC_GENOMICS_COLLECTION_DIR = TREC_GENOMICS_DIR + "collection/";
+
+	public static final String TREC_GENOMICS_COLLECTION_FILE = TREC_GENOMICS_DIR + "collection.txt";
+
+	public static final String TREC_GENOMICS_QUERY_DIR = TREC_GENOMICS_DIR + "query/";
+
+	public static final String TREC_GENOMICS_INDEX_DIR = TREC_GENOMICS_DIR + "index/";
+
+	public static final String TREC_GENOMICS_QUERY_2007_DIR = TREC_GENOMICS_QUERY_DIR + "2007/";
 
 	/*
 	 * OHSUMED

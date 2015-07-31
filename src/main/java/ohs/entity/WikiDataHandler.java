@@ -57,7 +57,6 @@ public class WikiDataHandler {
 		reader.printLast();
 		reader.close();
 		writer.close();
-
 	}
 
 	public static void main(String[] args) throws Exception {

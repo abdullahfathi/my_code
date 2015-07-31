@@ -86,11 +86,11 @@ public class TrecSearcher {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 		TrecSearcher tc = new TrecSearcher();
-		// tc.searchByQLD();
+//		tc.searchByQLD();
 		// tc.searchByKLD();
-		// tc.searchByKLDMultiFieldFB();
+//		tc.searchByKLDMultiFieldFB();
 		// tc.searchByKLDProximityFB();
-		// tc.searchByCBEEM();
+//		tc.searchByCBEEM();
 		// evalute();
 		// analyze();
 		format();
@@ -119,11 +119,11 @@ public class TrecSearcher {
 			String runId = "";
 
 			if (fileName.equals("qld")) {
-				runId = "KISTI001";
+				runId = "KISTI001B";
 			} else if (fileName.equals("cbeem")) {
-				runId = "KISTI002";
+				runId = "KISTI002B";
 			} else if (fileName.equals("kld_fb")) {
-				runId = "KISTI003";
+				runId = "KISTI003B";
 			}
 
 			CounterMap<String, String> cm = PerformanceEvaluator.readSearchResults(file.getPath());
@@ -232,7 +232,7 @@ public class TrecSearcher {
 	private Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
 
 	public TrecSearcher() throws Exception {
-		bqs = QueryReader.readTrecCdsQueries(MIRPath.TREC_CDS_QUERY_2015_FILE);
+		bqs = QueryReader.readTrecCdsQueries(MIRPath.TREC_CDS_QUERY_2015_B_FILE);
 
 		indexSearcher = DocumentSearcher.getIndexSearcher(MIRPath.TREC_CDS_INDEX_DIR);
 

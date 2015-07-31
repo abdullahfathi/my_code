@@ -50,6 +50,8 @@ public class ENTPath {
 	public static final String KOREAN_WIKI_TEXT_FILE = DATA_DIR + "wiki/kowiki-20150602-pages-articles.txt.bz2";
 
 	public static final String KOREAN_WIKI_REDIRECT_FILE = DATA_DIR + "wiki/redirects.txt";
+	
+	public static final String KOREAN_WIKI_TITLE_FILE = DATA_DIR + "wiki/titles.txt";
 
 	public static final String ORG_HISTORY_DIR = DATA_DIR + "org_history/";
 

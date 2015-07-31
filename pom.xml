@@ -10,16 +10,6 @@
 			<id>mesir-repo</id>
 			<url>http://mesir.googlecode.com/svn/trunk/mavenrepo</url>
 		</repository>
-		<repository>
-			<id>snapshots-repo</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
 	</repositories>
 
 	<!-- <properties> -->
@@ -27,17 +17,13 @@
 	<!-- <maven.compiler.target>1.8</maven.compiler.target> -->
 	<!-- </properties> -->
 
+
 	<dependencies>
 		<dependency>
 			<groupId>org.deeplearning4j</groupId>
 			<artifactId>deeplearning4j-core</artifactId>
 			<version>0.0.3.4-SNAPSHOT</version>
 		</dependency>
-<!-- 	<dependency> -->
-<!-- 		<groupId>org.deeplearning4j</groupId> -->
-<!-- 		<artifactId>deeplearning4j-scaleout-akka-word2vec</artifactId> -->
-<!-- 		<version>0.0.3.2-SNAPSHOT</version> -->
-<!-- 	</dependency> -->
 		<dependency>
 			<groupId>org.apache.lucene</groupId>
 			<artifactId>lucene-analyzers-common</artifactId>

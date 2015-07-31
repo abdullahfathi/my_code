@@ -28,6 +28,18 @@ import org.xml.sax.InputSource;
 
 public class QueryReader {
 
+	public static List<BaseQuery> filter(List<BaseQuery> baseQueries, CounterMap<String, String> relevanceData) {
+		List<BaseQuery> ret = new ArrayList<BaseQuery>();
+		for (int i = 0; i < baseQueries.size(); i++) {
+			BaseQuery q = baseQueries.get(i);
+			if (relevanceData.getCounter(q.getId()).size() > 0) {
+				ret.add(q);
+			}
+		}
+		System.out.printf("filter out queries which have no relevance judgements [%d -> %d].\n", baseQueries.size(), ret.size());
+		return ret;
+	}
+
 	public static void main(String[] args) throws Exception {
 		String fileName = MIRPath.CLEF_EHEALTH_QUERY_2014_FILE;
 
@@ -43,114 +55,6 @@ public class QueryReader {
 
 		System.out.println(cnt_sum / bqs.size());
 
-	}
-
-	public static List<BaseQuery> readTrecCdsQueries(String fileName) throws Exception {
-		List<BaseQuery> ret = new ArrayList<BaseQuery>();
-
-		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		DocumentBuilder parser = dbf.newDocumentBuilder();
-
-		Document xmlDoc = parser.parse(new InputSource(new StringReader(IOUtils.readText(fileName))));
-
-		Element docElem = xmlDoc.getDocumentElement();
-		NodeList nodeList = docElem.getElementsByTagName("topic");
-
-		String[] nodeNames = { "description", "summary" };
-
-		for (int i = 0; i < nodeList.getLength(); i++) {
-			Element topicElem = (Element) nodeList.item(i);
-
-			String id = topicElem.getAttribute("number");
-			String type = topicElem.getAttribute("type");
-
-			String[] values = new String[nodeNames.length];
-
-			values[0] = topicElem.getAttribute(nodeNames[0]);
-			for (int j = 0; j < nodeNames.length; j++) {
-				NodeList nodes = topicElem.getElementsByTagName(nodeNames[j]);
-				if (nodes.getLength() > 0) {
-					values[j] = nodes.item(0).getTextContent();
-				}
-			}
-
-			String description = values[0];
-			String summary = values[1];
-
-			description = description.replace("&quot;", "\"");
-
-			// id = new DecimalFormat("00").format(Integer.parseInt(id));
-
-			TrecCdsQuery query = new TrecCdsQuery(id, description, summary, type);
-			ret.add(query);
-		}
-
-		System.out.printf("read [%d] queries from [%s]\n", ret.size(), fileName);
-		return ret;
-	}
-
-	public static List<BaseQuery> filter(List<BaseQuery> baseQueries, CounterMap<String, String>  relevanceData) {
-		List<BaseQuery> ret = new ArrayList<BaseQuery>();
-		for (int i = 0; i < baseQueries.size(); i++) {
-			BaseQuery q = baseQueries.get(i);
-			if (relevanceData.getCounter(q.getId()).size() > 0) {
-				ret.add(q);
-			}
-		}
-		System.out.printf("filter out queries which have no relevance judgements [%d -> %d].\n", baseQueries.size(), ret.size());
-		return ret;
-	}
-
-	public static List<BaseQuery> readOhsumedQueries(String fileName) throws Exception {
-		/*
-		 * .I Sequential identifier
-		 * 
-		 * .B Patient information
-		 * 
-		 * .W Information request
-		 */
-
-		List<BaseQuery> ret = new ArrayList<BaseQuery>();
-		Map<String, String> map = new HashMap<String, String>();
-		TextFileReader reader = new TextFileReader(fileName);
-
-		while (reader.hasNext()) {
-			String line = reader.next();
-
-			if (line.startsWith(".I")) {
-				String[] parts = line.split("[\\s]+");
-				String key = parts[0];
-				String value = parts[1];
-
-				if (map.size() == 0) {
-					map.put(key, value);
-				} else {
-					String id = map.get(".I");
-					String patientInfo = map.get(".B");
-					String infoRequest = map.get(".W");
-
-					ret.add(new OhsumedQuery(id, patientInfo, infoRequest));
-
-					map = new HashMap<String, String>();
-					map.put(key, value);
-				}
-			} else {
-				reader.hasNext();
-				String value = reader.next();
-				map.put(line, value);
-			}
-		}
-		reader.close();
-
-		String id = map.get(".I");
-		String patientInfo = map.get(".B");
-		String infoRequest = map.get(".W");
-
-		ret.add(new OhsumedQuery(id, patientInfo, infoRequest));
-
-		System.out.printf("read [%d] queries from [%s]\n", ret.size(), fileName);
-
-		return ret;
 	}
 
 	public static List<BaseQuery> readClefEHealthQueries(String queryFileName) throws Exception {
@@ -259,6 +163,103 @@ public class QueryReader {
 
 		System.out.printf("read [%d] queries from [%s]\n", ret.size(), queryFileName);
 
+		return ret;
+	}
+
+	public static List<BaseQuery> readOhsumedQueries(String fileName) throws Exception {
+		/*
+		 * .I Sequential identifier
+		 * 
+		 * .B Patient information
+		 * 
+		 * .W Information request
+		 */
+
+		List<BaseQuery> ret = new ArrayList<BaseQuery>();
+		Map<String, String> map = new HashMap<String, String>();
+		TextFileReader reader = new TextFileReader(fileName);
+
+		while (reader.hasNext()) {
+			String line = reader.next();
+
+			if (line.startsWith(".I")) {
+				String[] parts = line.split("[\\s]+");
+				String key = parts[0];
+				String value = parts[1];
+
+				if (map.size() == 0) {
+					map.put(key, value);
+				} else {
+					String id = map.get(".I");
+					String patientInfo = map.get(".B");
+					String infoRequest = map.get(".W");
+
+					ret.add(new OhsumedQuery(id, patientInfo, infoRequest));
+
+					map = new HashMap<String, String>();
+					map.put(key, value);
+				}
+			} else {
+				reader.hasNext();
+				String value = reader.next();
+				map.put(line, value);
+			}
+		}
+		reader.close();
+
+		String id = map.get(".I");
+		String patientInfo = map.get(".B");
+		String infoRequest = map.get(".W");
+
+		ret.add(new OhsumedQuery(id, patientInfo, infoRequest));
+
+		System.out.printf("read [%d] queries from [%s]\n", ret.size(), fileName);
+
+		return ret;
+	}
+
+	public static List<BaseQuery> readTrecCdsQueries(String fileName) throws Exception {
+		List<BaseQuery> ret = new ArrayList<BaseQuery>();
+
+		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		DocumentBuilder parser = dbf.newDocumentBuilder();
+
+		Document xmlDoc = parser.parse(new InputSource(new StringReader(IOUtils.readText(fileName))));
+
+		Element docElem = xmlDoc.getDocumentElement();
+		NodeList nodeList = docElem.getElementsByTagName("topic");
+
+		String[] nodeNames = { "description", "summary", "diagnosis" };
+
+		for (int i = 0; i < nodeList.getLength(); i++) {
+			Element topicElem = (Element) nodeList.item(i);
+
+			String id = topicElem.getAttribute("number");
+			String type = topicElem.getAttribute("type");
+
+			String[] values = new String[nodeNames.length];
+
+//			values[0] = topicElem.getAttribute(nodeNames[0]);
+			for (int j = 0; j < nodeNames.length; j++) {
+				NodeList nodes = topicElem.getElementsByTagName(nodeNames[j]);
+				if (nodes != null && nodes.getLength() > 0) {
+					values[j] = nodes.item(0).getTextContent();
+				}
+			}
+
+			String description = values[0];
+			String summary = values[1];
+			String dignosis = values[2];
+
+			description = description.replace("&quot;", "\"");
+
+			// id = new DecimalFormat("00").format(Integer.parseInt(id));
+
+			TrecCdsQuery query = new TrecCdsQuery(id, description, summary, type, dignosis);
+			ret.add(query);
+		}
+
+		System.out.printf("read [%d] queries from [%s]\n", ret.size(), fileName);
 		return ret;
 	}
 }

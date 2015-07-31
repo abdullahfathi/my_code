@@ -136,6 +136,8 @@ public class OrganizationNormalizer {
 	}
 
 	public void read(String fileName) {
+		System.out.printf("read abbreviation patterns from [%s].\n", fileName);
+
 		engAbbrs = new TreeMap<String, String>();
 
 		TextFileReader reader = new TextFileReader(fileName);

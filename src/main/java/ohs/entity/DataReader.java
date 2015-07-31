@@ -4,161 +4,23 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import ohs.entity.data.struct.BilingualText;
 import ohs.entity.data.struct.Organization;
 import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
 import ohs.types.Counter;
-import ohs.utils.StrUtils;
 
 public class DataReader {
 
 	public static void main(String[] args) {
 		System.out.println("process begins.");
 
-		List<Organization> orgs = readOrganizations(ENTPath.BASE_ORG_NAME_FILE);
-		// readOrganizationHistories(ENTPath.BASE_ORG_HISTORY_FILE);
+		// List<Organization> orgs = readOrganizations(ENTPath.BASE_ORG_NAME_FILE);
+		List<Organization> orgs2 = readOrganizationHistories(ENTPath.BASE_ORG_HISTORY_FILE);
 
 		System.out.println("process ends.");
-	}
-
-	public static List<BilingualText> readBaseOrgNames(String fileName) {
-		List<BilingualText> ret = new ArrayList<BilingualText>();
-		List<Organization> orgs = readOrganizations(fileName);
-		for (Organization org : orgs) {
-			ret.add(org.getName());
-		}
-		return ret;
-	}
-
-	public static Counter<BilingualText> readBilingualTextCounter(String fileName) {
-		System.out.printf("read [%s].\n", fileName);
-		Counter<BilingualText> ret = new Counter<BilingualText>();
-		TextFileReader reader = new TextFileReader(fileName);
-		while (reader.hasNext()) {
-			String line = reader.next();
-			String[] parts = line.split("\t");
-			String korOrg = parts[0].equals("null") ? "" : parts[0];
-			String engOrg = parts[1].equals("null") ? "" : parts[1];
-			double cnt = Double.parseDouble(parts[2]);
-
-			BilingualText orgName = new BilingualText(korOrg, engOrg);
-
-			ret.incrementCount(orgName, cnt);
-		}
-		reader.close();
-		return ret;
-	}
-
-	public static List<Organization> readOrganizations(String fileName) {
-		System.out.printf("read [%s].\n", fileName);
-		List<Organization> ret = new ArrayList<Organization>();
-		TextFileReader reader = new TextFileReader(fileName);
-		while (reader.hasNext()) {
-			if (reader.getNumLines() == 1) {
-				continue;
-			}
-
-			String line = reader.next();
-			String[] parts = split(line);
-
-			int id = Integer.parseInt(parts[0]);
-			String country = parts[1];
-			String type = parts[2];
-
-			String korName = parts[3].trim();
-			String engName = parts[4].trim();
-			BilingualText orgName = new BilingualText(korName, engName);
-
-			String korAbbrs = parts[5];
-			String engAbbrs = parts[6];
-
-			String homepage = parts[9];
-
-			Organization org = new Organization(id, null, orgName);
-			org.setHomepage(homepage);
-
-			if (korAbbrs.length() > 0) {
-				String[] abbrs = korAbbrs.split(",");
-				for (String abbr : abbrs) {
-					org.getKoreanVariants().add(abbr.trim());
-				}
-			}
-
-			if (engAbbrs.length() > 0) {
-				String[] abbrs = engAbbrs.split(",");
-				for (String abbr : abbrs) {
-					org.getEnglishVariants().add(abbr.trim());
-				}
-			}
-
-			ret.add(org);
-		}
-		reader.close();
-		return ret;
-	}
-
-	public static String[] split(String line) {
-		String[] ret = line.replace("\t", "\t_").split("\t");
-		for (int j = 0; j < ret.length; j++) {
-			if (ret[j].startsWith("_")) {
-				ret[j] = ret[j].substring(1);
-			}
-
-			if (ret[j].equals("empty")) {
-				ret[j] = "";
-			}
-		}
-		return ret;
-	}
-
-	public static List<Organization> readOrganizationHistories(String fileName) {
-		System.out.printf("read [%s].\n", fileName);
-		List<Organization> ret = new ArrayList<Organization>();
-
-		// List<Organization> lines = new ArrayList<Organization>();
-
-		List<String[]> lines = new ArrayList<String[]>();
-		int num_orgs = 0;
-
-		TextFileReader reader = new TextFileReader(fileName, IOUtils.EUC_KR);
-		while (reader.hasNext()) {
-			String line = reader.next();
-
-			if (reader.getNumLines() == 1) {
-				continue;
-			}
-
-			String[] parts = split(line);
-
-			// try {
-			if (parts[3].length() == 0) {
-				// try {
-				if (lines.size() > 3) {
-					parse(lines);
-				}
-				// } catch (Exception e) {
-				// e.printStackTrace();
-				// }
-
-				num_orgs++;
-
-				lines = new ArrayList<String[]>();
-
-			} else {
-				lines.add(parts);
-			}
-			// } catch (Exception e) {
-			// System.out.println(StrUtils.join("\t", parts));
-			// }
-
-		}
-		reader.close();
-
-		System.out.println(num_orgs);
-
-		return ret;
 	}
 
 	public static Organization parse(List<String[]> lines) {
@@ -195,29 +57,33 @@ public class DataReader {
 				org.setHomepage(homepage);
 				map.put(korName, org);
 			} else {
-				// System.out.println();
+				if (org.getYear() > 0) {
+					System.out.println(org);
+					System.out.println();
+				}
 			}
 
 			if (korHistory.length() == 0) {
+
 				org.setYear(Integer.parseInt(year));
 			} else {
 				String[] events = korHistory.split(";");
-				String[] eventYears = eventYears = year.split(";");
+				String[] eventYears = year.split(";");
 
-				if (events.length != eventYears.length) {
-					System.out.println(StrUtils.join("\t", parts));
-					// System.out.println("errors");
-					// System.exit(0);
-					continue;
-				}
-
-				if (events.length > 1) {
-					System.out.println();
-				}
+				assert (events.length == eventYears.length);
 
 				for (int j = 0; j < events.length; j++) {
 					String event = events[j];
 					String eventYear = eventYears[j];
+
+					Map<Integer, Character> ops = new TreeMap<Integer, Character>();
+
+					for (int k = 0; k < event.length(); k++) {
+						char ch = event.charAt(k);
+						if (ch == '-' || ch == '+') {
+							ops.put(k, ch);
+						}
+					}
 
 					String[] memberNames = event.split("[+-]");
 
@@ -264,14 +130,149 @@ public class DataReader {
 			}
 		}
 
-		for (int i = 0; i < orgs.size(); i++) {
-			System.out.println(orgs.get(i));
-			System.out.println();
-		}
-
-		System.out.println("------------------------------");
+		// for (int i = 0; i < orgs.size(); i++) {
+		// System.out.println(orgs.get(i));
+		// System.out.println();
+		// }
+		//
+		// System.out.println("------------------------------");
 
 		return null;
+	}
+
+	public static List<BilingualText> readBaseOrgNames(String fileName) {
+		List<BilingualText> ret = new ArrayList<BilingualText>();
+		List<Organization> orgs = readOrganizations(fileName);
+		for (Organization org : orgs) {
+			ret.add(org.getName());
+		}
+		return ret;
+	}
+
+	public static Counter<BilingualText> readBilingualTextCounter(String fileName) {
+		System.out.printf("read [%s].\n", fileName);
+		Counter<BilingualText> ret = new Counter<BilingualText>();
+		TextFileReader reader = new TextFileReader(fileName);
+		while (reader.hasNext()) {
+			String line = reader.next();
+			String[] parts = line.split("\t");
+			String korOrg = parts[0].equals("null") ? "" : parts[0];
+			String engOrg = parts[1].equals("null") ? "" : parts[1];
+			double cnt = Double.parseDouble(parts[2]);
+
+			BilingualText orgName = new BilingualText(korOrg, engOrg);
+
+			ret.incrementCount(orgName, cnt);
+		}
+		reader.close();
+		return ret;
+	}
+
+	public static List<Organization> readOrganizationHistories(String fileName) {
+		System.out.printf("read [%s].\n", fileName);
+		List<Organization> ret = new ArrayList<Organization>();
+
+		// List<Organization> lines = new ArrayList<Organization>();
+
+		List<String[]> lines = new ArrayList<String[]>();
+		int num_orgs = 0;
+
+		TextFileReader reader = new TextFileReader(fileName, IOUtils.EUC_KR);
+		while (reader.hasNext()) {
+			String line = reader.next();
+
+			if (reader.getNumLines() == 1) {
+				continue;
+			}
+
+			String[] parts = split(line);
+
+			// try {
+			if (parts[3].length() == 0) {
+
+				if (lines.size() > 3) {
+					parse(lines);
+				}
+
+				num_orgs++;
+
+				lines = new ArrayList<String[]>();
+
+			} else {
+				lines.add(parts);
+			}
+			// } catch (Exception e) {
+			// System.out.println(StrUtils.join("\t", parts));
+			// }
+
+		}
+		reader.close();
+
+		System.out.println(num_orgs);
+
+		return ret;
+	}
+
+	public static List<Organization> readOrganizations(String fileName) {
+		System.out.printf("read [%s].\n", fileName);
+		List<Organization> ret = new ArrayList<Organization>();
+		TextFileReader reader = new TextFileReader(fileName, IOUtils.EUC_KR);
+		while (reader.hasNext()) {
+			if (reader.getNumLines() == 1) {
+				continue;
+			}
+
+			String line = reader.next();
+			String[] parts = split(line);
+
+			int id = Integer.parseInt(parts[0]);
+			String country = parts[1];
+			String type = parts[2];
+
+			String korName = parts[3].trim();
+			String engName = parts[4].trim();
+			BilingualText orgName = new BilingualText(korName, engName);
+
+			String korAbbrs = parts[5];
+			String engAbbrs = parts[6];
+
+			String homepage = parts[7];
+
+			Organization org = new Organization(id, null, orgName);
+			org.setHomepage(homepage);
+
+			if (korAbbrs.length() > 0) {
+				String[] abbrs = korAbbrs.split(",");
+				for (String abbr : abbrs) {
+					org.getKoreanVariants().add(abbr.trim());
+				}
+			}
+
+			if (engAbbrs.length() > 0) {
+				String[] abbrs = engAbbrs.split(",");
+				for (String abbr : abbrs) {
+					org.getEnglishVariants().add(abbr.trim());
+				}
+			}
+
+			ret.add(org);
+		}
+		reader.close();
+		return ret;
+	}
+
+	public static String[] split(String line) {
+		String[] ret = line.replace("\t", "\t_").split("\t");
+		for (int j = 0; j < ret.length; j++) {
+			if (ret[j].startsWith("_")) {
+				ret[j] = ret[j].substring(1);
+			}
+
+			if (ret[j].equals("empty")) {
+				ret[j] = "";
+			}
+		}
+		return ret;
 	}
 
 }

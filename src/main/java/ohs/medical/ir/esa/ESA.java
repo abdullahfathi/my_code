@@ -28,7 +28,7 @@ public class ESA {
 		ESA esa = new ESA(MedicalEnglishAnalyzer.getAnalyzer());
 		esa.read(MIRPath.ICD10_ESA_FILE);
 
-		List<BaseQuery> bqs = QueryReader.readTrecCdsQueries(MIRPath.TREC_CDS_QUERY_2015_FILE);
+		List<BaseQuery> bqs = QueryReader.readTrecCdsQueries(MIRPath.TREC_CDS_QUERY_2015_A_FILE);
 
 		for (int i = 0; i < bqs.size(); i++) {
 			BaseQuery bq = bqs.get(i);

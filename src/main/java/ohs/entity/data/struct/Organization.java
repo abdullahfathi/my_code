@@ -46,7 +46,7 @@ public class Organization implements Serializable {
 	private String homepage;
 
 	public Organization(int id, String sid, BilingualText name) {
-		this(id, sid, name, -1, OrganizationType.NONE, new HashSet<String>(), new HashSet<String>(), new ArrayList<Organization>(), null);
+		this(id, sid, name, 0, OrganizationType.NONE, new HashSet<String>(), new HashSet<String>(), new ArrayList<Organization>(), null);
 	}
 
 	public Organization(int id, String sid, BilingualText name, int year, OrganizationType type,

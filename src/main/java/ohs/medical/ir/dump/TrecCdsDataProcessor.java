@@ -92,7 +92,6 @@ public class TrecCdsDataProcessor {
 		}
 		writer.close();
 		System.out.println(num_files);
-
 	}
 
 	public void makeTextDump() throws Exception {
