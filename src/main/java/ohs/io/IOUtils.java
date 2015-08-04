@@ -500,6 +500,10 @@ public class IOUtils {
 	public static List<String> readLines(String fileName, int num_read) throws Exception {
 		return readLines(fileName, UTF_8, num_read);
 	}
+	
+	public static List<String> readLines(String fileName, String encoding) throws Exception {
+		return readLines(fileName, encoding, Integer.MAX_VALUE);
+	}
 
 	public static List<String> readLines(String fileName, String encoding, int num_read) throws Exception {
 		BufferedReader reader = openBufferedReader(fileName, encoding);

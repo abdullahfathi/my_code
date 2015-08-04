@@ -95,42 +95,15 @@ public class DocumentIndexer {
 		// di.indexTrecCds();
 		// di.indexClefEHealth();
 		// di.indexOhsumed();
-		di.indexTrecGeonomics();
+		// di.indexTrecGeonomics();
 		// di.indexWiki();
-		// di.makeTrecDocumentIdMap();
+		// di.makeDocumentIdMap();
 
 		System.out.println("process ends.");
 	}
 
 	public DocumentIndexer() {
 
-	}
-
-	public void indexTrecGeonomics() throws Exception {
-		IndexWriter indexWriter = getIndexWriter(MIRPath.TREC_GENOMICS_INDEX_DIR);
-		TextFileReader reader = new TextFileReader(MIRPath.TREC_GENOMICS_COLLECTION_FILE);
-		reader.setPrintNexts(false);
-
-		while (reader.hasNext()) {
-			reader.print(5000);
-			String line = reader.next();
-			String[] parts = line.split("\t");
-
-			String id = parts[0];
-			String content = parts[1];
-
-			int start = id.lastIndexOf("/");
-			int end = id.lastIndexOf(".");
-			id = id.substring(start + 1, end);
-
-			Document doc = new Document();
-			doc.add(new StringField(IndexFieldName.DOCUMENT_ID, id, Field.Store.YES));
-			doc.add(new MyTextField(IndexFieldName.CONTENT, content, Store.YES));
-
-			indexWriter.addDocument(doc);
-		}
-		reader.close();
-		indexWriter.close();
 	}
 
 	public void indexClefEHealth() throws Exception {
@@ -244,6 +217,33 @@ public class DocumentIndexer {
 		}
 		reader.printLast();
 		writer.close();
+	}
+
+	public void indexTrecGeonomics() throws Exception {
+		IndexWriter indexWriter = getIndexWriter(MIRPath.TREC_GENOMICS_INDEX_DIR);
+		TextFileReader reader = new TextFileReader(MIRPath.TREC_GENOMICS_COLLECTION_FILE);
+		reader.setPrintNexts(false);
+
+		while (reader.hasNext()) {
+			reader.print(5000);
+			String line = reader.next();
+			String[] parts = line.split("\t");
+
+			String id = parts[0];
+			String content = parts[1];
+
+			int start = id.lastIndexOf("/");
+			int end = id.lastIndexOf(".");
+			id = id.substring(start + 1, end);
+
+			Document doc = new Document();
+			doc.add(new StringField(IndexFieldName.DOCUMENT_ID, id, Field.Store.YES));
+			doc.add(new MyTextField(IndexFieldName.CONTENT, content, Store.YES));
+
+			indexWriter.addDocument(doc);
+		}
+		reader.close();
+		indexWriter.close();
 	}
 
 	public void indexWiki() throws Exception {
@@ -388,39 +388,4 @@ public class DocumentIndexer {
 		}
 	}
 
-	public void makeTrecDocumentIdMap() throws Exception {
-		String[] indexDirNames = MIRPath.IndexDirNames;
-		String[] docMapFileNames = MIRPath.DocIdMapFileNames;
-
-		String indexDirName = MIRPath.TREC_CDS_DIR + "index_old";
-		String docMapFileName = MIRPath.TREC_CDS_DIR + "document_id_map_old.txt";
-
-		File outputFile = new File(docMapFileName);
-
-		// if (outputFile.exists()) {
-		// return;
-		// }
-
-		IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(indexDirName);
-		IndexReader indexReader = indexSearcher.getIndexReader();
-
-		List<String> docIds = new ArrayList<String>();
-
-		for (int j = 0; j < indexReader.maxDoc(); j++) {
-			if ((j + 1) % 100000 == 0) {
-				System.out.printf("\r[%d/%d]", j + 1, indexReader.maxDoc());
-			}
-			Document doc = indexReader.document(j);
-			String docId = doc.getField(IndexFieldName.DOCUMENT_ID).stringValue();
-			docIds.add(docId);
-		}
-		System.out.printf("\r[%d/%d]\n", indexReader.maxDoc(), indexReader.maxDoc());
-
-		TextFileWriter writer = new TextFileWriter(docMapFileName);
-		for (int j = 0; j < docIds.size(); j++) {
-			String output = j + "\t" + docIds.get(j);
-			writer.write(output + "\n");
-		}
-		writer.close();
-	}
 }

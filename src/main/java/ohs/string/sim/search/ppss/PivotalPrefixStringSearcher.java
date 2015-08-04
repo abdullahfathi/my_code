@@ -18,6 +18,7 @@ import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.string.sim.func.AffineGap;
+import ohs.string.sim.func.EditDistance;
 import ohs.string.sim.func.SmithWaterman;
 import ohs.string.sim.search.ppss.Gram.Type;
 import ohs.types.BidMap;
@@ -25,6 +26,7 @@ import ohs.types.Counter;
 import ohs.types.DeepMap;
 import ohs.types.ListMap;
 import ohs.types.Pair;
+import ohs.utils.StrUtils;
 
 /**
  * 
@@ -41,117 +43,10 @@ public class PivotalPrefixStringSearcher implements Serializable {
 	 */
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
-		// test0();
 		// test1();
 		// test2();
 		test3();
 		System.out.println("process ends.");
-	}
-
-	public static void test0() throws Exception {
-		PivotalPrefixStringSearcher ppss = new PivotalPrefixStringSearcher();
-		ppss.read(ENTPath.PPSS_INDEX_FILE);
-	}
-
-	public static void test3() throws Exception {
-		List<BilingualText> orgNames = DataReader.readBaseOrgNames(ENTPath.BASE_ORG_NAME_FILE);
-		Counter<BilingualText> externalOrgCounts = DataReader.readBilingualTextCounter(ENTPath.DOMESTIC_PAPER_ORG_NAME_FILE);
-
-		List<StringRecord> strings = new ArrayList<StringRecord>();
-		List<StringRecord> strings2 = new ArrayList<StringRecord>();
-
-		for (int i = 0; i < orgNames.size(); i++) {
-			strings.add(new StringRecord(i, orgNames.get(i).getKorean()));
-			strings2.add(new StringRecord(i, orgNames.get(i).getKorean()));
-		}
-
-		GramSorter gramSorter = new GramSorter();
-
-		{
-			List<StringRecord> ss = new ArrayList<StringRecord>();
-
-			for (BilingualText orgName : externalOrgCounts.keySet()) {
-				String korName = orgName.getKorean();
-				if (korName.length() == 0) {
-					continue;
-				}
-				ss.add(new StringRecord(ss.size(), korName));
-			}
-
-			Counter<String> gramWeights1 = GramWeighter.compute(new GramGenerator(2), ss);
-			System.out.println(gramWeights1);
-			gramSorter.setGramWeights(gramWeights1);
-			// gramSorter.setIsAscendingOrder(false);
-		}
-
-		int q = 2;
-		int tau = 4;
-
-		PivotalPrefixStringSearcher ppss = new PivotalPrefixStringSearcher(q, tau, true);
-		ppss.setGramSorter(gramSorter);
-		ppss.index(strings);
-		// ppss.write(ENTPath.PPSS_INDEX_FILE);
-		// ppss.writeObject(ENTPath.PPSS_OBJECT_FILE);
-
-		// {
-		// TextFileWriter writer = new TextFileWriter(ENTPath.DATA_DIR + "ppss_res.txt");
-		// for (int i = 0; i < strings2.size(); i++) {
-		// String str = strings2.get(i);
-		// System.out.println(str);
-		//
-		// // if (!str.contains("경남양돈산업클러스터사업단")) {
-		// // continue;
-		// // }
-		// Counter<String> res = ext.search(str);
-		// writer.write(String.format("Input:\t%s\n", str));
-		// writer.write(String.format("Output:\t%s\n\n", res.toStringSortedByValues(false, false, res.size())));
-		// }
-		//
-		// writer.close();
-		// }
-
-		ListMap<String, String> listMap = new ListMap<String, String>();
-
-		{
-			TextFileReader reader = new TextFileReader(ENTPath.DATA_DIR + "patent_orgs_2.txt");
-			while (reader.hasNext()) {
-				if (reader.getNumLines() == 1) {
-					continue;
-				}
-				String line = reader.next();
-				String[] parts = line.split("\t");
-				String korName = parts[0];
-
-				if (parts.length == 2) {
-					String[] engNames = parts[1].split(" # ");
-					for (String engName : engNames) {
-						listMap.put(korName, engName);
-					}
-				}
-			}
-			reader.close();
-		}
-
-		{
-
-			List<String> korNames = new ArrayList<String>(listMap.keySet());
-			Collections.sort(korNames);
-
-			TextFileWriter writer = new TextFileWriter(ENTPath.PPSS_RESULT_FILE);
-
-			for (int i = 0; i < korNames.size(); i++) {
-				String korName = korNames.get(i);
-				System.out.println(korName);
-
-				Counter<StringRecord> res = ppss.search(korName);
-				StringBuffer sb = new StringBuffer();
-				sb.append("Input:\n");
-				sb.append(korName.toString() + "\n");
-				sb.append(String.format("Output:\t%s\n\n", res.toStringSortedByValues(true, true, 10)));
-				writer.write(sb.toString());
-			}
-			writer.close();
-		}
 	}
 
 	public static void test1() throws Exception {
@@ -262,6 +157,102 @@ public class PivotalPrefixStringSearcher implements Serializable {
 		Counter<StringRecord> res = ppss.search(s);
 
 		System.out.println(res.toString());
+	}
+
+	public static void test3() throws Exception {
+		List<BilingualText> orgNames = DataReader.readBaseOrgNames(ENTPath.BASE_ORG_NAME_FILE);
+		// Counter<BilingualText> externalOrgCounts = DataReader.readBilingualTextCounter(ENTPath.DOMESTIC_PAPER_ORG_NAME_FILE);
+
+		List<StringRecord> strings = new ArrayList<StringRecord>();
+		List<StringRecord> strings2 = new ArrayList<StringRecord>();
+
+		for (int i = 0; i < orgNames.size(); i++) {
+			strings.add(new StringRecord(i, orgNames.get(i).getKorean()));
+			strings2.add(new StringRecord(i, orgNames.get(i).getKorean()));
+		}
+
+		// GramSorter gramSorter = new GramSorter();
+
+		// {
+		// List<StringRecord> ss = new ArrayList<StringRecord>();
+		//
+		// for (BilingualText orgName : externalOrgCounts.keySet()) {
+		// String korName = orgName.getKorean();
+		// if (korName.length() == 0) {
+		// continue;
+		// }
+		// ss.add(new StringRecord(ss.size(), korName));
+		// }
+		//
+		// Counter<String> gramWeights1 = GramWeighter.compute(new GramGenerator(2), ss);
+		// System.out.println(gramWeights1);
+		// gramSorter.setGramWeights(gramWeights1);
+		// }
+
+		int q = 2;
+		int tau = 4;
+
+		PivotalPrefixStringSearcher ppss = new PivotalPrefixStringSearcher(q, tau, true);
+		// ppss.setGramSorter(gramSorter);
+		ppss.index(strings);
+		// ppss.write(ENTPath.PPSS_INDEX_FILE);
+		// ppss.writeObject(ENTPath.PPSS_OBJECT_FILE);
+
+		// {
+		// TextFileWriter writer = new TextFileWriter(ENTPath.DATA_DIR + "ppss_res.txt");
+		// for (int i = 0; i < strings2.size(); i++) {
+		// String str = strings2.get(i);
+		// System.out.println(str);
+		//
+		// // if (!str.contains("경남양돈산업클러스터사업단")) {
+		// // continue;
+		// // }
+		// Counter<String> res = ext.search(str);
+		// writer.write(String.format("Input:\t%s\n", str));
+		// writer.write(String.format("Output:\t%s\n\n", res.toStringSortedByValues(false, false, res.size())));
+		// }
+		//
+		// writer.close();
+		// }
+
+		TextFileReader reader = new TextFileReader(ENTPath.PATENT_ORG_FILE_2);
+		TextFileWriter writer = new TextFileWriter(ENTPath.PPSS_RESULT_FILE);
+
+		while (reader.hasNext()) {
+			String line = reader.next();
+			String[] parts = line.split("\t");
+
+			String korName = null;
+			Counter<String> engNameCounts = new Counter<String>();
+
+			for (int i = 0; i < parts.length; i++) {
+				String[] two = StrUtils.split2Two(":", parts[i]);
+				String name = two[0];
+				double cnt = Double.parseDouble(two[1]);
+				if (i == 0) {
+					korName = name;
+				} else {
+					engNameCounts.incrementCount(name, cnt);
+				}
+			}
+
+			BilingualText orgName = new BilingualText(korName, engNameCounts.argMax());
+
+			Counter<StringRecord> ret = ppss.search(korName);
+
+			List<StringRecord> keys = ret.getSortedKeys();
+			int num_candidates = 10;
+			StringBuffer sb = new StringBuffer(line);
+			for (int i = 0; i < keys.size() && i < num_candidates; i++) {
+				StringRecord sr = keys.get(i);
+				double score = ret.getCount(sr);
+				sb.append(String.format("\n%d\t%s\t%f", i + 1, sr, score));
+			}
+
+			writer.write(sb.toString() + "\n\n");
+		}
+		writer.close();
+
 	}
 
 	private int q;
@@ -686,21 +677,22 @@ public class PivotalPrefixStringSearcher implements Serializable {
 
 		AffineGap ag = new AffineGap();
 		SmithWaterman sw = new SmithWaterman(2, -1, -1, true);
+		EditDistance ed = new EditDistance();
 
 		for (int loc : C) {
 			String r = ss.get(loc).getString();
-			// if (stringVerifier.verify(s, grams, r)) {
+//			if (stringVerifier.verify(s, grams, r)) {
+//				continue;
+//			}
 
-			// double ed = sw.getNormalizedScore(s, r);
-			double ed = sw.getBestScore(s, r);
+			double swScore = sw.getBestScore(s, r);
 			double min = Math.min(s.length(), r.length());
-			ed /= min;
+			swScore /= min;
 
 			// double long_len = Math.max(s.length(), r.length());
 			// double sim = 1 - (ed / long_len);
 
-			A.incrementCount(ss.get(loc), ed);
-			// }
+			A.incrementCount(ss.get(loc), swScore);
 		}
 
 		return A;

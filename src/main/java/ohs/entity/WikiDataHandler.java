@@ -7,9 +7,11 @@ import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
-import ohs.lucene.common.IndexFieldName;
+import ohs.types.Counter;
+import ohs.types.CounterMap;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -23,17 +25,21 @@ public class WikiDataHandler {
 	public void extractRedirects() throws Exception {
 
 		TextFileReader reader = new TextFileReader(ENTPath.KOREAN_WIKI_TEXT_FILE);
-		TextFileWriter writer = new TextFileWriter(ENTPath.KOREAN_WIKI_REDIRECT_FILE);
 		TextFileWriter writer2 = new TextFileWriter(ENTPath.KOREAN_WIKI_TITLE_FILE);
 
 		reader.setPrintNexts(false);
 
 		MediaWikiParser parser = new MediaWikiParserFactory().createParser();
 
-		String regex = "#REDIRECT \\[\\[([^\\[\\]]+)\\]\\]";
-		Pattern p = Pattern.compile(regex);
+		String regex1 = "#REDIRECT \\[\\[([^\\[\\]]+)\\]\\]";
+		String regex2 = "^([^:]+)\\:";
 
-		writer.write("FROM\tTO\n");
+		Pattern p1 = Pattern.compile(regex1);
+		Pattern p2 = Pattern.compile(regex2);
+
+		Counter<String> c = new Counter<String>();
+
+		CounterMap<String, String> cm = new CounterMap<String, String>();
 
 		while (reader.hasNext()) {
 			reader.print(100000);
@@ -46,21 +52,31 @@ public class WikiDataHandler {
 			String title = parts[0];
 			String wikiText = parts[1].replace("<NL>", "\n").trim();
 
+			Matcher m2 = p2.matcher(title);
+			if (m2.find()) {
+				c.incrementCount(m2.group(1), 1);
+				continue;
+			}
+
 			writer2.write(title + "\n");
 
-			Matcher m = p.matcher(wikiText);
+			Matcher m1 = p1.matcher(wikiText);
 
-			if (m.find()) {
-				String redirect = m.group(1).trim();
+			if (m1.find()) {
+				String redirect = m1.group(1).trim();
 				if (redirect.length() > 0) {
-					writer.write(title + "\t" + redirect + "\n");
+					cm.incrementCount(redirect, title, 1);
 				}
 			}
+
 		}
 		reader.printLast();
 		reader.close();
-		writer.close();
 		writer2.close();
+
+		IOUtils.write(ENTPath.KOREAN_WIKI_REDIRECT_FILE, cm);
+
+		System.out.println(c.toStringSortedByValues(true, true, c.size()));
 
 	}
 

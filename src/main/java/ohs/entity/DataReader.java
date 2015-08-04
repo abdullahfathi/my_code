@@ -2,9 +2,13 @@ package ohs.entity;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+
+import org.apache.uima.resource.MQMessagingSpecifier;
 
 import ohs.entity.data.struct.BilingualText;
 import ohs.entity.data.struct.Organization;
@@ -44,7 +48,7 @@ public class DataReader {
 
 			String korHistory = parts[7];
 			String engHistory = parts[8];
-			String year = parts[9];
+			String year = parts[9].trim();
 			String homepage = parts[10];
 			String desc = parts[11];
 
@@ -100,6 +104,10 @@ public class DataReader {
 							member = new Organization(-1, null, new BilingualText(memberName, ""));
 						} else {
 							// System.out.println();
+						}
+
+						if (org.equals(member)) {
+							continue;
 						}
 
 						org.getHistory().add(member);
@@ -175,7 +183,8 @@ public class DataReader {
 		// List<Organization> lines = new ArrayList<Organization>();
 
 		List<String[]> lines = new ArrayList<String[]>();
-		int num_orgs = 0;
+
+		Counter<String> c = new Counter<String>();
 
 		TextFileReader reader = new TextFileReader(fileName, IOUtils.EUC_KR);
 		while (reader.hasNext()) {
@@ -189,12 +198,12 @@ public class DataReader {
 
 			// try {
 			if (parts[3].length() == 0) {
+				Organization org = parse(lines);
 
-				if (lines.size() > 3) {
-					parse(lines);
+				for (int i = 0; i < lines.size(); i++) {
+
+					c.incrementCount(lines.get(i)[3], 1);
 				}
-
-				num_orgs++;
 
 				lines = new ArrayList<String[]>();
 
@@ -208,7 +217,7 @@ public class DataReader {
 		}
 		reader.close();
 
-		System.out.println(num_orgs);
+		System.out.printf("num orgs:\t%d\n", c.size());
 
 		return ret;
 	}
@@ -235,8 +244,8 @@ public class DataReader {
 
 			String korAbbrs = parts[5];
 			String engAbbrs = parts[6];
-
-			String homepage = parts[7];
+			String year = parts[7];
+			String homepage = parts[8];
 
 			Organization org = new Organization(id, null, orgName);
 			org.setHomepage(homepage);

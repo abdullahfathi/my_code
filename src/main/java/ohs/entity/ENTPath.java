@@ -23,8 +23,6 @@ public class ENTPath {
 
 	public static final String PATENT_ORG_FILE_2 = DATA_DIR + "orgs_patents_특허정보원_2.txt";
 
-	public static final String PATENT_ORG_FILE_3 = DATA_DIR + "orgs_patents_특허정보원_3.txt";
-
 	public static final String PPSS_INDEX_FILE = DATA_DIR + "ppss_index.txt";
 
 	public static final String PPSS_RESULT_FILE = DATA_DIR + "ppss_res.txt";
@@ -32,6 +30,10 @@ public class ENTPath {
 	public static final String PPSS_OBJECT_FILE = DATA_DIR + "ppss_object.txt";
 
 	public static final String ODK_FILE = DATA_DIR + "odk.txt";
+
+	public static final String ODK_OUTPUT_PATENT_FILE = DATA_DIR + "odk_output_patent.txt";
+
+	public static final String ODK_OUTPUT_PAPER_FILE = DATA_DIR + "odk_output_paper.txt";
 
 	public static final String ODK_LOG_FILE = DATA_DIR + "odk_log.txt";
 
