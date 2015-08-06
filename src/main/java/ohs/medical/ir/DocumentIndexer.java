@@ -95,7 +95,8 @@ public class DocumentIndexer {
 		// di.indexTrecCds();
 		// di.indexClefEHealth();
 		// di.indexOhsumed();
-		// di.indexTrecGeonomics();
+		di.indexTrecGenomics();
+
 		// di.indexWiki();
 		// di.makeDocumentIdMap();
 
@@ -219,7 +220,7 @@ public class DocumentIndexer {
 		writer.close();
 	}
 
-	public void indexTrecGeonomics() throws Exception {
+	public void indexTrecGenomics() throws Exception {
 		IndexWriter indexWriter = getIndexWriter(MIRPath.TREC_GENOMICS_INDEX_DIR);
 		TextFileReader reader = new TextFileReader(MIRPath.TREC_GENOMICS_COLLECTION_FILE);
 		reader.setPrintNexts(false);
@@ -228,6 +229,10 @@ public class DocumentIndexer {
 			reader.print(5000);
 			String line = reader.next();
 			String[] parts = line.split("\t");
+
+			if (parts.length != 2) {
+				continue;
+			}
 
 			String id = parts[0];
 			String content = parts[1];

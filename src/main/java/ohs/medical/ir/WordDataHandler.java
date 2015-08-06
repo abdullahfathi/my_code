@@ -47,15 +47,14 @@ public class WordDataHandler {
 			bigramFileNames2[i] = bigramFileNames2[i] + "bigrams_filtered.txt";
 		}
 
-		// {
-		// String[] vocFileNames = MIRPath.VocFileNames;
-		// for (int i = 0; i < indexDirNames.length - 1; i++) {
-		// dh.makeVocabulary(indexDirNames[i], vocFileNames[i]);
-		// }
-		// dh.mergeVocabularies(vocFileNames, MIRPath.VOCABULARY_FILE);
-		// }
+		{
+			for (int i = 4; i < indexDirNames.length; i++) {
+				dh.makeVocabulary(indexDirNames[i], vocFileNames[i]);
+			}
+			dh.mergeVocabularies(vocFileNames, MIRPath.VOCABULARY_FILE);
+		}
 
-		dh.extractBigrams(indexDirNames[0], bigramFileNames[0]);
+		// dh.extractBigrams(indexDirNames[0], bigramFileNames[0]);
 
 		// dh.process(vocFileNames[0], bigramFileNames[0], bigramFileNames2[0]);
 

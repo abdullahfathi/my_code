@@ -12,11 +12,11 @@ import ohs.io.TextFileWriter;
 import ohs.medical.ir.MIRPath;
 import sun.management.snmp.util.MibLogger;
 
-public class TrecGeonomicsDataProcessor {
+public class TrecGenomicsDataProcessor {
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
-		TrecGeonomicsDataProcessor d = new TrecGeonomicsDataProcessor();
+		TrecGenomicsDataProcessor d = new TrecGenomicsDataProcessor();
 		d.makeTextDump();
 		System.out.println("process ends.");
 	}
