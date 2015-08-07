@@ -41,19 +41,18 @@ public class QueryReader {
 	}
 
 	public static void main(String[] args) throws Exception {
-		String fileName = MIRPath.CLEF_EHEALTH_QUERY_2014_FILE;
 
-		List<BaseQuery> bqs = readClefEHealthQueries(fileName, null);
-		double cnt_sum = 0;
-		for (int i = 0; i < bqs.size(); i++) {
-			BaseQuery bq = bqs.get(i);
-			System.out.println(bq);
-			Counter<String> c = AnalyzerUtils.getWordCounts(bq.getSearchText(), MedicalEnglishAnalyzer.getAnalyzer());
-			cnt_sum += c.totalCount();
-			System.out.println(c.totalCount());
+		{
+			List<BaseQuery> bqs = readClefEHealthQueries(MIRPath.CLEF_EHEALTH_QUERY_2014_FILE, null);
 		}
 
-		System.out.println(cnt_sum / bqs.size());
+		{
+			List<BaseQuery> bqs = readTrecGenomicsQueries(MIRPath.TREC_GENOMICS_QUERY_2007_FILE);
+
+			for (int i = 0; i < bqs.size(); i++) {
+				System.out.println(bqs.get(i));
+			}
+		}
 
 	}
 
@@ -239,7 +238,7 @@ public class QueryReader {
 
 			String[] values = new String[nodeNames.length];
 
-//			values[0] = topicElem.getAttribute(nodeNames[0]);
+			// values[0] = topicElem.getAttribute(nodeNames[0]);
 			for (int j = 0; j < nodeNames.length; j++) {
 				NodeList nodes = topicElem.getElementsByTagName(nodeNames[j]);
 				if (nodes != null && nodes.getLength() > 0) {
@@ -260,6 +259,22 @@ public class QueryReader {
 		}
 
 		System.out.printf("read [%d] queries from [%s]\n", ret.size(), fileName);
+		return ret;
+	}
+
+	public static List<BaseQuery> readTrecGenomicsQueries(String queryFileName) throws Exception {
+		List<BaseQuery> ret = new ArrayList<BaseQuery>();
+		List<String> lines = IOUtils.readLines(queryFileName);
+
+		for (int i = 0; i < lines.size(); i++) {
+			String line = lines.get(i);
+			String id = line.substring(0, 5);
+			id = id.substring(1, 4);
+			String desc = line.substring(5);
+			TrecGenomicsQuery q = new TrecGenomicsQuery(id, desc);
+			ret.add(q);
+		}
+
 		return ret;
 	}
 }

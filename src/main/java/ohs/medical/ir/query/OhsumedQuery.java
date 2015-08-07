@@ -59,15 +59,15 @@ public class OhsumedQuery implements BaseQuery {
 		return patientInfo;
 	}
 
+	@Override
+	public List<Integer> getQueryWords() {
+		return words;
+	}
+
 	public String getSearchText() {
 		String ret = patientInfo;
 		ret = ret.replaceAll("[\\p{Punct}]+", " ");
 		return ret;
-	}
-
-	@Override
-	public List<Integer> getQueryWords() {
-		return words;
 	}
 
 	private String makeOutput(Map<String, String> map) {

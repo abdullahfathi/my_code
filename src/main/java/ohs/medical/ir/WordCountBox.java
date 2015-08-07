@@ -67,8 +67,8 @@ public class WordCountBox {
 
 			BytesRef bytesRef = null;
 			PostingsEnum postingsEnum = null;
-			IntCounter wcs = new IntCounter();
-			Map<Integer, Integer> wordLocs = new HashMap<Integer, Integer>();
+			Counter<Integer> wcs = new Counter<Integer>();
+			Map<Integer, Integer> locWords = new HashMap<Integer, Integer>();
 
 			while ((bytesRef = termsEnum.next()) != null) {
 				postingsEnum = termsEnum.postings(null, postingsEnum, PostingsEnum.ALL);
@@ -87,18 +87,18 @@ public class WordCountBox {
 
 				for (int k = 0; k < freq; k++) {
 					final int position = postingsEnum.nextPosition();
-					wordLocs.put(position, w);
+					locWords.put(position, w);
 				}
 			}
 			cm.setCounter(docId, wcs);
 
-			List<Integer> locs = new ArrayList<Integer>(wordLocs.keySet());
+			List<Integer> locs = new ArrayList<Integer>(locWords.keySet());
 			Collections.sort(locs);
 
 			List<Integer> words = new ArrayList<Integer>();
 
 			for (int loc : locs) {
-				words.add(wordLocs.get(loc));
+				words.add(locWords.get(loc));
 			}
 
 			docWords.set(docId, words);
@@ -110,8 +110,8 @@ public class WordCountBox {
 
 		SparseMatrix docWordCounts = VectorUtils.toSpasreMatrix(cm);
 
-		IntCounter c1 = new IntCounter();
-		IntCounter c2 = new IntCounter();
+		Counter<Integer> c1 = new Counter<Integer>();
+		Counter<Integer> c2 = new Counter<Integer>();
 
 		for (int w : fbWords) {
 			String word = wordIndexer.getObject(w);
@@ -128,7 +128,6 @@ public class WordCountBox {
 		double cnt_sum_in_coll = indexReader.getSumTotalTermFreq(IndexFieldName.CONTENT);
 
 		WordCountBox ret = new WordCountBox(docWordCounts, collWordCounts, cnt_sum_in_coll, docFreqs, indexReader.maxDoc(), docWords);
-
 		return ret;
 	}
 

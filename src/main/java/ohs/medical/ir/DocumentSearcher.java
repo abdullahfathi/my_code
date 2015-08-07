@@ -100,12 +100,6 @@ public class DocumentSearcher {
 		System.out.println("process ends.");
 	}
 
-	public static SparseVector search(SparseVector queryModel, Indexer<String> wordIndexer, IndexSearcher indexSearcher, int top_k)
-			throws Exception {
-		Query q = AnalyzerUtils.getQuery(VectorUtils.toCounter(queryModel, wordIndexer));
-		return search(q, indexSearcher, top_k);
-	}
-
 	public static SparseVector search(Query query, IndexSearcher indexSearcher, int top_k) throws Exception {
 		TopDocs topDocs = indexSearcher.search(query, top_k);
 		int num_docs = topDocs.scoreDocs.length;
@@ -118,6 +112,12 @@ public class DocumentSearcher {
 		ret.summation();
 		ret.sortByIndex();
 		return ret;
+	}
+
+	public static SparseVector search(SparseVector queryModel, Indexer<String> wordIndexer, IndexSearcher indexSearcher, int top_k)
+			throws Exception {
+		Query q = AnalyzerUtils.getQuery(VectorUtils.toCounter(queryModel, wordIndexer));
+		return search(q, indexSearcher, top_k);
 	}
 
 	private QueryParser queryParser;

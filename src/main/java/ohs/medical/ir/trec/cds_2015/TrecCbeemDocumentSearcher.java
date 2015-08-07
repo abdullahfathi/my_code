@@ -39,8 +39,6 @@ public class TrecCbeemDocumentSearcher {
 
 	private IndexSearcher[] indexSearchers;
 
-	private IndexSearcher wikiIndexSearcher;
-
 	private Analyzer analyzer;
 
 	private int num_colls;
@@ -61,23 +59,18 @@ public class TrecCbeemDocumentSearcher {
 
 	private boolean makeLog = false;
 
-	private WikiQueryExpander wikiQueryExpander;
-
 	private AbbrQueryExpander abbrQueryExpander;
 
 	public TrecCbeemDocumentSearcher(IndexSearcher[] indexSearchers, DenseVector[] docPriorData, HyperParameter hyperParameter,
-			Analyzer analyzer, IndexSearcher wikiIndexSearcher, boolean makeLog) throws Exception {
+			Analyzer analyzer, boolean makeLog) throws Exception {
 		super();
 		this.indexSearchers = indexSearchers;
 		this.collDocPriors = docPriorData;
 		this.hyperParam = hyperParameter;
 		this.analyzer = analyzer;
-		this.wikiIndexSearcher = wikiIndexSearcher;
 		this.makeLog = makeLog;
 
 		num_colls = indexSearchers.length;
-
-		wikiQueryExpander = new WikiQueryExpander(wikiIndexSearcher, analyzer, true, 2000, 0.5, 20, 100);
 
 		abbrQueryExpander = new AbbrQueryExpander(analyzer, MIRPath.ABBREVIATION_FILTERED_FILE);
 	}
@@ -339,8 +332,6 @@ public class TrecCbeemDocumentSearcher {
 		ArrayMath.normalize(mixture_for_each_qm);
 
 		SparseVector expQueryModel = VectorMath.addAfterScale(new Vector[] { queryModel, cbeem }, mixture_for_each_qm);
-		expQueryModel.removeZeros();
-		expQueryModel.normalize();
 
 		// SparseVector ret = scoreDocuments(colId, expQueryModel);
 

@@ -95,10 +95,10 @@ public class DocumentIndexer {
 		// di.indexTrecCds();
 		// di.indexClefEHealth();
 		// di.indexOhsumed();
-		di.indexTrecGenomics();
+//		di.indexTrecGenomics();
 
 		// di.indexWiki();
-		// di.makeDocumentIdMap();
+		di.makeDocumentIdMap();
 
 		System.out.println("process ends.");
 	}
@@ -355,7 +355,7 @@ public class DocumentIndexer {
 		String[] docMapFileNames = MIRPath.DocIdMapFileNames;
 
 		for (int i = 0; i < indexDirNames.length; i++) {
-			if (i != 0) {
+			if (i != 3) {
 				continue;
 			}
 			String indexDirName = indexDirNames[i];

@@ -22,7 +22,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-public class TrecCdsQuery implements BaseQuery {
+public class TrecGenomicsQuery implements BaseQuery {
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
@@ -41,25 +41,16 @@ public class TrecCdsQuery implements BaseQuery {
 
 	private String description;
 
-	private String summary;
-
-	private String type;
-
 	private Query luceneQuery;
 
 	private SparseVector queryModel;
 
-	private String diagnosis;
-
 	private List<Integer> words;
 
-	public TrecCdsQuery(String id, String description, String summary, String type, String diagnosis) {
+	public TrecGenomicsQuery(String id, String description) {
 		super();
 		this.id = id;
 		this.description = description;
-		this.summary = summary;
-		this.type = type;
-		this.diagnosis = diagnosis;
 	}
 
 	@Override
@@ -70,7 +61,7 @@ public class TrecCdsQuery implements BaseQuery {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		TrecCdsQuery other = (TrecCdsQuery) obj;
+		TrecGenomicsQuery other = (TrecGenomicsQuery) obj;
 		if (description == null) {
 			if (other.description != null)
 				return false;
@@ -80,16 +71,6 @@ public class TrecCdsQuery implements BaseQuery {
 			if (other.id != null)
 				return false;
 		} else if (!id.equals(other.id))
-			return false;
-		if (summary == null) {
-			if (other.summary != null)
-				return false;
-		} else if (!summary.equals(other.summary))
-			return false;
-		if (type == null) {
-			if (other.type != null)
-				return false;
-		} else if (!type.equals(other.type))
 			return false;
 		return true;
 	}
@@ -114,15 +95,8 @@ public class TrecCdsQuery implements BaseQuery {
 
 	public String getSearchText() {
 		String ret = description;
-		if (diagnosis != null) {
-			ret = ret + "\n" + diagnosis;
-		}
 		ret = ret.replaceAll("[\\p{Punct}]+", " ");
 		return ret.trim();
-	}
-
-	public String getType() {
-		return type;
 	}
 
 	@Override
@@ -131,8 +105,6 @@ public class TrecCdsQuery implements BaseQuery {
 		int result = 1;
 		result = prime * result + ((description == null) ? 0 : description.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result + ((summary == null) ? 0 : summary.hashCode());
-		result = prime * result + ((type == null) ? 0 : type.hashCode());
 		return result;
 	}
 
@@ -153,10 +125,7 @@ public class TrecCdsQuery implements BaseQuery {
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append(String.format("qid:\t%s\n", id));
-		sb.append(String.format("type:\t%s\n", type));
 		sb.append(String.format("description:\t%s\n", description));
-		sb.append(String.format("summary:\t%s\n", summary));
-		sb.append(String.format("diagnosis:\t%s", diagnosis));
 		return sb.toString();
 	}
 }

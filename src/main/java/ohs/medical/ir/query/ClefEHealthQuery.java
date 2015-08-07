@@ -108,6 +108,11 @@ public class ClefEHealthQuery implements BaseQuery {
 	}
 
 	@Override
+	public List<Integer> getQueryWords() {
+		return words;
+	}
+
+	@Override
 	public String getSearchText() {
 		String ret = title + "\n" + description;
 		ret = ret.replaceAll("[\\p{Punct}]+", " ");
@@ -116,11 +121,6 @@ public class ClefEHealthQuery implements BaseQuery {
 
 	public String getTitle() {
 		return title;
-	}
-
-	@Override
-	public List<Integer> getQueryWords() {
-		return words;
 	}
 
 	@Override

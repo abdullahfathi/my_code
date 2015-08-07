@@ -25,6 +25,30 @@ import org.apache.lucene.search.IndexSearcher;
 
 public class AbbreviationCollector {
 
+	public static String capitalize(String s) {
+		String[] parts = s.split(" ");
+		StringBuffer sb = new StringBuffer();
+
+		for (int i = 0; i < parts.length; i++) {
+			String part = parts[i];
+			part = Character.toUpperCase(part.charAt(0)) + part.substring(1).toLowerCase();
+			sb.append(part + " ");
+		}
+		return sb.toString().trim();
+	}
+
+	// public static void extractContext() {
+	// TextFileReader reader = new TextFileReader(new
+	// File(EHPath.ABBREVIATION_FILE));
+	// while (reader.hasNext()) {
+	// String[] parts = reader.next().split("\t");
+	// String shortForm = parts[0];
+	// String longForm = parts[1].toLowerCase();
+	// int indexId = Integer.parseInt(parts[2]);
+	// }
+	// reader.close();
+	// }
+
 	public static void extract() throws Exception {
 		System.out.println("extract abbreviations.");
 
@@ -97,18 +121,6 @@ public class AbbreviationCollector {
 		}
 
 	}
-
-	// public static void extractContext() {
-	// TextFileReader reader = new TextFileReader(new
-	// File(EHPath.ABBREVIATION_FILE));
-	// while (reader.hasNext()) {
-	// String[] parts = reader.next().split("\t");
-	// String shortForm = parts[0];
-	// String longForm = parts[1].toLowerCase();
-	// int indexId = Integer.parseInt(parts[2]);
-	// }
-	// reader.close();
-	// }
 
 	public static void filter() {
 		TextFileReader reader = new TextFileReader(MIRPath.ABBREVIATION_GROUP_FILE);
@@ -224,18 +236,6 @@ public class AbbreviationCollector {
 			}
 		}
 		return ret;
-	}
-
-	public static String capitalize(String s) {
-		String[] parts = s.split(" ");
-		StringBuffer sb = new StringBuffer();
-
-		for (int i = 0; i < parts.length; i++) {
-			String part = parts[i];
-			part = Character.toUpperCase(part.charAt(0)) + part.substring(1).toLowerCase();
-			sb.append(part + " ");
-		}
-		return sb.toString().trim();
 	}
 
 	public static void group() {

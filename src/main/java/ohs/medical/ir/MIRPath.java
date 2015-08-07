@@ -221,6 +221,12 @@ public class MIRPath {
 
 	public static final String TREC_GENOMICS_VOCABULARY_FILE = TREC_GENOMICS_DIR + "vocabulary.txt";
 
+	public static final String TREC_GENOMICS_QUERY_2007_FILE = TREC_GENOMICS_QUERY_DIR + "2007topics.txt";
+
+	public static final String TREC_GENOMICS_RELEVANCE_JUDGE_2007_FILE = TREC_GENOMICS_QUERY_2007_DIR + "trecgen2007.all.judgments.tsv.txt";
+
+	public static final String TREC_GENOMICS_DOCUMENT_ID_MAP_FILE = TREC_GENOMICS_DIR + "document_id_map.txt";
+
 	/*
 	 * OHSUMED
 	 */
@@ -276,8 +282,8 @@ public class MIRPath {
 	// public static String[] IndexDirNames = { MIRPath.TREC_CDS_INDEX_DIR,
 	// MIRPath.CLEF_EHEALTH_INDEX_DIR, MIRPath.OHSUMED_INDEX_DIR};
 
-	public static final String[] IndexDirNames = { TREC_CDS_INDEX_DIR, CLEF_EHEALTH_INDEX_DIR, OHSUMED_INDEX_DIR, WIKI_INDEX_DIR,
-			TREC_GENOMICS_INDEX_DIR };
+	public static final String[] IndexDirNames = { TREC_CDS_INDEX_DIR, CLEF_EHEALTH_INDEX_DIR, OHSUMED_INDEX_DIR, TREC_GENOMICS_INDEX_DIR,
+			WIKI_INDEX_DIR };
 
 	public static final String[] ResultDirNames = { TREC_CDS_OUTPUT_RESULT_DIR, CLEF_EHEALTH_OUTPUT_RESULT_DIR, OHSUMED_OUTPUT_RESULT_DIR };
 
@@ -290,13 +296,13 @@ public class MIRPath {
 			OHSUMED_RELEVANCE_JUDGE_FILE };
 
 	public static final String[] DocIdMapFileNames = { TREC_CDS_DOCUMENT_ID_MAP_FILE, CLEF_EHEALTH_DOCUMENT_ID_MAP_FIE,
-			OHSUMED_DOCUMENT_ID_MAP_FILE };
+			OHSUMED_DOCUMENT_ID_MAP_FILE, TREC_GENOMICS_DOCUMENT_ID_MAP_FILE };
 
 	public static final String[] AbbrFileNames = { TREC_CDS_ABBREVIATION_FILE, CLEF_EHEALTH_ABBREVIATION_FILE, OHSUMED_ABBREVIATION_FILE };
 
-	public static final String[] CollNames = { "TREC CDS", "CLEF eHealth", "OHSUMED", "WIKI" };
+	public static final String[] CollNames = { "TREC CDS", "CLEF eHealth", "OHSUMED", "TREC GENOMICS", "WIKI" };
 
 	public static final String[] VocFileNames = { TREC_CDS_VOCABULARY_FILE, CLEF_EHEALTH_VOCABULARY_FILE, OHSUMED_VOCABULARY_FILE,
-			WIKI_VOCABULARY_FILE, TREC_GENOMICS_VOCABULARY_FILE };
+			TREC_GENOMICS_VOCABULARY_FILE, WIKI_VOCABULARY_FILE };
 
 }

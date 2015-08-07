@@ -21,8 +21,8 @@ public class DataReader {
 	public static void main(String[] args) {
 		System.out.println("process begins.");
 
-		// List<Organization> orgs = readOrganizations(ENTPath.BASE_ORG_NAME_FILE);
-		List<Organization> orgs2 = readOrganizationHistories(ENTPath.BASE_ORG_HISTORY_FILE);
+		List<Organization> orgs = readOrganizations(ENTPath.BASE_ORG_NAME_FILE);
+		// List<Organization> orgs2 = readOrganizationHistories(ENTPath.BASE_ORG_HISTORY_FILE);
 
 		System.out.println("process ends.");
 	}
@@ -242,10 +242,12 @@ public class DataReader {
 			String engName = parts[4].trim();
 			BilingualText orgName = new BilingualText(korName, engName);
 
-			String korAbbrs = parts[5];
-			String engAbbrs = parts[6];
-			String year = parts[7];
-			String homepage = parts[8];
+			String korVariants = parts[5];
+
+			String korAbbrs = parts[6];
+			String engAbbrs = parts[7];
+			String year = parts[8];
+			String homepage = parts[9];
 
 			Organization org = new Organization(id, null, orgName);
 			org.setHomepage(homepage);

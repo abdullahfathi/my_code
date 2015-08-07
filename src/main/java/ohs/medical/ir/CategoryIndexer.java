@@ -36,6 +36,8 @@ import org.apache.lucene.util.Version;
  */
 public class CategoryIndexer {
 
+	public static final int ramSize = 5000;
+
 	/**
 	 * @param args
 	 * @throws Exception
@@ -47,8 +49,6 @@ public class CategoryIndexer {
 		// id.index();
 		System.out.println("process ends.");
 	}
-
-	public static final int ramSize = 5000;
 
 	public CategoryIndexer() {
 

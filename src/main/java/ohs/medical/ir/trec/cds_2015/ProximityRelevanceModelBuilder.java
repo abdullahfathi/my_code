@@ -18,6 +18,7 @@ import ohs.types.CounterMap;
 import ohs.types.DeepListMap;
 import ohs.types.Indexer;
 import ohs.types.ListMap;
+import ohs.types.common.StrCounter;
 
 public class ProximityRelevanceModelBuilder {
 
@@ -108,8 +109,8 @@ public class ProximityRelevanceModelBuilder {
 						start = 0;
 					}
 
-					if (end >= words.size()) {
-						end = words.size() - 1;
+					if (end > words.size()) {
+						end = words.size();
 					}
 
 					for (int context_loc = start; context_loc < end; context_loc++) {
@@ -146,32 +147,36 @@ public class ProximityRelevanceModelBuilder {
 
 			gcm.incrementAll(cm);
 
-			double mixture = 0.5;
-			double cnt_sum_in_coll = wcb.getCountSumInCollection();
+			// double mixture = 0.5;
+			// double cnt_sum_in_coll = wcb.getCountSumInCollection();
+
+			SparseVector docFreqs = wcb.getCollDocFreqs();
+			double num_docs = wcb.getNumDocsInCollection();
+
+			double cocnt_sum = cm.totalCount();
 
 			for (int qw : cm.keySet()) {
 				Counter<Integer> cws = cm.getCounter(qw);
+				Counter<Integer> wordWeights = new Counter<Integer>();
+				double df1 = docFreqs.valueAlways(qw);
+				double idf1 = Math.log((num_docs + 1) / df1);
+
 				for (int cw : cws.keySet()) {
-					double tran_prob = cws.getProbability(cw);
-					double prob_w_in_coll = wcb.getCollDocFreqs().valueAlways(cw) / cnt_sum_in_coll;
-					double cnt_w_in_doc = wordCounts.valueAlways(qw);
-					double cnt_sum_in_doc = wordCounts.sum();
-					double mixture_for_coll = dirichlet_prior / (cnt_sum_in_doc + dirichlet_prior);
-					double prob_w_in_doc = cnt_w_in_doc / cnt_sum_in_doc;
-					prob_w_in_doc = (1 - mixture_for_coll) * prob_w_in_doc + mixture_for_coll * prob_w_in_coll;
-					double word_weight = (1 - mixture) * tran_prob + mixture * prob_w_in_doc;
-
-					// double word_weight = prob;
-
-					cws.setCount(cw, word_weight);
+					double cocnt = cws.getCount(cw) / cocnt_sum;
+					double df2 = docFreqs.valueAlways(cw);
+					double idf2 = Math.log((num_docs + 1) / df2);
+					double weight = idf1 * idf2 * cocnt;
+					wordWeights.setCount(cw, weight);
 				}
+				cm.setCounter(qw, wordWeights);
 			}
 
-			// System.out.println(VectorUtils.toCounterMap(cm1, wordIndexer, wordIndexer));
+			// System.out.println(VectorUtils.toCounterMap(cm, wordIndexer, wordIndexer));
 
+			// cm.normalize();
 			cm = cm.invert();
 
-			// System.out.println(VectorUtils.toCounterMap(cm1, wordIndexer, wordIndexer));
+			// System.out.println(VectorUtils.toCounterMap(cm, wordIndexer, wordIndexer));
 
 			// cm1.normalize();
 
@@ -179,19 +184,19 @@ public class ProximityRelevanceModelBuilder {
 			docWordProximities.put(docId, sm);
 		}
 
-		double cnt_sum_in_coll = wcb.getCountSumInCollection();
-		double mixture_for_coll = 0.5;
-
-		for (int qw : gcm.keySet()) {
-			Counter<Integer> cws = gcm.getCounter(qw);
-			for (int cw : cws.keySet()) {
-				double prob = cws.getProbability(cw);
-				double prob_w_in_coll = wcb.getCollDocFreqs().valueAlways(cw) / cnt_sum_in_coll;
-				prob = (1 - mixture_for_coll) * prob + mixture_for_coll * prob_w_in_coll;
-				cws.setCount(cw, prob);
-			}
-		}
-		gcm = gcm.invert();
+		// double cnt_sum_in_coll = wcb.getCountSumInCollection();
+		// double mixture_for_coll = 0.5;
+		//
+		// for (int qw : gcm.keySet()) {
+		// Counter<Integer> cws = gcm.getCounter(qw);
+		// for (int cw : cws.keySet()) {
+		// double prob = cws.getProbability(cw);
+		// double prob_w_in_coll = wcb.getCollDocFreqs().valueAlways(cw) / cnt_sum_in_coll;
+		// prob = (1 - mixture_for_coll) * prob + mixture_for_coll * prob_w_in_coll;
+		// cws.setCount(cw, prob);
+		// }
+		// }
+		// gcm = gcm.invert();
 		fbWordProximities = VectorUtils.toSpasreMatrix(gcm);
 
 	}
@@ -207,8 +212,8 @@ public class ProximityRelevanceModelBuilder {
 		SparseVector ret = new SparseVector(wcb.getCollWordCounts().size());
 
 		for (int j = 0; j < wcb.getCollWordCounts().size(); j++) {
-			int qw = wcb.getCollWordCounts().indexAtLoc(j);
-			double cnt_w_in_coll = wcb.getCollWordCounts().valueAlways(qw);
+			int w = wcb.getCollWordCounts().indexAtLoc(j);
+			double cnt_w_in_coll = wcb.getCollWordCounts().valueAlways(w);
 			double prob_w_in_coll = cnt_w_in_coll / wcb.getCountSumInCollection();
 
 			for (int k = 0; k < docScores.size() && k < num_fb_docs; k++) {
@@ -217,15 +222,15 @@ public class ProximityRelevanceModelBuilder {
 				double doc_weight = docScores.valueAtLoc(k);
 				double local_weight = 0;
 				if (wordProxes != null) {
-					SparseVector localProxes = wordProxes.rowAlways(qw);
-					local_weight = localProxes.sum();
+					SparseVector localProxes = wordProxes.rowAlways(w);
+					local_weight = localProxes.sum() / localProxes.size();
 				}
 				local_weight = Math.exp(local_weight);
 
 				// SparseVector fbProxes = fbWordProximities.rowAlways(qw);
 
 				SparseVector wordCounts = wcb.getDocWordCounts().rowAlways(docId);
-				double cnt_w_in_doc = wordCounts.valueAlways(qw);
+				double cnt_w_in_doc = wordCounts.valueAlways(w);
 				double cnt_sum_in_doc = wordCounts.sum();
 				double mixture_for_coll = dirichlet_prior / (cnt_sum_in_doc + dirichlet_prior);
 				double prob_w_in_doc = cnt_w_in_doc / cnt_sum_in_doc;
@@ -236,7 +241,7 @@ public class ProximityRelevanceModelBuilder {
 				double prob_w_in_fb_model = doc_weight * prob_w_in_doc * doc_prior * local_weight;
 
 				if (prob_w_in_fb_model > 0) {
-					ret.incrementAtLoc(j, qw, prob_w_in_fb_model);
+					ret.incrementAtLoc(j, w, prob_w_in_fb_model);
 				}
 			}
 		}

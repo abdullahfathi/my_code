@@ -1,14 +1,18 @@
 package ohs.medical.ir.query;
 
+import java.util.List;
+
 import ohs.io.TextFileReader;
+import ohs.medical.ir.MIRPath;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.common.StrBidMap;
 import ohs.types.common.StrCounterMap;
 
 public class RelevanceReader {
+
 	public static CounterMap<String, String> filter(CounterMap<String, String> relevanceData, StrBidMap docIdMap) {
-		StrCounterMap ret = new StrCounterMap();
+		CounterMap<String, String> ret = new CounterMap<String, String>();
 
 		int num_pairs = 0;
 		int num_result_pairs = 0;
@@ -56,8 +60,17 @@ public class RelevanceReader {
 		return ret;
 	}
 
+	public static void main(String[] args) throws Exception {
+
+		{
+			CounterMap<String, String> relData = readTrecGenomicsRelevances(MIRPath.TREC_GENOMICS_RELEVANCE_JUDGE_2007_FILE);
+			System.out.println(relData);
+		}
+
+	}
+
 	public static CounterMap<String, String> readClefEHealthRelevances(String fileName) {
-		StrCounterMap ret = new StrCounterMap();
+		CounterMap<String, String> ret = new CounterMap<String, String>();
 		TextFileReader reader = new TextFileReader(fileName);
 		while (reader.hasNext()) {
 			String line = reader.next();
@@ -76,7 +89,7 @@ public class RelevanceReader {
 	}
 
 	public static CounterMap<String, String> readOhsumedRelevances(String fileName) {
-		StrCounterMap ret = new StrCounterMap();
+		CounterMap<String, String> ret = new CounterMap<String, String>();
 		TextFileReader reader = new TextFileReader(fileName);
 		while (reader.hasNext()) {
 			String line = reader.next();
@@ -117,7 +130,7 @@ public class RelevanceReader {
 	}
 
 	public static CounterMap<String, String> readTrecCdsRelevances(String fileName) {
-		StrCounterMap ret = new StrCounterMap();
+		CounterMap<String, String> ret = new CounterMap<String, String>();
 		TextFileReader reader = new TextFileReader(fileName);
 		while (reader.hasNext()) {
 			String line = reader.next();
@@ -126,6 +139,28 @@ public class RelevanceReader {
 			String qId = parts[0];
 			String docId = parts[2];
 			double relevance = Double.parseDouble(parts[3]);
+			// if (relevance > 0) {
+			ret.setCount(qId, docId, relevance);
+			// }
+		}
+		reader.close();
+		return ret;
+	}
+
+	public static CounterMap<String, String> readTrecGenomicsRelevances(String fileName) {
+		CounterMap<String, String> ret = new CounterMap<String, String>();
+		TextFileReader reader = new TextFileReader(fileName);
+		while (reader.hasNext()) {
+			String line = reader.next();
+			if (line.startsWith("#")) {
+				continue;
+			}
+
+			String[] parts = line.split("\t");
+
+			String qId = parts[0];
+			String docId = parts[1];
+			double relevance = parts[4].equals("RELEVANT") ? 1 : 0;
 			// if (relevance > 0) {
 			ret.setCount(qId, docId, relevance);
 			// }

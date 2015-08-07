@@ -251,6 +251,29 @@ public class SearchLogAnalyzer {
 
 	}
 
+	private String getResultMatrix(String[] collNames, double[][] mat) {
+		int row = mat.length;
+		int col = mat[0].length;
+
+		StringBuffer sb = new StringBuffer("Col");
+		for (int i = 0; i < col; i++) {
+			sb.append("\t" + collNames[i]);
+		}
+		sb.append("\n");
+
+		NumberFormat nf = NumberFormat.getInstance();
+		nf.setMinimumFractionDigits(4);
+
+		for (int i = 0; i < row; i++) {
+			sb.append(collNames[i]);
+			for (int j = 0; j < col; j++) {
+				sb.append(String.format("\t%s", nf.format(mat[i][j])));
+			}
+			sb.append("\n");
+		}
+		return sb.toString().trim();
+	}
+
 	public void makeQueryDocPairs() throws Exception {
 		String[] queryFileNames = MIRPath.QueryFileNames;
 
@@ -352,29 +375,6 @@ public class SearchLogAnalyzer {
 			writer.close();
 		}
 
-	}
-
-	private String getResultMatrix(String[] collNames, double[][] mat) {
-		int row = mat.length;
-		int col = mat[0].length;
-
-		StringBuffer sb = new StringBuffer("Col");
-		for (int i = 0; i < col; i++) {
-			sb.append("\t" + collNames[i]);
-		}
-		sb.append("\n");
-
-		NumberFormat nf = NumberFormat.getInstance();
-		nf.setMinimumFractionDigits(4);
-
-		for (int i = 0; i < row; i++) {
-			sb.append(collNames[i]);
-			for (int j = 0; j < col; j++) {
-				sb.append(String.format("\t%s", nf.format(mat[i][j])));
-			}
-			sb.append("\n");
-		}
-		return sb.toString().trim();
 	}
 
 }
