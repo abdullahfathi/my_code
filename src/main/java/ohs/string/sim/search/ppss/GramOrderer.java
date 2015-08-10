@@ -18,7 +18,7 @@ import ohs.types.common.IntPair;
  * 
  *         A class of determining global gram orders
  */
-public class GramSorter implements Serializable {
+public class GramOrderer implements Serializable {
 
 	private class PositionComparator implements Comparator<IntPair>, Serializable {
 
@@ -34,15 +34,30 @@ public class GramSorter implements Serializable {
 
 	private boolean isAscendingOrder = true;
 
-	public GramSorter() {
+	public GramOrderer() {
+		
+	}
+
+	public void determineGramOrders() {
+		// if (allGrams != null) {
+		// computeGramWeights(allGrams, useTFIDF);
+		// }
+
+		List<String> grams = gramWeights.getSortedKeys();
+
+		if (isAscendingOrder) {
+			Collections.reverse(grams);
+		}
+
+		gramOrders = new HashMap<String, Integer>();
+
+		for (int i = 0; i < grams.size(); i++) {
+			gramOrders.put(grams.get(i), i);
+		}
 	}
 
 	public Map<String, Integer> getGramOrders() {
 		return gramOrders;
-	}
-
-	public Counter<String> getGramWeights() {
-		return gramWeights;
 	}
 
 	// private void computeGramWeights(Gram[][] allGrams, boolean useTFIDF) {
@@ -104,6 +119,10 @@ public class GramSorter implements Serializable {
 	// }
 	// }
 
+	public Counter<String> getGramWeights() {
+		return gramWeights;
+	}
+
 	/**
 	 * @param grams
 	 * 
@@ -144,23 +163,5 @@ public class GramSorter implements Serializable {
 
 	public void setIsAscendingOrder(boolean isAscendingOrder) {
 		this.isAscendingOrder = isAscendingOrder;
-	}
-
-	public void sortGrams() {
-		// if (allGrams != null) {
-		// computeGramWeights(allGrams, useTFIDF);
-		// }
-
-		List<String> grams = gramWeights.getSortedKeys();
-
-		if (isAscendingOrder) {
-			Collections.reverse(grams);
-		}
-
-		gramOrders = new HashMap<String, Integer>();
-
-		for (int i = 0; i < grams.size(); i++) {
-			gramOrders.put(grams.get(i), i);
-		}
 	}
 }

@@ -32,20 +32,25 @@ public class GramUtils {
 		return grams.length + q - 1;
 	}
 
-	public static ListMap<Type, Integer> groupByTypes(Gram[] grams) {
+	public static ListMap<Type, Integer> groupGramsByTypes(Gram[] grams, boolean allowPivotAsPrefix) {
 		ListMap<Type, Integer> ret = new ListMap<Type, Integer>();
 		for (int i = 0; i < grams.length; i++) {
 			Gram gram = grams[i];
 			Type type = gram.getType();
-			if (type == Type.PREFIX || type == Type.PIVOT) {
-				if (type == Type.PREFIX) {
-					ret.put(type, i);
-				} else if (type == Type.PIVOT) {
-					ret.put(type, i);
-					ret.put(Type.PREFIX, i);
-				}
-			} else {
+
+			if (!allowPivotAsPrefix) {
 				ret.put(type, i);
+			} else {
+				if (type == Type.PREFIX || type == Type.PIVOT) {
+					if (type == Type.PREFIX) {
+						ret.put(type, i);
+					} else if (type == Type.PIVOT) {
+						ret.put(type, i);
+						ret.put(Type.PREFIX, i);
+					}
+				} else {
+					ret.put(type, i);
+				}
 			}
 		}
 		return ret;

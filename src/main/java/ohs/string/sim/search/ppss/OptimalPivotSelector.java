@@ -126,13 +126,14 @@ public class OptimalPivotSelector extends PivotSelector {
 
 		prefixes = new Gram[prefix_size];
 
-		ListMap<Type, Integer> groups = GramUtils.groupByTypes(grams);
+		ListMap<Type, Integer> typeLocs = GramUtils.groupGramsByTypes(grams, true);
 
-		List<Integer> prefixLocs = groups.get(Type.PREFIX);
+		List<Integer> prefixLocs = typeLocs.get(Type.PREFIX);
 
 		if (prefixLocs.size() < prefix_size) {
-			for (int i = 0; i < prefixLocs.size(); i++) {
-				int loc = prefixLocs.get(i);
+			List<Integer> disjointPrefixLocs = selectDisjointPrefixLocs();
+			for (int i = 0; i < disjointPrefixLocs.size(); i++) {
+				int loc = disjointPrefixLocs.get(i);
 				grams[loc].setType(Type.PIVOT);
 			}
 		} else {
@@ -173,6 +174,8 @@ public class OptimalPivotSelector extends PivotSelector {
 				prefixes[loc].setType(Type.PIVOT);
 			}
 		}
+
+		sortGramsByTypes();
 
 		// System.out.println(GramUtils.toString(grams));
 

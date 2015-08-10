@@ -27,7 +27,11 @@ public class StringVerifier implements Serializable {
 		this.tau = tau;
 	}
 
-	public double computeEditDistance(String s, String t, boolean findMinValue) {
+	public double getEditDistance() {
+		return ed;
+	}
+
+	public double getEditDistance(String s, String t) {
 		int n = s.length();
 		int m = t.length();
 		int ed[][]; // matrix
@@ -70,15 +74,11 @@ public class StringVerifier implements Serializable {
 			}
 		}
 
-		int ret = findMinValue ? min : ed[n][m];
+		int ret = ed[n][m];
 
 		// System.out.println(show(s, t, ed) + "\n\n");
 
 		return ret;
-	}
-
-	public double getEditDistance() {
-		return ed;
 	}
 
 	public double getNumErrors() {
@@ -141,14 +141,14 @@ public class StringVerifier implements Serializable {
 			}
 
 			String sub_r = r.substring(start, end);
-			num_errors += computeEditDistance(g, sub_r, true);
+			num_errors += getEditDistance(g, sub_r);
 
 			if (num_errors > tau) {
 				return false;
 			}
 		}
 
-		ed = computeEditDistance(s, r, false);
+		ed = getEditDistance(s, r);
 
 		if (ed <= tau) {
 			return true;

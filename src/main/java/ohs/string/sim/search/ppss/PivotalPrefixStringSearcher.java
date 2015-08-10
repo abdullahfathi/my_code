@@ -62,7 +62,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 			strings2.add(new StringRecord(i, orgNames.get(i).getKorean()));
 		}
 
-		GramSorter gramSorter = new GramSorter();
+		GramOrderer gramOrderer = new GramOrderer();
 
 		{
 			List<StringRecord> ss = new ArrayList<StringRecord>();
@@ -77,15 +77,15 @@ public class PivotalPrefixStringSearcher implements Serializable {
 
 			Counter<String> gramWeights1 = GramWeighter.compute(new GramGenerator(2), ss);
 			System.out.println(gramWeights1);
-			gramSorter.setGramWeights(gramWeights1);
-			// gramSorter.setIsAscendingOrder(false);
+			gramOrderer.setGramWeights(gramWeights1);
+			// gramOrderer.setIsAscendingOrder(false);
 		}
 
 		int q = 2;
-		int tau = 4;
+		int tau = 3;
 
 		PivotalPrefixStringSearcher ppss = new PivotalPrefixStringSearcher(q, tau, true);
-		ppss.setGramSorter(gramSorter);
+		ppss.setGramSorter(gramOrderer);
 		ppss.index(strings);
 		// ppss.write(ENTPath.PPSS_INDEX_FILE);
 		// ppss.writeObject(ENTPath.PPSS_OBJECT_FILE);
@@ -146,13 +146,13 @@ public class PivotalPrefixStringSearcher implements Serializable {
 			strings.add(new StringRecord(i, strs[i]));
 		}
 
-		GramSorter gramSorter = new GramSorter();
+		GramOrderer gramOrderer = new GramOrderer();
 
 		int q = 2;
 		int tau = 2;
 
 		PivotalPrefixStringSearcher ppss = new PivotalPrefixStringSearcher(q, tau, true);
-		ppss.setGramSorter(gramSorter);
+		ppss.setGramSorter(gramOrderer);
 		ppss.index(strings);
 		Counter<StringRecord> res = ppss.search(s);
 
@@ -171,7 +171,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 			strings2.add(new StringRecord(i, orgNames.get(i).getKorean()));
 		}
 
-		// GramSorter gramSorter = new GramSorter();
+		// GramOrderer gramOrderer = new GramOrderer();
 
 		// {
 		// List<StringRecord> ss = new ArrayList<StringRecord>();
@@ -186,14 +186,14 @@ public class PivotalPrefixStringSearcher implements Serializable {
 		//
 		// Counter<String> gramWeights1 = GramWeighter.compute(new GramGenerator(2), ss);
 		// System.out.println(gramWeights1);
-		// gramSorter.setGramWeights(gramWeights1);
+		// gramOrderer.setGramWeights(gramWeights1);
 		// }
 
 		int q = 2;
-		int tau = 4;
+		int tau = 2;
 
 		PivotalPrefixStringSearcher ppss = new PivotalPrefixStringSearcher(q, tau, true);
-		// ppss.setGramSorter(gramSorter);
+		// ppss.setGramSorter(gramOrderer);
 		ppss.index(strings);
 		// ppss.write(ENTPath.PPSS_INDEX_FILE);
 		// ppss.writeObject(ENTPath.PPSS_OBJECT_FILE);
@@ -252,7 +252,6 @@ public class PivotalPrefixStringSearcher implements Serializable {
 			writer.write(sb.toString() + "\n\n");
 		}
 		writer.close();
-
 	}
 
 	private int q;
@@ -277,7 +276,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 
 	private StringVerifier stringVerifier;
 
-	private GramSorter gramSorter;
+	private GramOrderer gramOrderer;
 
 	private BidMap<StringRecord, Integer> idMap;
 
@@ -293,7 +292,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 
 		prefix_size = q * tau + 1;
 
-		this.gramSorter = new GramSorter();
+		this.gramOrderer = new GramOrderer();
 
 		gramGenerator = new GramGenerator(q);
 
@@ -355,8 +354,8 @@ public class PivotalPrefixStringSearcher implements Serializable {
 		return gramGenerator;
 	}
 
-	public GramSorter getGramSorter() {
-		return gramSorter;
+	public GramOrderer getGramSorter() {
+		return gramOrderer;
 	}
 
 	private Set<String> getIntersection(Set<String> a, Set<String> b) {
@@ -453,15 +452,15 @@ public class PivotalPrefixStringSearcher implements Serializable {
 			idMap.put(sr, sr.getId());
 		}
 
-		if (gramSorter.getGramWeights() == null) {
-			gramSorter.setGramWeights(GramWeighter.compute(allGrams));
+		if (gramOrderer.getGramWeights() == null) {
+			gramOrderer.setGramWeights(GramWeighter.compute(allGrams));
 		}
 
-		gramSorter.sortGrams();
-		gramOrders = gramSorter.getGramOrders();
+		gramOrderer.determineGramOrders();
+		gramOrders = gramOrderer.getGramOrders();
 
 		if (pivotSelector instanceof OptimalPivotSelector) {
-			((OptimalPivotSelector) pivotSelector).setGramWeights(gramSorter.getGramWeights());
+			((OptimalPivotSelector) pivotSelector).setGramWeights(gramOrderer.getGramWeights());
 		}
 
 		L = new GramInvertedIndex();
@@ -470,7 +469,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 			String s = ss.get(i).getString();
 			Gram[] grams = allGrams.get(i);
 
-			gramSorter.order(grams);
+			gramOrderer.order(grams);
 			pivotSelector.select(grams);
 
 			int len = s.length();
@@ -553,7 +552,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 		L = new GramInvertedIndex();
 		L.read(reader);
 
-		gramSorter = new GramSorter();
+		gramOrderer = new GramOrderer();
 		Counter<String> gramWeights = new Counter<String>();
 
 		num_read = GramUtils.getNumLinesToRead(reader);
@@ -564,8 +563,8 @@ public class PivotalPrefixStringSearcher implements Serializable {
 			gramWeights.setCount(parts[0], Double.parseDouble(parts[1]));
 		}
 
-		gramSorter.setGramWeights(gramWeights);
-		gramSorter.sortGrams();
+		gramOrderer.setGramWeights(gramWeights);
+		gramOrderer.determineGramOrders();
 	}
 
 	public void read(String fileName) throws Exception {
@@ -575,19 +574,19 @@ public class PivotalPrefixStringSearcher implements Serializable {
 	}
 
 	public Counter<StringRecord> search(String s) {
-		Gram[] grams = gramGenerator.generate(s.toLowerCase());
+		Gram[] sGrams = gramGenerator.generate(s.toLowerCase());
 
-		if (grams.length == 0) {
+		if (sGrams.length == 0) {
 			return new Counter<StringRecord>();
 		}
 
-		gramSorter.order(grams);
-		pivotSelector.select(grams);
+		gramOrderer.order(sGrams);
+		pivotSelector.select(sGrams);
 
-		ListMap<Type, Integer> groups = GramUtils.groupByTypes(grams);
-		Set<String> prefixesInS = getStringSet(grams, groups.get(Type.PREFIX));
-		Set<String> pivotsInS = getStringSet(grams, groups.get(Type.PIVOT));
-		Pair<String, Integer> lastPrefixInS = getLastPrefix(grams, groups);
+		ListMap<Type, Integer> typeLocs = GramUtils.groupGramsByTypes(sGrams, true);
+		Set<String> prefixesInS = getStringSet(sGrams, typeLocs.get(Type.PREFIX));
+		Set<String> pivotsInS = getStringSet(sGrams, typeLocs.get(Type.PIVOT));
+		Pair<String, Integer> lastPrefixInS = getLastPrefix(sGrams, typeLocs);
 
 		if (lastPrefixInS.getSecond() < 0) {
 			return new Counter<StringRecord>();
@@ -604,8 +603,8 @@ public class PivotalPrefixStringSearcher implements Serializable {
 			Type searchType = searchTypes[i];
 			Type indexType = indexTypes[i];
 
-			for (int loc : groups.get(searchType)) {
-				Gram gram = grams[loc];
+			for (int loc : typeLocs.get(searchType)) {
+				Gram gram = sGrams[loc];
 				String g = gram.getString();
 
 				GramPostings gp = L.get(g, false);
@@ -634,7 +633,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 					String r = ss.get(rid).getString();
 
 					Gram[] rGrams = allGrams.get(rid);
-					ListMap<Type, Integer> groupsInR = GramUtils.groupByTypes(rGrams);
+					ListMap<Type, Integer> groupsInR = GramUtils.groupGramsByTypes(rGrams, true);
 					Set<String> prefixesInR = getStringSet(rGrams, groupsInR.get(Type.PREFIX));
 					Set<String> pivotsInR = getStringSet(rGrams, groupsInR.get(Type.PIVOT));
 					Pair<String, Integer> lastPrefixInR = getLastPrefix(rGrams, groupsInR);
@@ -664,6 +663,8 @@ public class PivotalPrefixStringSearcher implements Serializable {
 			}
 		}
 
+		int num_candidates_after_search = C.size();
+
 		{
 			Set<String> ret = new HashSet<String>();
 			for (int id : C) {
@@ -681,9 +682,9 @@ public class PivotalPrefixStringSearcher implements Serializable {
 
 		for (int loc : C) {
 			String r = ss.get(loc).getString();
-//			if (stringVerifier.verify(s, grams, r)) {
-//				continue;
-//			}
+			if (stringVerifier.verify(s, sGrams, r)) {
+				continue;
+			}
 
 			double swScore = sw.getBestScore(s, r);
 			double min = Math.min(s.length(), r.length());
@@ -695,11 +696,13 @@ public class PivotalPrefixStringSearcher implements Serializable {
 			A.incrementCount(ss.get(loc), swScore);
 		}
 
+		int num_candidates_after_verfication = A.size();
+
 		return A;
 	}
 
-	public void setGramSorter(GramSorter gramSorter) {
-		this.gramSorter = gramSorter;
+	public void setGramSorter(GramOrderer gramOrderer) {
+		this.gramOrderer = gramOrderer;
 	}
 
 	public void setPivotSelector(PivotSelector pivotSelector) {
@@ -729,7 +732,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 
 		writer.write("\n\n");
 
-		Counter<String> gramWeights = gramSorter.getGramWeights();
+		Counter<String> gramWeights = gramOrderer.getGramWeights();
 
 		writer.write(String.format("## Gram Weights\t%d\n", gramWeights.size()));
 

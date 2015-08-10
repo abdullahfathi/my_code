@@ -21,7 +21,7 @@ import ohs.math.VectorUtils;
 import ohs.matrix.SparseVector;
 import ohs.string.sim.search.ppss.Gram;
 import ohs.string.sim.search.ppss.GramGenerator;
-import ohs.string.sim.search.ppss.GramSorter;
+import ohs.string.sim.search.ppss.GramOrderer;
 import ohs.string.sim.search.ppss.GramWeighter;
 import ohs.string.sim.search.ppss.PivotalPrefixStringSearcher;
 import ohs.string.sim.search.ppss.StringRecord;
@@ -64,45 +64,45 @@ public class OrganizationDisambiguationKernel implements Serializable {
 		// odk.createClassifiers();
 		// odk.write(ENTPath.ODK_FILE);
 
-//		{
-//			TextFileReader reader = new TextFileReader(ENTPath.PATENT_ORG_FILE_2);
-//			TextFileWriter writer = new TextFileWriter(ENTPath.ODK_OUTPUT_PATENT_FILE);
-//
-//			while (reader.hasNext()) {
-//				String line = reader.next();
-//				String[] parts = line.split("\t");
-//
-//				String korName = null;
-//				Counter<String> engNameCounts = new Counter<String>();
-//
-//				for (int i = 0; i < parts.length; i++) {
-//					String[] two = StrUtils.split2Two(":", parts[i]);
-//					String name = two[0];
-//					double cnt = Double.parseDouble(two[1]);
-//					if (i == 0) {
-//						korName = name;
-//					} else {
-//						engNameCounts.incrementCount(name, cnt);
-//					}
-//				}
-//
-//				BilingualText orgName = new BilingualText(korName, engNameCounts.argMax());
-//
-//				Counter<StringRecord> ret = odk.disambiguate(orgName);
-//
-//				List<StringRecord> keys = ret.getSortedKeys();
-//				int num_candidates = 10;
-//				StringBuffer sb = new StringBuffer(line);
-//				for (int i = 0; i < keys.size() && i < num_candidates; i++) {
-//					StringRecord sr = keys.get(i);
-//					double score = ret.getCount(sr);
-//					sb.append(String.format("\n%d\t%s\t%f", i + 1, sr, score));
-//				}
-//
-//				writer.write(sb.toString() + "\n\n");
-//			}
-//			writer.close();
-//		}
+		{
+			TextFileReader reader = new TextFileReader(ENTPath.PATENT_ORG_FILE_2);
+			TextFileWriter writer = new TextFileWriter(ENTPath.ODK_OUTPUT_PATENT_FILE);
+
+			while (reader.hasNext()) {
+				String line = reader.next();
+				String[] parts = line.split("\t");
+
+				String korName = null;
+				Counter<String> engNameCounts = new Counter<String>();
+
+				for (int i = 0; i < parts.length; i++) {
+					String[] two = StrUtils.split2Two(":", parts[i]);
+					String name = two[0];
+					double cnt = Double.parseDouble(two[1]);
+					if (i == 0) {
+						korName = name;
+					} else {
+						engNameCounts.incrementCount(name, cnt);
+					}
+				}
+
+				BilingualText orgName = new BilingualText(korName, engNameCounts.argMax());
+
+				Counter<StringRecord> ret = odk.disambiguate(orgName);
+
+				List<StringRecord> keys = ret.getSortedKeys();
+				int num_candidates = 10;
+				StringBuffer sb = new StringBuffer(line);
+				for (int i = 0; i < keys.size() && i < num_candidates; i++) {
+					StringRecord sr = keys.get(i);
+					double score = ret.getCount(sr);
+					sb.append(String.format("\n%d\t%s\t%f", i + 1, sr, score));
+				}
+
+				writer.write(sb.toString() + "\n\n");
+			}
+			writer.close();
+		}
 
 		{
 			TextFileWriter writer = new TextFileWriter(ENTPath.ODK_OUTPUT_PAPER_FILE);
@@ -256,7 +256,7 @@ public class OrganizationDisambiguationKernel implements Serializable {
 				}
 			}
 
-			GramSorter gramSorter = new GramSorter();
+			GramOrderer gramOrderer = new GramOrderer();
 
 			if (c != null) {
 				Counter<BilingualText> extOrgCounts = new Counter<BilingualText>();
@@ -278,11 +278,11 @@ public class OrganizationDisambiguationKernel implements Serializable {
 				}
 
 				Counter<String> gramWeights = GramWeighter.compute(new GramGenerator(q), ss);
-				gramSorter.setGramWeights(gramWeights);
+				gramOrderer.setGramWeights(gramWeights);
 			}
 
 			PivotalPrefixStringSearcher searcher = new PivotalPrefixStringSearcher(q, tau, true);
-			searcher.setGramSorter(gramSorter);
+			searcher.setGramSorter(gramOrderer);
 			searcher.index(srs);
 
 			searchers[i] = searcher;

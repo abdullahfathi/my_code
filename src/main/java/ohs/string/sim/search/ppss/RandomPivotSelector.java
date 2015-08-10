@@ -32,6 +32,8 @@ public class RandomPivotSelector extends PivotSelector {
 			grams[locs.get(i)].setType(Type.PIVOT);
 		}
 
+		sortGramsByTypes();
+
 		// StringBuffer sb = new StringBuffer();
 		//
 		// for (int i = 0; i < grams.length; i++) {
@@ -43,34 +45,34 @@ public class RandomPivotSelector extends PivotSelector {
 		// System.out.println(sb.toString() + "\n");
 	}
 
-	private List<Integer> selectDisjointPrefixLocs() {
-		List<Integer> ret = new ArrayList<Integer>();
-
-		int len = GramUtils.getStringLength(grams);
-
-		boolean[] visited = new boolean[len];
-
-		for (int i = 0; i < grams.length && i < prefix_size; i++) {
-			Gram gram = grams[i];
-			int start = gram.getStart();
-			int end = start + q;
-
-			boolean isUsed = false;
-
-			for (int j = start; j < end; j++) {
-				if (visited[j]) {
-					isUsed = true;
-				} else {
-					visited[j] = true;
-				}
-			}
-
-			if (isUsed) {
-				continue;
-			}
-			ret.add(i);
-		}
-		return ret;
-	}
+	// private List<Integer> selectDisjointPrefixLocs() {
+	// List<Integer> ret = new ArrayList<Integer>();
+	//
+	// int len = GramUtils.getStringLength(grams);
+	//
+	// boolean[] visited = new boolean[len];
+	//
+	// for (int i = 0; i < grams.length && i < prefix_size; i++) {
+	// Gram gram = grams[i];
+	// int start = gram.getStart();
+	// int end = start + q;
+	//
+	// boolean isUsed = false;
+	//
+	// for (int j = start; j < end; j++) {
+	// if (visited[j]) {
+	// isUsed = true;
+	// } else {
+	// visited[j] = true;
+	// }
+	// }
+	//
+	// if (isUsed) {
+	// continue;
+	// }
+	// ret.add(i);
+	// }
+	// return ret;
+	// }
 
 }

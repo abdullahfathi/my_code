@@ -58,9 +58,9 @@ public class NeedlemanWunsch {
 
 		// String[] strs = { "William W. ‘Don’t call me Dubya’ Cohen", "William W. Cohen" };
 		// String[] strs = { "MCCOHN", "COHEN" };
-		// String[] strs = { "MCCOHN", "COHEN" };
-		String[] strs = { "부산대학교 고분자공학과", "부산대학교 병원" };
-		strs = new String[] { "국민은행", "국민대학교 금속재료공학부" };
+		String[] strs = { "CXOHEN", "COHEN" };
+		// String[] strs = { "부산대학교 고분자공학과", "부산대학교 병원" };
+		// strs = new String[] { "국민은행", "국민대학교 금속재료공학부" };
 
 		String s = strs[0];
 		String t = strs[1];
