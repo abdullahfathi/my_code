@@ -19,11 +19,11 @@
 
 
 	<dependencies>
-		<dependency>
-			<groupId>org.deeplearning4j</groupId>
-			<artifactId>deeplearning4j-core</artifactId>
-			<version>0.0.3.4-SNAPSHOT</version>
-		</dependency>
+		<!-- <dependency> -->
+		<!-- <groupId>org.deeplearning4j</groupId> -->
+		<!-- <artifactId>deeplearning4j-core</artifactId> -->
+		<!-- <version>0.0.3.4-SNAPSHOT</version> -->
+		<!-- </dependency> -->
 		<dependency>
 			<groupId>org.apache.lucene</groupId>
 			<artifactId>lucene-analyzers-common</artifactId>

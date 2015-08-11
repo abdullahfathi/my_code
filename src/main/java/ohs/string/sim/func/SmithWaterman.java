@@ -29,20 +29,12 @@ public class SmithWaterman {
 			char si = getSource().charAt(i - 1);
 			char tj = getTarget().charAt(j - 1);
 
-			double weight1 = 1;
-			double weight2 = 1;
+			double wi = 1;
+			double wj = 1;
 
 			if (chWeights != null) {
-				weight1 = chWeights.getCount(si);
-				weight2 = chWeights.getCount(tj);
-
-				if (weight1 == 0) {
-					weight1 = 1;
-				}
-
-				if (weight2 == 0) {
-					weight2 = 1;
-				}
+				wi += chWeights.getCount(si);
+				wj += chWeights.getCount(tj);
 			}
 
 			double cost = 0;
@@ -51,15 +43,15 @@ public class SmithWaterman {
 				if (ignoreWhitespaces && si == ' ') {
 
 				} else {
-					cost = weight1 * match_cost;
+					cost = wi + match_cost;
 				}
 			} else {
-				cost = Math.max(weight2, weight1) * unmatch_cost;
+				cost = unmatch_cost - ((wi + wj) / 2);
 			}
 
 			double substitute_score = get(i - 1, j - 1) + cost;
-			double delete_score = get(i - 1, j) + weight1 * gap_cost;
-			double insert_score = get(i, j - 1) + weight2 * gap_cost;
+			double delete_score = get(i - 1, j) + wi * gap_cost;
+			double insert_score = get(i, j - 1) + wj * gap_cost;
 			double[] scores = new double[] { 0, substitute_score, delete_score, insert_score };
 			int index = ArrayMath.argMax(scores);
 			double ret = scores[index];
@@ -165,8 +157,25 @@ public class SmithWaterman {
 
 	public double getNormalizedScore(String s, String t) {
 		double score = getScore(s, t);
-		double max_match_score = match_cost * Math.min(s.length(), t.length());
-		double ret = score / max_match_score;
+		double ret = 0;
+		if (chWeights == null) {
+			double max_match_score = match_cost * Math.min(s.length(), t.length());
+			ret = score / max_match_score;
+		} else {
+			String temp = s;
+
+			if (s.length() > t.length()) {
+				temp = t;
+			}
+
+			double weight_sum = 0;
+			for (int i = 0; i < temp.length(); i++) {
+				double w = 1 + chWeights.getCount(temp.charAt(i));
+				weight_sum += w;
+			}
+			ret = score / weight_sum;
+		}
+
 		return ret;
 	}
 
