@@ -62,11 +62,12 @@ public class AffineGap {
 
 			char si = getSource().charAt(i - 1);
 			char tj = getTarget().charAt(j - 1);
-			double match_cost = si == tj ? match_score : unmatch_score;
+			double cost = si == tj ? match_cost : unmatch_cost;
 
-			double score1 = m.get(i - 1, j - 1) + match_cost;
-			double score2 = is.get(i - 1, j - 1) + match_cost;
-			double score3 = it.get(i = 1, j - 1) + match_cost;
+			double score1 = m.get(i - 1, j - 1) + cost;
+			double score2 = is.get(i - 1, j - 1) + cost;
+			// double score3 = it.get(i = 1, j - 1) + cost;
+			double score3 = it.get(i - 1, j = 1) + cost;
 			double[] scores = new double[] { lower_bound, score1, score2, score3 };
 			int max_index = ArrayMath.argMax(scores);
 			double max = scores[max_index];
@@ -84,8 +85,8 @@ public class AffineGap {
 		AffineGap aligner = new AffineGap();
 
 		String[] strs = { "William W. ‘Don’t call me Dubya’ Cohen", "William W. Cohen" };
-		// String[] strs = { "MCCOHN", "COHEN" };
-		// String[] strs = { "MCCOHN", "COHEN" };
+		strs = new String[] { "ABC", "ABBBBBC" };
+		strs = new String[] { "COHEN", "MCCOHN" };
 		// String[] strs = { "국민은행", "국민대학교 금속재료공학부" };
 		String s = strs[0];
 		String t = strs[1];
@@ -107,17 +108,17 @@ public class AffineGap {
 
 	private double lower_bound;
 
-	private double match_score;
+	private double match_cost;
 
-	private double unmatch_score;
+	private double unmatch_cost;
 
 	public AffineGap() {
 		this(2, -1, 2, 1, -Double.MAX_VALUE);
 	}
 
 	public AffineGap(double match_score, double unmatch_score, double open_gap_score, double extend_gap_score, double lower_bound) {
-		this.match_score = match_score;
-		this.unmatch_score = unmatch_score;
+		this.match_cost = match_score;
+		this.unmatch_cost = unmatch_score;
 		this.open_gap_score = open_gap_score;
 		this.extend_gap_score = extend_gap_score;
 		this.lower_bound = lower_bound;
@@ -129,7 +130,7 @@ public class AffineGap {
 		return ret;
 	}
 
-	public double getBestScore(String s, String t) {
+	public double getScore(String s, String t) {
 		return compute(s, t).getBestScore();
 	}
 

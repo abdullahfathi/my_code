@@ -1,6 +1,9 @@
 package ohs.entity;
 
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,8 +28,6 @@ public class WikiDataHandler {
 	public void extractRedirects() throws Exception {
 
 		TextFileReader reader = new TextFileReader(ENTPath.KOREAN_WIKI_TEXT_FILE);
-		TextFileWriter writer2 = new TextFileWriter(ENTPath.KOREAN_WIKI_TITLE_FILE);
-
 		reader.setPrintNexts(false);
 
 		MediaWikiParser parser = new MediaWikiParserFactory().createParser();
@@ -37,9 +38,10 @@ public class WikiDataHandler {
 		Pattern p1 = Pattern.compile(regex1);
 		Pattern p2 = Pattern.compile(regex2);
 
-		Counter<String> c = new Counter<String>();
+		Counter<String> c1 = new Counter<String>();
+		Counter<String> c2 = new Counter<String>();
 
-		CounterMap<String, String> cm = new CounterMap<String, String>();
+		CounterMap<String, String> cm1 = new CounterMap<String, String>();
 
 		while (reader.hasNext()) {
 			reader.print(100000);
@@ -54,29 +56,38 @@ public class WikiDataHandler {
 
 			Matcher m2 = p2.matcher(title);
 			if (m2.find()) {
-				c.incrementCount(m2.group(1), 1);
+				c1.incrementCount(m2.group(1), 1);
 				continue;
 			}
 
-			writer2.write(title + "\n");
+			c2.incrementCount(title, 1);
 
 			Matcher m1 = p1.matcher(wikiText);
 
 			if (m1.find()) {
 				String redirect = m1.group(1).trim();
 				if (redirect.length() > 0) {
-					cm.incrementCount(redirect, title, 1);
+					cm1.incrementCount(redirect, title, 1);
 				}
 			}
-
 		}
 		reader.printLast();
 		reader.close();
-		writer2.close();
 
-		IOUtils.write(ENTPath.KOREAN_WIKI_REDIRECT_FILE, cm);
+		IOUtils.write(ENTPath.KOREAN_WIKI_REDIRECT_FILE, cm1);
 
-		System.out.println(c.toStringSortedByValues(true, true, c.size()));
+		List<String> titles = new ArrayList<String>(c2.keySet());
+		Collections.sort(titles);
+
+		TextFileWriter writer = new TextFileWriter(ENTPath.KOREAN_WIKI_TITLE_FILE);
+
+		for (int i = 0; i < titles.size(); i++) {
+			String title = titles.get(i);
+			writer.write(title + "\n");
+		}
+		writer.close();
+
+		System.out.println(c1.toStringSortedByValues(true, true, c1.size()));
 
 	}
 
@@ -84,8 +95,8 @@ public class WikiDataHandler {
 		System.out.println("process begins.");
 
 		WikiDataHandler dh = new WikiDataHandler();
-		// dh.makeTextDump();
-		dh.extractRedirects();
+		dh.makeTextDump();
+		// dh.extractRedirects();
 
 		System.out.println("process ends.");
 	}
@@ -113,7 +124,7 @@ public class WikiDataHandler {
 
 	public void makeTextDump() throws Exception {
 		TextFileReader reader = new TextFileReader(ENTPath.KOREAN_WIKI_XML_FILE);
-		TextFileWriter writer = new TextFileWriter(ENTPath.KOREAN_WIKI_TEXT_FILE);
+		// TextFileWriter writer = new TextFileWriter(ENTPath.KOREAN_WIKI_TEXT_FILE);
 
 		reader.setPrintNexts(false);
 
@@ -131,8 +142,6 @@ public class WikiDataHandler {
 			} else if (line.trim().startsWith("</page>")) {
 				sb.append(line);
 
-				// System.out.println(sb.toString() + "\n\n");
-
 				String[] values = parse(sb.toString());
 
 				boolean isFilled = true;
@@ -145,10 +154,14 @@ public class WikiDataHandler {
 				}
 
 				if (isFilled) {
+
 					String title = values[0].trim();
 					String wikiText = values[1].replaceAll("\n", "<NL>").trim();
 					String output = String.format("%s\t%s", title, wikiText);
-					writer.write(output + "\n");
+					// writer.write(output + "\n");
+
+					System.out.println(title);
+					System.out.println(sb.toString() + "\n\n");
 				}
 
 				sb = new StringBuffer();
@@ -161,7 +174,7 @@ public class WikiDataHandler {
 		}
 		reader.printLast();
 		reader.close();
-		writer.close();
+		// writer.close();
 
 		System.out.printf("# of documents:%d\n", num_docs);
 

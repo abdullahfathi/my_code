@@ -48,7 +48,7 @@ public class SmithWaterman {
 			double cost = 0;
 
 			if (si == tj) {
-				if (ignoreGap && si == ' ') {
+				if (ignoreWhitespaces && si == ' ') {
 
 				} else {
 					cost = weight1 * match_cost;
@@ -98,10 +98,6 @@ public class SmithWaterman {
 			double num_docs = c.size();
 			double idf = Math.log((num_docs + 1) / df);
 			double tfidf = tf * idf;
-
-			if (tfidf < 0) {
-				System.out.println();
-			}
 			ret.setCount(ch, idf);
 		}
 
@@ -147,17 +143,18 @@ public class SmithWaterman {
 
 	private double gap_cost;
 
-	private boolean ignoreGap;
+	private boolean ignoreWhitespaces;
 
 	public SmithWaterman() {
 		this(2, -1, -1, false);
+		// this(3, 2, 1, false);
 	}
 
-	public SmithWaterman(double match_cost, double unmatch_cost, double gap_cost, boolean ignoreGap) {
+	public SmithWaterman(double match_cost, double unmatch_cost, double gap_cost, boolean ignoreWhitespaces) {
 		this.match_cost = match_cost;
 		this.unmatch_cost = unmatch_cost;
 		this.gap_cost = gap_cost;
-		this.ignoreGap = ignoreGap;
+		this.ignoreWhitespaces = ignoreWhitespaces;
 	}
 
 	public MemoMatrix compute(String s, String t) {
@@ -166,15 +163,15 @@ public class SmithWaterman {
 		return ret;
 	}
 
-	public double getBestScore(String s, String t) {
-		return compute(s, t).getBestScore();
-	}
-
 	public double getNormalizedScore(String s, String t) {
-		double score = getBestScore(s, t);
+		double score = getScore(s, t);
 		double max_match_score = match_cost * Math.min(s.length(), t.length());
 		double ret = score / max_match_score;
 		return ret;
+	}
+
+	public double getScore(String s, String t) {
+		return compute(s, t).getBestScore();
 	}
 
 	public void setChWeight(Counter<Character> chWeights) {

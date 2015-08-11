@@ -6,6 +6,8 @@ import java.util.Set;
 import org.apache.commons.math.optimization.GoalType;
 import org.hamcrest.core.Is;
 
+import cc.mallet.fst.MaxLattice;
+import edu.stanford.nlp.parser.shiftreduce.BinaryTransition.Side;
 import ohs.entity.DataReader;
 import ohs.entity.ENTPath;
 import ohs.entity.data.struct.BilingualText;
@@ -23,9 +25,9 @@ public class NeedlemanWunsch {
 
 		public double compute(int i, int j) {
 			if (i == 0)
-				return -j * gap_cost;
+				return j * gap_cost;
 			if (j == 0)
-				return -i * gap_cost;
+				return i * gap_cost;
 
 			char si = getSource().charAt(i - 1);
 			char tj = getTarget().charAt(j - 1);
@@ -44,11 +46,6 @@ public class NeedlemanWunsch {
 			double[] scores = new double[] { substitute_score, delete_score, insert_score };
 			int index = ArrayMath.argMax(scores);
 			double ret = scores[index];
-
-			if (ret > best) {
-				best = ret;
-				indexAtBest.set(i, j);
-			}
 			return ret;
 		}
 	}
@@ -57,27 +54,21 @@ public class NeedlemanWunsch {
 		// doMain(new SmithWatermanAligner(), argv);
 
 		// String[] strs = { "William W. ‘Don’t call me Dubya’ Cohen", "William W. Cohen" };
-		// String[] strs = { "MCCOHN", "COHEN" };
-		String[] strs = { "CXOHEN", "COHEN" };
+		String[] strs = { "MCCOHN", "COHEN" };
+		// String[] strs = { "ABG", "EFG" };
 		// String[] strs = { "부산대학교 고분자공학과", "부산대학교 병원" };
-		// strs = new String[] { "국민은행", "국민대학교 금속재료공학부" };
+		strs = new String[] { "국민은행", "국민대학교 금속재료공학부" };
 
 		String s = strs[0];
 		String t = strs[1];
 
-		NeedlemanWunsch sw = new NeedlemanWunsch();
+		NeedlemanWunsch nw = new NeedlemanWunsch();
+		System.out.println(nw.compute(s, t));
+		System.out.println(nw.getNormalizedScore(s, t));
 
-		MemoMatrix m = sw.compute(s, t);
-
-		Aligner al = new Aligner();
-		AlignResult ar = al.align(m);
-
-		System.out.println();
-		System.out.println(m.toString());
-		// System.out.println();
-		// System.out.println(ar);
-
-		// AlignResult ar = new Aligner().align(m);
+		SmithWaterman sw = new SmithWaterman();
+		System.out.println(sw.compute(s, t));
+		System.out.println(sw.getNormalizedScore(s, t));
 
 		// System.out.println(ar.toString());
 
@@ -94,7 +85,8 @@ public class NeedlemanWunsch {
 	private boolean ignoreGap;
 
 	public NeedlemanWunsch() {
-		this(1, 0, -1, false);
+		// this(1, 0, 0, false);
+		this(0, -1, -1, false);
 	}
 
 	public NeedlemanWunsch(double match_cost, double unmatch_cost, double gap_cost, boolean ignoreGap) {
@@ -110,14 +102,24 @@ public class NeedlemanWunsch {
 		return ret;
 	}
 
-	public double getBestScore(String s, String t) {
-		return compute(s, t).getBestScore();
+	public double getNormalizedScore(String s, String t) {
+		MemoMatrix m = compute(s, t);
+		double dissam_score = m.getValues()[s.length() - 1][t.length() - 1];
+		double max_dissam_score = 0;
+		
+		if (s.length() > t.length()) {
+			max_dissam_score = m.getValues()[s.length() - 1][0];
+		} else {
+			max_dissam_score = m.getValues()[0][t.length() - 1];
+		}
+		double dissam = dissam_score / max_dissam_score;
+		double sim = 1 - dissam;
+		return sim;
 	}
 
-	public double getNormalizedScore(String s, String t) {
-		double score = getBestScore(s, t);
-		double max_match_score = match_cost * Math.min(s.length(), t.length());
-		double ret = score / max_match_score;
+	public double getScore(String s, String t) {
+		MemoMatrix m = compute(s, t);
+		double ret = m.getValues()[s.length() - 1][t.length() - 1];
 		return ret;
 	}
 

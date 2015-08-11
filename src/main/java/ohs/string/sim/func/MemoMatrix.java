@@ -62,6 +62,10 @@ public abstract class MemoMatrix {
 		return t;
 	}
 
+	public double[][] getValues() {
+		return values;
+	}
+
 	public void setIndexAtBest(IntPair indexAtBest) {
 		this.indexAtBest = indexAtBest;
 	}

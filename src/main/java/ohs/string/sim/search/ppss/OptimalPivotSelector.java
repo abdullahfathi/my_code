@@ -66,7 +66,7 @@ public class OptimalPivotSelector extends PivotSelector {
 			} else if (m < n) {
 				ret = Double.POSITIVE_INFINITY;
 			} else {
-				Counter<Integer> counter = new Counter<Integer>();
+				Counter<Integer> c = new Counter<Integer>();
 
 				for (int k = n; k <= m; k++) {
 					int kp = -1;
@@ -95,13 +95,11 @@ public class OptimalPivotSelector extends PivotSelector {
 
 					double optimal_value = computeWeightMatrix(kp, n - 1);
 					double w = wgs[k];
-					counter.setCount(k, optimal_value + w);
+					c.setCount(k, optimal_value + w);
 				}
 
-				if (counter.size() > 0) {
-					int min_k = counter.argMin();
-					double min = counter.getCount(min_k);
-					ret = min;
+				if (c.size() > 0) {
+					ret = c.min();
 				} else {
 					// System.out.println();
 				}

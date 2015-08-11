@@ -17,40 +17,12 @@ import ohs.types.Counter;
  */
 public class GramWeighter {
 
-	public static Counter<String> compute(List<Gram[]> allGrams) {
-		Counter<String> ret = new Counter<String>();
-		Map<String, Integer> gramFirstLocs = new HashMap<String, Integer>();
-		int gram_cnt = 0;
-
-		for (int i = 0; i < allGrams.size(); i++) {
-			Gram[] grams = allGrams.get(i);
-
-			for (int j = 0; j < grams.length; j++) {
-				Gram gram = grams[j];
-				String g = gram.getString();
-				ret.incrementCount(g, 1);
-				gram_cnt++;
-				if (!gramFirstLocs.containsKey(g)) {
-					gramFirstLocs.put(g, gram_cnt);
-				}
-			}
-		}
-
-		for (String g : gramFirstLocs.keySet()) {
-			int id = gramFirstLocs.get(g);
-			double pos_weight = 1f * id / (gram_cnt + 1);
-			ret.incrementCount(g, pos_weight);
-		}
-
-		return ret;
-	}
-
 	public static Counter<String> compute(GramGenerator gramGenerator, List<StringRecord> ss) {
 		List<Gram[]> allGrams = GramGenerator.generate(gramGenerator, ss);
-		return compute(allGrams);
+		return computeWeightsByGramCounts(allGrams);
 	}
 
-	public static Counter<String> computeIDFs(List<Gram[]> allGrams) {
+	public static Counter<String> computeGramWeightsByIDFs(List<Gram[]> allGrams) {
 		Counter<String> ret = new Counter<String>();
 
 		Map<String, Integer> gramFirstLocs = new HashMap<String, Integer>();
@@ -81,6 +53,12 @@ public class GramWeighter {
 		}
 
 		return ret;
+	}
+
+	public static Counter<String> computeTFIDFs(GramGenerator gramGenerator, List<StringRecord> ss) {
+		List<Gram[]> allGrams = GramGenerator.generate(gramGenerator, ss);
+		return computeTFIDFs(allGrams);
+
 	}
 
 	public static Counter<String> computeTFIDFs(List<Gram[]> allGrams) {
@@ -118,10 +96,38 @@ public class GramWeighter {
 		return ret;
 	}
 
-	public static Counter<String> computeTFIDFs(GramGenerator gramGenerator, List<StringRecord> ss) {
-		List<Gram[]> allGrams = GramGenerator.generate(gramGenerator, ss);
-		return computeTFIDFs(allGrams);
+	/**
+	 * compute gram weights using gram counts. Grams which appear first get more weight than those appear later.
+	 * 
+	 * @param allGrams
+	 * @return
+	 */
+	public static Counter<String> computeWeightsByGramCounts(List<Gram[]> allGrams) {
+		Counter<String> ret = new Counter<String>();
+		Map<String, Integer> gramFirstLocs = new HashMap<String, Integer>();
+		int gram_cnt = 0;
 
+		for (int i = 0; i < allGrams.size(); i++) {
+			Gram[] grams = allGrams.get(i);
+
+			for (int j = 0; j < grams.length; j++) {
+				Gram gram = grams[j];
+				String g = gram.getString();
+				ret.incrementCount(g, 1);
+				gram_cnt++;
+				if (!gramFirstLocs.containsKey(g)) {
+					gramFirstLocs.put(g, gram_cnt);
+				}
+			}
+		}
+
+		for (String g : gramFirstLocs.keySet()) {
+			int id = gramFirstLocs.get(g);
+			double pos_weight = 1f * id / (gram_cnt + 1);
+			ret.incrementCount(g, pos_weight);
+		}
+
+		return ret;
 	}
 
 }

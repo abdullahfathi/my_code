@@ -453,7 +453,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 		}
 
 		if (gramOrderer.getGramWeights() == null) {
-			gramOrderer.setGramWeights(GramWeighter.compute(allGrams));
+			gramOrderer.setGramWeights(GramWeighter.computeWeightsByGramCounts(allGrams));
 		}
 
 		gramOrderer.determineGramOrders();
@@ -676,23 +676,20 @@ public class PivotalPrefixStringSearcher implements Serializable {
 
 		Counter<StringRecord> A = new Counter<StringRecord>();
 
-		AffineGap ag = new AffineGap();
-		SmithWaterman sw = new SmithWaterman(2, -1, -1, true);
-		EditDistance ed = new EditDistance();
+		SmithWaterman sw = new SmithWaterman();
 
 		for (int loc : C) {
 			String r = ss.get(loc).getString();
-			if (stringVerifier.verify(s, sGrams, r)) {
-				continue;
-			}
+			// if (!stringVerifier.verify(s, sGrams, r)) {
+			// continue;
+			// }
 
-			double swScore = sw.getBestScore(s, r);
-			double min = Math.min(s.length(), r.length());
-			swScore /= min;
+			double swScore = sw.getNormalizedScore(s, r);
 
 			// double long_len = Math.max(s.length(), r.length());
 			// double sim = 1 - (ed / long_len);
 
+			// double edit_dist = stringVerifier.getEditDistance();
 			A.incrementCount(ss.get(loc), swScore);
 		}
 
