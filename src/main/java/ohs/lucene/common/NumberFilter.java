@@ -17,9 +17,9 @@ import org.apache.lucene.analysis.util.CharacterUtils;
 import org.apache.lucene.util.Version;
 
 public final class NumberFilter extends TokenFilter {
+	private static final Pattern p = Pattern.compile("\\d+[\\d,\\.]*");
 	private final CharacterUtils charUtils = CharacterUtils.getInstance();
 	private final CharTermAttribute termAtt = addAttribute(CharTermAttribute.class);
-	private static final Pattern p = Pattern.compile("\\d+[\\d,\\.]*");
 
 	public NumberFilter(TokenStream in) {
 		super(in);

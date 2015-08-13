@@ -21,6 +21,30 @@ import ohs.types.ListMap;
  */
 public class TermWeighting {
 
+	public static void computeTFIDFs(List<SparseVector> docs) {
+		computeTFIDFs(docs, docFreq(docs, getMaxIndex(docs) + 1));
+	}
+
+	public static void computeTFIDFs(List<SparseVector> docs, DenseVector docFreqs) {
+		System.out.println("compute tfidfs.");
+		for (int i = 0; i < docs.size(); i++) {
+			SparseVector doc = docs.get(i);
+
+			for (int j = 0; j < doc.size(); j++) {
+				int w = doc.indexAtLoc(j);
+				double cnt = doc.valueAtLoc(j);
+				double tf = Math.log(cnt) + 1;
+				double doc_freq = docFreqs.value(w);
+				double num_docs = docs.size();
+				double idf = doc_freq == 0 ? 0 : Math.log((num_docs + 1) / doc_freq);
+				double tfidf = tf * idf;
+				doc.setAtLoc(j, tfidf);
+			}
+			ArrayMath.normalizeByL2Norm(doc.values(), doc.values());
+			doc.summation();
+		}
+	}
+
 	public static DenseVector docFreq(List<SparseVector> docs, int num_terms) {
 		DenseVector ret = new DenseVector(num_terms);
 		for (SparseVector doc : docs) {
@@ -234,30 +258,6 @@ public class TermWeighting {
 				norm += weight * weight;
 			}
 			x.scale(1f / norm);
-		}
-	}
-
-	public static void computeTFIDFs(List<SparseVector> docs) {
-		computeTFIDFs(docs, docFreq(docs, getMaxIndex(docs) + 1));
-	}
-
-	public static void computeTFIDFs(List<SparseVector> docs, DenseVector docFreqs) {
-		System.out.println("compute tfidfs.");
-		for (int i = 0; i < docs.size(); i++) {
-			SparseVector doc = docs.get(i);
-
-			for (int j = 0; j < doc.size(); j++) {
-				int w = doc.indexAtLoc(j);
-				double cnt = doc.valueAtLoc(j);
-				double tf = Math.log(cnt) + 1;
-				double doc_freq = docFreqs.value(w);
-				double num_docs = docs.size();
-				double idf = doc_freq == 0 ? 0 : Math.log((num_docs + 1) / doc_freq);
-				double tfidf = tf * idf;
-				doc.setAtLoc(j, tfidf);
-			}
-			ArrayMath.normalizeByL2Norm(doc.values(), doc.values());
-			doc.summation();
 		}
 	}
 

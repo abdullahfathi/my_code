@@ -19,31 +19,6 @@ public abstract class PivotSelector implements Serializable {
 
 	abstract public void select(Gram[] grams);
 
-	protected void sortGramsByTypes() {
-		ListMap<Type, Integer> typeLocs = GramUtils.groupGramsByTypes(grams, false);
-
-		Gram[] tempGrams = new Gram[grams.length];
-
-		Type[] types = { Type.PIVOT, Type.PREFIX, Type.SUFFIX };
-		int new_loc = 0;
-
-		for (Type type : types) {
-			List<Integer> locs = typeLocs.get(type);
-
-			for (int loc : locs) {
-				if (tempGrams[new_loc] == null) {
-					tempGrams[new_loc] = grams[loc];
-					new_loc++;
-				}
-			}
-		}
-
-		for (int i = 0; i < grams.length; i++) {
-			grams[i] = tempGrams[i];
-		}
-
-	}
-
 	protected List<Integer> selectDisjointPrefixLocs() {
 		List<Integer> ret = new ArrayList<Integer>();
 
@@ -84,6 +59,31 @@ public abstract class PivotSelector implements Serializable {
 				gram.setType(Type.SUFFIX);
 			}
 		}
+	}
+
+	protected void sortGramsByTypes() {
+		ListMap<Type, Integer> typeLocs = GramUtils.groupGramsByTypes(grams, false);
+
+		Gram[] tempGrams = new Gram[grams.length];
+
+		Type[] types = { Type.PIVOT, Type.PREFIX, Type.SUFFIX };
+		int new_loc = 0;
+
+		for (Type type : types) {
+			List<Integer> locs = typeLocs.get(type);
+
+			for (int loc : locs) {
+				if (tempGrams[new_loc] == null) {
+					tempGrams[new_loc] = grams[loc];
+					new_loc++;
+				}
+			}
+		}
+
+		for (int i = 0; i < grams.length; i++) {
+			grams[i] = tempGrams[i];
+		}
+
 	}
 
 }

@@ -52,14 +52,14 @@ public final class MedicalEnglishAnalyzer extends StopwordAnalyzerBase {
 		static final CharArraySet DEFAULT_STOP_SET = StandardAnalyzer.STOP_WORDS_SET;
 	}
 
+	public static MedicalEnglishAnalyzer getAnalyzer() throws Exception {
+		return getAnalyzer(MIRPath.STOPWORD_INQUERY_FILE);
+	}
+
 	public static MedicalEnglishAnalyzer getAnalyzer(String stopwordFileName) throws Exception {
 		Set<String> stopwords = IOUtils.readSet(stopwordFileName);
 		System.out.printf("read [%d] stopwords from [%s].\n", stopwords.size(), stopwordFileName);
 		return new MedicalEnglishAnalyzer(new CharArraySet(stopwords, true));
-	}
-
-	public static MedicalEnglishAnalyzer getAnalyzer() throws Exception {
-		return getAnalyzer(MIRPath.STOPWORD_INQUERY_FILE);
 	}
 
 	/**

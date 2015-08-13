@@ -31,45 +31,6 @@ public class DataHandler {
 		System.out.println("process ends.");
 	}
 
-	public static void pairQueryRelevantDocuments() throws Exception {
-		String queryFileName = MIRPath.CLEF_EHEALTH_QUERY_2015_FILE;
-		String revFileName = MIRPath.CLEF_EHEALTH_RELEVANCE_JUDGE_2015_FILE;
-		String docMapFileName = MIRPath.CLEF_EHEALTH_DOCUMENT_ID_MAP_FIE;
-
-		List<BaseQuery> baseQueries = QueryReader.readClefEHealthQueries(queryFileName);
-		CounterMap<String, String>  relvData = RelevanceReader.readClefEHealthRelevances(revFileName);
-		StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(docMapFileName);
-
-		IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(MIRPath.CLEF_EHEALTH_INDEX_DIR);
-
-		String outputFileName = MIRPath.CLEF_EHEALTH_OUTPUT_RESULT_2015_QUERY_DOC_DIR + "CLEF_2015_TRAIN.txt";
-
-		TextFileWriter writer = new TextFileWriter(outputFileName);
-
-		for (int j = 0; j < baseQueries.size(); j++) {
-			BaseQuery bq = baseQueries.get(j);
-			Counter<String> docRelevances = relvData.getCounter(bq.getId());
-			List<String> docIds = docRelevances.getSortedKeys();
-
-			StringBuffer sb = new StringBuffer();
-			sb.append(String.format("Query-%d\n%s\n", j + 1, bq.toString()));
-
-			for (int k = 0; k < docIds.size() && k < 20; k++) {
-				String docId = docIds.get(k);
-				String newDocId = docIdMap.getKey(docId);
-				Document doc = indexSearcher.doc(Integer.parseInt(newDocId));
-				String title = doc.get(IndexFieldName.TITLE);
-				String content = doc.get(IndexFieldName.CONTENT);
-				content = NLPUtils.tokenize(content);
-				sb.append(String.format("Document-%d: %f\n%s\n%s\n", k + 1, docRelevances.getCount(docId), title, content));
-			}
-
-			writer.write(sb.toString().trim() + "\n\n");
-		}
-
-		writer.close();
-	}
-
 	public static void pairQueryDocuments() throws Exception {
 		String queryFileName = MIRPath.CLEF_EHEALTH_QUERY_2015_FILE;
 		String[] indexDirNames = MIRPath.IndexDirNames;
@@ -133,6 +94,45 @@ public class DataHandler {
 
 			writer.close();
 		}
+	}
+
+	public static void pairQueryRelevantDocuments() throws Exception {
+		String queryFileName = MIRPath.CLEF_EHEALTH_QUERY_2015_FILE;
+		String revFileName = MIRPath.CLEF_EHEALTH_RELEVANCE_JUDGE_2015_FILE;
+		String docMapFileName = MIRPath.CLEF_EHEALTH_DOCUMENT_ID_MAP_FIE;
+
+		List<BaseQuery> baseQueries = QueryReader.readClefEHealthQueries(queryFileName);
+		CounterMap<String, String>  relvData = RelevanceReader.readClefEHealthRelevances(revFileName);
+		StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(docMapFileName);
+
+		IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(MIRPath.CLEF_EHEALTH_INDEX_DIR);
+
+		String outputFileName = MIRPath.CLEF_EHEALTH_OUTPUT_RESULT_2015_QUERY_DOC_DIR + "CLEF_2015_TRAIN.txt";
+
+		TextFileWriter writer = new TextFileWriter(outputFileName);
+
+		for (int j = 0; j < baseQueries.size(); j++) {
+			BaseQuery bq = baseQueries.get(j);
+			Counter<String> docRelevances = relvData.getCounter(bq.getId());
+			List<String> docIds = docRelevances.getSortedKeys();
+
+			StringBuffer sb = new StringBuffer();
+			sb.append(String.format("Query-%d\n%s\n", j + 1, bq.toString()));
+
+			for (int k = 0; k < docIds.size() && k < 20; k++) {
+				String docId = docIds.get(k);
+				String newDocId = docIdMap.getKey(docId);
+				Document doc = indexSearcher.doc(Integer.parseInt(newDocId));
+				String title = doc.get(IndexFieldName.TITLE);
+				String content = doc.get(IndexFieldName.CONTENT);
+				content = NLPUtils.tokenize(content);
+				sb.append(String.format("Document-%d: %f\n%s\n%s\n", k + 1, docRelevances.getCount(docId), title, content));
+			}
+
+			writer.write(sb.toString().trim() + "\n\n");
+		}
+
+		writer.close();
 	}
 
 }

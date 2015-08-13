@@ -16,6 +16,13 @@ public class Utils {
     private final static Logger logger = Logger.getLogger(Utils.class.getName());
 
     
+    public static String strip_whitespace(String word){
+        word = word.replaceAll("[^a-zA-Z0-9-]", "");
+        return word;
+    }    
+    
+    
+    
     public synchronized static String tidyWord(String str){
        
         if(str.matches("[-]+")){
@@ -37,13 +44,6 @@ public class Utils {
             return str;
         }
         
-    }    
-    
-    
-    
-    public static String strip_whitespace(String word){
-        word = word.replaceAll("[^a-zA-Z0-9-]", "");
-        return word;
     }
     
 

@@ -10,8 +10,64 @@ import ohs.types.common.IntPair;
 
 public class Aligner {
 
+	static enum Direction {
+		WEST, NORTH, DIAGONAL, NONE
+	}
+
 	public Aligner() {
 
+	}
+
+	public AlignResult align(MemoMatrix mm) {
+		List<IntPair> path = getAlignmentPath(mm);
+
+		String s = mm.getSource();
+		String t = mm.getTarget();
+
+		List<MatchType> mt = new ArrayList<MatchType>();
+
+		StringBuffer sb = new StringBuffer();
+		StringBuffer tb = new StringBuffer();
+
+		int pi = -1;
+		int pj = -1;
+
+		for (int k = 0; k < path.size(); k++) {
+			IntPair index = path.get(k);
+			int i = index.getFirst();
+			int j = index.getSecond();
+
+			char si = s.charAt(i);
+			char tj = t.charAt(j);
+
+			// System.out.printf("[%d, %d = %s, %s]\n", i, j, wi, wj);
+
+			MatchType mi = null;
+
+			if (si == tj) {
+				mi = MatchType.MATCH;
+			} else {
+				mi = MatchType.UNMATCH;
+			}
+
+			mt.add(mi);
+
+			if (i == pi) {
+				si = '#';
+			}
+
+			if (j == pj) {
+				tj = '#';
+			}
+
+			sb.append(si);
+			tb.append(tj);
+
+			pi = i;
+			pj = j;
+		}
+
+		return new AlignResult(mm, sb.toString(), tb.toString(), mt);
 	}
 
 	private int countPrevNonZerosInSource(MemoMatrix m, int i, int j) {
@@ -36,10 +92,6 @@ public class Aligner {
 			ret++;
 		}
 		return ret;
-	}
-
-	static enum Direction {
-		WEST, NORTH, DIAGONAL, NONE
 	}
 
 	private List<IntPair> getAlignmentPath(MemoMatrix mm) {
@@ -117,58 +169,6 @@ public class Aligner {
 
 		Collections.reverse(ret);
 		return ret;
-	}
-
-	public AlignResult align(MemoMatrix mm) {
-		List<IntPair> path = getAlignmentPath(mm);
-
-		String s = mm.getSource();
-		String t = mm.getTarget();
-
-		List<MatchType> mt = new ArrayList<MatchType>();
-
-		StringBuffer sb = new StringBuffer();
-		StringBuffer tb = new StringBuffer();
-
-		int pi = -1;
-		int pj = -1;
-
-		for (int k = 0; k < path.size(); k++) {
-			IntPair index = path.get(k);
-			int i = index.getFirst();
-			int j = index.getSecond();
-
-			char si = s.charAt(i);
-			char tj = t.charAt(j);
-
-			// System.out.printf("[%d, %d = %s, %s]\n", i, j, wi, wj);
-
-			MatchType mi = null;
-
-			if (si == tj) {
-				mi = MatchType.MATCH;
-			} else {
-				mi = MatchType.UNMATCH;
-			}
-
-			mt.add(mi);
-
-			if (i == pi) {
-				si = '#';
-			}
-
-			if (j == pj) {
-				tj = '#';
-			}
-
-			sb.append(si);
-			tb.append(tj);
-
-			pi = i;
-			pj = j;
-		}
-
-		return new AlignResult(mm, sb.toString(), tb.toString(), mt);
 	}
 
 }

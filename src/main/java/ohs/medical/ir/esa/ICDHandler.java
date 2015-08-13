@@ -144,103 +144,6 @@ public class ICDHandler {
 		cacheMap = new HashMap<String, Integer>();
 	}
 
-	public void searchPages() throws Exception {
-
-		Set<String> stopSecTitleSet = getStopSectionTitleSet();
-
-		TextFileReader reader = new TextFileReader(MIRPath.ICD10_HIERARCHY_REFINED_FILE);
-		TextFileWriter writer = new TextFileWriter(MIRPath.ICD10_HIERARCHY_PAGE_FILE);
-		TextFileWriter writer2 = new TextFileWriter(MIRPath.ICD10_LOG_FILE);
-
-		Counter<String> c = new Counter<String>();
-
-		while (reader.hasNext()) {
-			List<String> lines = reader.getNextLines();
-
-			String chapter = lines.get(1);
-			String section = lines.get(2).split("\t")[1];
-			String subSection = lines.get(3).replace("\t", " - ");
-
-			chapter = removePrefix(chapter);
-
-			for (int i = 4; i < lines.size(); i++) {
-				String line = lines.get(i);
-				String[] parts = line.split("\t");
-				String wikiTitle = parts[1].replace("_", " ");
-
-				ParsedPage page = null;
-				Document doc = null;
-
-				Stack<String> stack = new Stack<String>();
-				stack.add(wikiTitle.toLowerCase());
-				stack.add(parts[2].replace("_", " ").toLowerCase());
-				stack.add(parts[2].toLowerCase());
-
-				Set<String> visited = new HashSet<String>();
-
-				String searchKey = null;
-
-				while (!stack.isEmpty()) {
-					searchKey = stack.pop();
-
-					int idx = searchKey.indexOf("#");
-
-					if (idx > -1) {
-						searchKey = searchKey.substring(0, idx);
-					}
-
-					if (visited.contains(searchKey)) {
-						continue;
-					}
-
-					visited.add(searchKey);
-
-					doc = searchDocument(searchKey);
-
-					if (doc == null) {
-						continue;
-					} else {
-						String title = doc.getField(IndexFieldName.TITLE).stringValue();
-						String wikiText = doc.getField(IndexFieldName.CONTENT).stringValue();
-						String redirect = doc.getField(IndexFieldName.REDIRECT_TITLE).stringValue();
-
-						// page = parser.parse(wikiText);
-
-						// String ss = page.getText();
-
-						if (redirect.length() > 0) {
-							stack.push(redirect);
-						} else {
-							break;
-						}
-					}
-				}
-
-				if (doc == null) {
-					writer2.write(String.format("Fail to find [%s]\n", wikiTitle));
-					continue;
-				}
-
-				String title = doc.getField(IndexFieldName.TITLE).stringValue();
-				String wikiText = doc.getField(IndexFieldName.CONTENT).stringValue();
-
-				if (wikiText.length() > 0) {
-					c.incrementCount("Page", 1);
-				}
-
-				String newLine = StrUtils.join("\t", new String[] { chapter, section, subSection, title, wikiText.replace("\n", "<NL>") });
-
-				writer.write(newLine + "\n");
-			}
-		}
-
-		reader.close();
-		writer.close();
-		writer2.close();
-
-		System.out.println(c.toString());
-	}
-
 	public void extractStructure() throws Exception {
 		Set<String> stopSecTitleSet = getStopSectionTitleSet();
 
@@ -487,5 +390,102 @@ public class ICDHandler {
 		}
 
 		return ret;
+	}
+
+	public void searchPages() throws Exception {
+
+		Set<String> stopSecTitleSet = getStopSectionTitleSet();
+
+		TextFileReader reader = new TextFileReader(MIRPath.ICD10_HIERARCHY_REFINED_FILE);
+		TextFileWriter writer = new TextFileWriter(MIRPath.ICD10_HIERARCHY_PAGE_FILE);
+		TextFileWriter writer2 = new TextFileWriter(MIRPath.ICD10_LOG_FILE);
+
+		Counter<String> c = new Counter<String>();
+
+		while (reader.hasNext()) {
+			List<String> lines = reader.getNextLines();
+
+			String chapter = lines.get(1);
+			String section = lines.get(2).split("\t")[1];
+			String subSection = lines.get(3).replace("\t", " - ");
+
+			chapter = removePrefix(chapter);
+
+			for (int i = 4; i < lines.size(); i++) {
+				String line = lines.get(i);
+				String[] parts = line.split("\t");
+				String wikiTitle = parts[1].replace("_", " ");
+
+				ParsedPage page = null;
+				Document doc = null;
+
+				Stack<String> stack = new Stack<String>();
+				stack.add(wikiTitle.toLowerCase());
+				stack.add(parts[2].replace("_", " ").toLowerCase());
+				stack.add(parts[2].toLowerCase());
+
+				Set<String> visited = new HashSet<String>();
+
+				String searchKey = null;
+
+				while (!stack.isEmpty()) {
+					searchKey = stack.pop();
+
+					int idx = searchKey.indexOf("#");
+
+					if (idx > -1) {
+						searchKey = searchKey.substring(0, idx);
+					}
+
+					if (visited.contains(searchKey)) {
+						continue;
+					}
+
+					visited.add(searchKey);
+
+					doc = searchDocument(searchKey);
+
+					if (doc == null) {
+						continue;
+					} else {
+						String title = doc.getField(IndexFieldName.TITLE).stringValue();
+						String wikiText = doc.getField(IndexFieldName.CONTENT).stringValue();
+						String redirect = doc.getField(IndexFieldName.REDIRECT_TITLE).stringValue();
+
+						// page = parser.parse(wikiText);
+
+						// String ss = page.getText();
+
+						if (redirect.length() > 0) {
+							stack.push(redirect);
+						} else {
+							break;
+						}
+					}
+				}
+
+				if (doc == null) {
+					writer2.write(String.format("Fail to find [%s]\n", wikiTitle));
+					continue;
+				}
+
+				String title = doc.getField(IndexFieldName.TITLE).stringValue();
+				String wikiText = doc.getField(IndexFieldName.CONTENT).stringValue();
+
+				if (wikiText.length() > 0) {
+					c.incrementCount("Page", 1);
+				}
+
+				String newLine = StrUtils.join("\t", new String[] { chapter, section, subSection, title, wikiText.replace("\n", "<NL>") });
+
+				writer.write(newLine + "\n");
+			}
+		}
+
+		reader.close();
+		writer.close();
+		writer2.close();
+
+		System.out.println(c.toString());
 	}
 }

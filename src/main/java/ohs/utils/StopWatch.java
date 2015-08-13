@@ -4,6 +4,10 @@ package ohs.utils;
  * Simple class for measuring elapsed time.
  */
 public class StopWatch {
+	public long startTime, endTime, ms;
+
+	public int n;
+
 	public StopWatch() {
 	}
 
@@ -11,6 +15,13 @@ public class StopWatch {
 		startTime = 0;
 		endTime = ms;
 		this.ms = ms;
+	}
+
+	public StopWatch accumStop() { // Stop and accumulate time
+		endTime = System.currentTimeMillis();
+		ms += endTime - startTime;
+		n++;
+		return this;
 	}
 
 	public void reset() {
@@ -28,14 +39,6 @@ public class StopWatch {
 		n = 1;
 		return this;
 	}
-
-	public StopWatch accumStop() { // Stop and accumulate time
-		endTime = System.currentTimeMillis();
-		ms += endTime - startTime;
-		n++;
-		return this;
-	}
-
 	public String toString() {
 		long msCopy = ms;
 		long m = msCopy / 60000;
@@ -83,8 +86,5 @@ public class StopWatch {
 		}
 		return sb.toString();
 	}
-
-	public long startTime, endTime, ms;
-	public int n;
 
 }

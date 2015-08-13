@@ -30,12 +30,6 @@ public class QueryClassifier implements Serializable {
 
 	private static final long serialVersionUID = -3273222430839071709L;
 
-	public static QueryClassifier read(Indexer<String> featureIndexer) throws Exception {
-		Indexer<String> labelIndexer = IOUtils.readIndexer(CDSPath.QUERY_CLASSIFIER_TYPE_INDEXER_FILE);
-		Model model = Model.load(new File(CDSPath.QUERY_CLASSIFIER_MODEL_FILE));
-		return new QueryClassifier(model, labelIndexer, featureIndexer);
-	}
-
 	public static Counter<String> analyze(String text, Analyzer analyzer) throws Exception {
 		Counter<String> ret = new Counter<String>();
 
@@ -98,6 +92,12 @@ public class QueryClassifier implements Serializable {
 		System.out.printf("accuracy:\t%s\n", numCorrect / cdsQueries.size());
 
 		System.out.println("process ends.");
+	}
+
+	public static QueryClassifier read(Indexer<String> featureIndexer) throws Exception {
+		Indexer<String> labelIndexer = IOUtils.readIndexer(CDSPath.QUERY_CLASSIFIER_TYPE_INDEXER_FILE);
+		Model model = Model.load(new File(CDSPath.QUERY_CLASSIFIER_MODEL_FILE));
+		return new QueryClassifier(model, labelIndexer, featureIndexer);
 	}
 
 	private Model model;

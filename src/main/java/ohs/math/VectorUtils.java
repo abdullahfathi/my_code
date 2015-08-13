@@ -200,25 +200,6 @@ public class VectorUtils {
 		return toSparseVector(x, indexer, false);
 	}
 
-	public static SparseVector toSparseVector(List<String> x, Indexer<String> indexer, boolean addIfUnseen) {
-		Counter<Integer> ret = new Counter<Integer>();
-
-		for (String item : x) {
-			int index = indexer.indexOf(item);
-
-			if (index < 0) {
-				if (addIfUnseen) {
-					index = indexer.getIndex(item);
-				} else {
-					continue;
-				}
-			}
-
-			ret.incrementCount(index, 1);
-		}
-		return toSparseVector(ret);
-	}
-
 	public static SparseVector toSparseVector(Counter<String> x, Indexer<String> indexer, boolean addIfUnseen) {
 		List<Integer> indexList = new ArrayList<Integer>();
 		List<Double> valueList = new ArrayList<Double>();
@@ -252,6 +233,25 @@ public class VectorUtils {
 		ret.sortByIndex();
 		ret.setDim(dim);
 		return ret;
+	}
+
+	public static SparseVector toSparseVector(List<String> x, Indexer<String> indexer, boolean addIfUnseen) {
+		Counter<Integer> ret = new Counter<Integer>();
+
+		for (String item : x) {
+			int index = indexer.indexOf(item);
+
+			if (index < 0) {
+				if (addIfUnseen) {
+					index = indexer.getIndex(item);
+				} else {
+					continue;
+				}
+			}
+
+			ret.incrementCount(index, 1);
+		}
+		return toSparseVector(ret);
 	}
 
 	public static SparseMatrix toSpasreMatrix(CounterMap<Integer, Integer> counterMap) {

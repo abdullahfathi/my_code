@@ -24,9 +24,9 @@ public interface Matrix extends Serializable {
 
 	public int rowDim();
 
-	public Vector[] rows();
-
 	public int[] rowIndexes();
+
+	public Vector[] rows();
 
 	public int rowSize();
 
@@ -48,8 +48,8 @@ public interface Matrix extends Serializable {
 
 	public Vector vectorAtRowLoc(int rowLoc);
 
-	public void write(String fileName) throws Exception;
-
 	public void write(ObjectOutputStream oos) throws Exception;
+
+	public void write(String fileName) throws Exception;
 
 }

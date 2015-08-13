@@ -38,8 +38,8 @@ import org.apache.lucene.util.Version;
 
 public final class PunctuationFilter extends FilteringTokenFilter {
 
-	private final CharTermAttribute termAtt = addAttribute(CharTermAttribute.class);
 	private static final Pattern p = Pattern.compile("\\p{Punct}+");
+	private final CharTermAttribute termAtt = addAttribute(CharTermAttribute.class);
 
 	public PunctuationFilter(TokenStream in) {
 		super(in);

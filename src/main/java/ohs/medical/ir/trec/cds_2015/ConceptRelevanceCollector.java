@@ -149,6 +149,12 @@ public class ConceptRelevanceCollector {
 		}
 	}
 
+	private Counter<String> getConcepts(IndexReader reader, SparseVector conceptWeights) {
+		Counter<String> ret = new Counter<String>();
+
+		return ret;
+	}
+
 	private String getString(SparseVector sv) {
 		StringBuffer sb = new StringBuffer();
 		for (int i = 0; i < sv.size(); i++) {
@@ -161,11 +167,5 @@ public class ConceptRelevanceCollector {
 			}
 		}
 		return sb.toString();
-	}
-
-	private Counter<String> getConcepts(IndexReader reader, SparseVector conceptWeights) {
-		Counter<String> ret = new Counter<String>();
-
-		return ret;
 	}
 }

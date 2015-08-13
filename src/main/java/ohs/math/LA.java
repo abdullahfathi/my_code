@@ -29,207 +29,6 @@ import ohs.types.common.IntPair;
  */
 public class LA {
 
-	public static int MAX_ITER = 100;
-
-	public static double TOLERANCE = 0.0000005f;
-
-	/**
-	 * 
-	 * http://en.wikipedia.org/wiki/Augmented_matrix
-	 * 
-	 * @param a
-	 * @param b
-	 * @return
-	 */
-	public static double[][] joinColumns(double[][] a, double[][] b) {
-		if (!ArrayChecker.isSameRowDimension(a, b)) {
-			throw new IllegalArgumentException();
-		}
-
-		int aRowDim = a.length;
-		int aColDim = a[0].length;
-		int bRowDim = b.length;
-		int bColDim = b[0].length;
-
-		double[][] ret = new double[aRowDim][aColDim + bColDim];
-
-		for (int i = 0; i < aRowDim; i++) {
-			for (int j = 0; j < aColDim; j++) {
-				ret[i][j] = a[i][j];
-			}
-		}
-
-		for (int i = 0; i < bRowDim; i++) {
-			for (int j = 0; j < bColDim; j++) {
-				ret[i][aColDim + j] = b[i][j];
-			}
-		}
-
-		return ret;
-	}
-
-	public static double[][] joinColumns(double[] a, double[] b) {
-		if (!ArrayChecker.isSameDimension(a, b)) {
-			throw new IllegalArgumentException();
-		}
-
-		int rowDim = a.length;
-
-		double[][] ret = new double[rowDim][2];
-
-		for (int i = 0; i < a.length; i++) {
-			ret[i][0] = a[i];
-		}
-
-		for (int i = 0; i < a.length; i++) {
-			ret[i][1] = b[i];
-		}
-
-		return ret;
-
-	}
-
-	public static double[][] joinColumns(double[][] a, double[] b) {
-		if (!ArrayChecker.isSameRowDimension(a, b)) {
-			throw new IllegalArgumentException();
-		}
-
-		int aRowDim = a.length;
-		int aColDim = a[0].length;
-
-		double[][] ret = new double[aRowDim][aColDim + 1];
-		for (int i = 0; i < aRowDim; i++) {
-			for (int j = 0; j < aColDim; j++) {
-				ret[i][j] = a[i][j];
-			}
-			ret[i][aColDim] = b[i];
-		}
-		return ret;
-	}
-
-	/**
-	 * 
-	 * [Definition]
-	 * 
-	 * A leading entry of a row refers to the leftmost nonzero entry (in a nonzero row).
-	 * 
-	 * 
-	 * [Definition]
-	 * 
-	 * Convert a matrix to reduced echelon form (REF). REF satisfies following properties.
-	 * 
-	 * 1. All nonzero rows are above any rows of all zeros.
-	 * 
-	 * 2. Each leading entry of a row is in a column to the right of the leading entry of the row above it.
-	 * 
-	 * 3. All entries in a column below a leading entry are zeros.
-	 * 
-	 * A method of finding solutions of a matrix using REF is called "Gaussian elimination".
-	 * 
-	 * 
-	 * [Definition]
-	 * 
-	 * A pivot position in a matrix A is a location in A that corresponds to a leading 1 in the reduced echelon form of A. A pivot column is
-	 * a column of A that contains a pivot position.
-	 * 
-	 * 
-	 * [Reference]
-	 * 
-	 * 1. http://en.wikipedia.org/wiki/Gauss-Jordan_elimination
-	 * 
-	 * @param a
-	 *            augmented matrix [d|e]
-	 * 
-	 * @return pivot columns
-	 */
-	public static int[] GaussElimination(double[][] a) {
-		int rowDim = a.length;
-		int colDim = a[0].length;
-		int[] pivotColumns = new int[a.length];
-
-		for (int i = 0; i < rowDim; i++) {
-			pivotColumns[i] = -1;
-		}
-
-		/*
-		 * Row Echelon Form
-		 */
-
-		for (int i = 0, j = 0; i < rowDim && j < colDim; j++) {
-			if (a[i][j] == 0) {
-
-				/*
-				 * Partial pivoting - selects as a pivot the entry in a column having the largest absolute value to reduce roundoff errors
-				 * in the calculations.
-				 */
-				int max_abs_nonzero_i = -1;
-				double max_abs_value = 0;
-
-				for (int ii = i + 1; ii < rowDim; ii++) {
-					double value = a[ii][j];
-					if (value != 0 && Math.abs(value) > Math.abs(max_abs_value)) {
-						max_abs_nonzero_i = ii;
-						max_abs_value = value;
-					}
-				}
-
-				if (max_abs_nonzero_i > 0) {
-					ArrayUtils.swapRows(a, i, max_abs_nonzero_i);
-				}
-			}
-
-			if (a[i][j] != 0) {
-				pivotColumns[i] = j;
-				for (int ii = i + 1; ii < rowDim; ii++) {
-					double scaleFactor = a[ii][j] / a[i][j];
-
-					if (scaleFactor != 0) {
-						for (int jj = 0; jj < colDim; jj++) {
-							a[ii][jj] = a[ii][jj] - scaleFactor * a[i][jj];
-						}
-					}
-				}
-				i++;
-			}
-		}
-
-		return pivotColumns;
-
-	}
-
-	/**
-	 * Reduced Row Echelon Form
-	 * 
-	 * 
-	 * @param a
-	 * @param pivotColumns
-	 */
-	public static void GaussElimination(double[][] a, int[] pivotColumns) {
-		int rowDim = a.length;
-		int colDim = a[0].length;
-		for (int i = rowDim - 1; i >= 0; i--) {
-			int j = pivotColumns[i];
-
-			if (j == -1) {
-				continue;
-			}
-
-			{
-				double scaleFactor = 1f / a[i][j];
-				for (int jj = j; jj < colDim; jj++) {
-					a[i][jj] *= scaleFactor;
-				}
-			}
-
-			for (int ii = 0; ii < i; ii++) {
-				double scaleFactor = -1 * a[ii][j];
-				for (int jj = j; jj < colDim; jj++) {
-					a[ii][jj] = a[ii][jj] + scaleFactor * a[i][jj];
-				}
-			}
-		}
-	}
-
 	public enum SolutionType {
 		Unique, Infinite, No
 	}
@@ -238,30 +37,9 @@ public class LA {
 		Free, Basic
 	}
 
-	/**
-	 * @param a
-	 *            Reduced Row Echelon Form using GaussElimination
-	 * @return
-	 */
-	public static VariableType[] variableTypes(double[][] a) {
-		int rowDim = a.length;
-		int colDim = a[0].length;
-		VariableType[] ret = new VariableType[colDim];
+	public static int MAX_ITER = 100;
 
-		for (int j = 0; j < ret.length; j++) {
-			ret[j] = VariableType.Free;
-		}
-		for (int i = 0; i < rowDim; i++) {
-			for (int j = 0; j < colDim; j++) {
-				if (a[i][j] == 1) {
-					ret[j] = VariableType.Basic;
-					break;
-				}
-			}
-		}
-
-		return ret;
-	}
+	public static double TOLERANCE = 0.0000005f;
 
 	public static void adjoint(double[][] a, double[][] b) {
 
@@ -354,6 +132,22 @@ public class LA {
 		double[] c = new double[b.length];
 		orthogonalToProjection(a, b, c);
 		return ArrayMath.normL2(c);
+	}
+
+	/**
+	 * @param a
+	 * @param i
+	 * @param j
+	 * @param b
+	 *            Reusable matrix for computing minor matrix which is b[aRowDim-1][aColDim-1]
+	 * @return
+	 */
+	public static double cofactor(double[][] a, int i, int j, double[][] b) {
+		double ret = minor(a, i, j, b);
+		if ((i + j) % 2 != 0) {
+			ret *= -1;
+		}
+		return ret;
 	}
 
 	/**
@@ -594,80 +388,6 @@ public class LA {
 		return ret;
 	}
 
-	/**
-	 * @param a
-	 * @param i
-	 * @param j
-	 * @param b
-	 *            Reusable matrix for computing minor matrix which is b[aRowDim-1][aColDim-1]
-	 * @return
-	 */
-	public static double cofactor(double[][] a, int i, int j, double[][] b) {
-		double ret = minor(a, i, j, b);
-		if ((i + j) % 2 != 0) {
-			ret *= -1;
-		}
-		return ret;
-	}
-
-	/**
-	 * 
-	 * Return the determinant of a minor matrix which is a matrix excluding ith row and jth column. the value of ith row and jth column is
-	 * called as cofactor of aij.
-	 * 
-	 * 
-	 * @param A
-	 * @param i
-	 * @param j
-	 * @param b
-	 *            Reusable matrix for computing minor matrix which is b[aRowDim-1][aColDim-1]
-	 * 
-	 * @return
-	 */
-	public static double minor(double[][] a, int i, int j, double[][] b) {
-		minorMatrix(a, i, j, b);
-		return determinant(b);
-	}
-
-	/**
-	 * 
-	 * Return a minor matrix that is a sub-matrix excludes ith row and jth column from a matrix.
-	 * 
-	 * @param a
-	 * @param i
-	 * @param j
-	 * @param b
-	 *            Reusable matrix for computing minor matrix which is b[aRowDim-1][aColDim-1]
-	 */
-	public static void minorMatrix(double[][] a, int i, int j, double[][] b) {
-
-		int aRowDim = a.length;
-		int aColDim = a[0].length;
-
-		int bRowDim = b.length;
-		int BColDim = b[0].length;
-
-		if (aRowDim - 1 == bRowDim && aColDim - 1 == BColDim) {
-
-		} else {
-			throw new IllegalArgumentException();
-		}
-
-		for (int ii = 0, m = 0; ii < aRowDim; ii++) {
-			if (ii == i) {
-				continue;
-			}
-			for (int jj = 0, n = 0; jj < aColDim; jj++) {
-				if (jj == j) {
-					continue;
-				}
-				b[m][n] = a[ii][jj];
-				n++;
-			}
-			m++;
-		}
-	}
-
 	public static void diagonalization(Matrix A) {
 		// boolean isSymmetric = ArrayChecker.isSymmetric(A);
 		// Matrix D = eigenValues(A);
@@ -720,6 +440,18 @@ public class LA {
 		return ret;
 	}
 
+	public static double dotProduct(double[] a, double[] b) {
+		if (!ArrayChecker.isSameDimension(a, b)) {
+			throw new IllegalArgumentException();
+		}
+
+		double ret = 0;
+		for (int i = 0; i < a.length; i++) {
+			ret += a[i] * b[i];
+		}
+		return ret;
+	}
+
 	/**
 	 * [Reference]
 	 * 
@@ -758,20 +490,6 @@ public class LA {
 		}
 	}
 
-	public double[][] colBasis(double[][] a) {
-		double[][] b = ArrayUtils.copy(a);
-		int[] pivotColumns = GaussElimination(b);
-
-		double[][] c = new double[a.length][pivotColumns.length];
-
-		for (int i = 0; i < pivotColumns.length; i++) {
-			int column = pivotColumns[i];
-			ArrayUtils.copyColumn(b, column, c, i);
-		}
-
-		return c;
-	}
-
 	/**
 	 * 
 	 * http://mathworld.wolfram.com/FrobeniusNorm.html
@@ -798,6 +516,529 @@ public class LA {
 		}
 		ret = Math.sqrt(ret);
 		return ret;
+	}
+
+	/**
+	 * 
+	 * [Definition]
+	 * 
+	 * A leading entry of a row refers to the leftmost nonzero entry (in a nonzero row).
+	 * 
+	 * 
+	 * [Definition]
+	 * 
+	 * Convert a matrix to reduced echelon form (REF). REF satisfies following properties.
+	 * 
+	 * 1. All nonzero rows are above any rows of all zeros.
+	 * 
+	 * 2. Each leading entry of a row is in a column to the right of the leading entry of the row above it.
+	 * 
+	 * 3. All entries in a column below a leading entry are zeros.
+	 * 
+	 * A method of finding solutions of a matrix using REF is called "Gaussian elimination".
+	 * 
+	 * 
+	 * [Definition]
+	 * 
+	 * A pivot position in a matrix A is a location in A that corresponds to a leading 1 in the reduced echelon form of A. A pivot column is
+	 * a column of A that contains a pivot position.
+	 * 
+	 * 
+	 * [Reference]
+	 * 
+	 * 1. http://en.wikipedia.org/wiki/Gauss-Jordan_elimination
+	 * 
+	 * @param a
+	 *            augmented matrix [d|e]
+	 * 
+	 * @return pivot columns
+	 */
+	public static int[] GaussElimination(double[][] a) {
+		int rowDim = a.length;
+		int colDim = a[0].length;
+		int[] pivotColumns = new int[a.length];
+
+		for (int i = 0; i < rowDim; i++) {
+			pivotColumns[i] = -1;
+		}
+
+		/*
+		 * Row Echelon Form
+		 */
+
+		for (int i = 0, j = 0; i < rowDim && j < colDim; j++) {
+			if (a[i][j] == 0) {
+
+				/*
+				 * Partial pivoting - selects as a pivot the entry in a column having the largest absolute value to reduce roundoff errors
+				 * in the calculations.
+				 */
+				int max_abs_nonzero_i = -1;
+				double max_abs_value = 0;
+
+				for (int ii = i + 1; ii < rowDim; ii++) {
+					double value = a[ii][j];
+					if (value != 0 && Math.abs(value) > Math.abs(max_abs_value)) {
+						max_abs_nonzero_i = ii;
+						max_abs_value = value;
+					}
+				}
+
+				if (max_abs_nonzero_i > 0) {
+					ArrayUtils.swapRows(a, i, max_abs_nonzero_i);
+				}
+			}
+
+			if (a[i][j] != 0) {
+				pivotColumns[i] = j;
+				for (int ii = i + 1; ii < rowDim; ii++) {
+					double scaleFactor = a[ii][j] / a[i][j];
+
+					if (scaleFactor != 0) {
+						for (int jj = 0; jj < colDim; jj++) {
+							a[ii][jj] = a[ii][jj] - scaleFactor * a[i][jj];
+						}
+					}
+				}
+				i++;
+			}
+		}
+
+		return pivotColumns;
+
+	}
+
+	/**
+	 * Reduced Row Echelon Form
+	 * 
+	 * 
+	 * @param a
+	 * @param pivotColumns
+	 */
+	public static void GaussElimination(double[][] a, int[] pivotColumns) {
+		int rowDim = a.length;
+		int colDim = a[0].length;
+		for (int i = rowDim - 1; i >= 0; i--) {
+			int j = pivotColumns[i];
+
+			if (j == -1) {
+				continue;
+			}
+
+			{
+				double scaleFactor = 1f / a[i][j];
+				for (int jj = j; jj < colDim; jj++) {
+					a[i][jj] *= scaleFactor;
+				}
+			}
+
+			for (int ii = 0; ii < i; ii++) {
+				double scaleFactor = -1 * a[ii][j];
+				for (int jj = j; jj < colDim; jj++) {
+					a[ii][jj] = a[ii][jj] + scaleFactor * a[i][jj];
+				}
+			}
+		}
+	}
+
+	/**
+	 * 
+	 * [Theorem 6.11 - The Gram-Schmidt Process]
+	 * 
+	 * Given a basis {x1,...,xp} for a subspace W of R^n, define
+	 * 
+	 * v1 = x1
+	 * 
+	 * v2 = x2 - ((InnerProduct(x2,v1) / InnerProduct(v1,v1)) * v1)
+	 * 
+	 * v3 = x3 - ((InnerProduct(x3,v1) / InnerProduct(v1,v1)) * v1) - ((InnerProduct(x3,v2) / InnerProduct(v2,v2)) * v2)
+	 * 
+	 * vp = xp - ((InnerProduct(xp,v1) / InnerProduct(v1,v1)) * v1) - ... - ((InnerProduct(xp,v(p-1)) / InnerProduct(v(p-1),v(p-1))) *
+	 * v(p-1) )
+	 * 
+	 * Then {v1
+	 * 
+	 * http://en.wikipedia.org/wiki/Gram%E2%80%93Schmidt_process
+	 * 
+	 * @param a
+	 *            input
+	 * @param b
+	 *            output
+	 */
+	public static void GramSchmidtProcess(double[][] a, double[][] b) {
+
+		if (!ArrayChecker.isSameDimensions(a, b)) {
+			throw new IllegalArgumentException();
+		}
+
+		int rowDim = a.length;
+		int colDim = a[0].length;
+
+		double[] vk = new double[colDim];
+		double[] uj = new double[colDim];
+		double[] uk = new double[colDim];
+		double[] temp = new double[colDim];
+
+		ArrayUtils.copyColumn(a, 0, b, 0);
+
+		for (int k = 1; k < colDim; k++) {
+			ArrayUtils.copyColumn(a, k, vk);
+			ArrayUtils.setAll(uk, 0);
+
+			for (int j = 0; j < k; j++) {
+				ArrayUtils.copyColumn(b, j, uj);
+				projectionAonB(vk, uj, temp);
+
+				ArrayMath.add(temp, uk);
+			}
+			ArrayMath.substract(vk, uk, uk);
+			ArrayUtils.copyColumn(uk, b, k);
+		}
+	}
+
+	private static void improve(double[][] a, double[] x, double[] b, double[] newx) {
+		double[] ax = new double[x.length];
+		double[] r = new double[x.length];
+		double[] z = new double[x.length];
+
+		for (int u = 0; u < MAX_ITER; u++) {
+			product(a, x, ax);
+			ArrayMath.substract(b, ax, r);
+			solve(a, r, z, false);
+
+			if (ArrayChecker.isZeroVector(z)) {
+				break;
+			}
+
+			ArrayMath.add(newx, z, newx);
+		}
+	}
+
+	/**
+	 * 
+	 * [Fact]
+	 * 
+	 * A^(-1) A = I and A A^(-1) = I
+	 * 
+	 * [Theorem 2.4]
+	 * 
+	 * Let A = {{a, b},{c,d}}. If ad-bc != 0, then A is invertible and
+	 * 
+	 * A^(-1) = 1 / (ad-bc) {{d,-b},{-c,a}}
+	 * 
+	 * If ad-bc=0, then A is not invertible.
+	 * 
+	 * [Fact]
+	 * 
+	 * det A = ad-bc
+	 * 
+	 * [Theorem 2.5]
+	 * 
+	 * If A is an invertible n x n matrix, then for each b in R^n, the equation Ax=b has the unique solution x=A^(-1) b.
+	 * 
+	 * [Theorem 2.6]
+	 * 
+	 * a. If A is an invertible matrix, then A^(-1) is invertible and
+	 * 
+	 * (A^(-1)) = A
+	 * 
+	 * b. If A and B are n x n invertible matrices, then so is AB, and the inverse of AB is the product of the inverses of A and B in the
+	 * reverse order. That is,
+	 * 
+	 * (AB)^(-1) = B^(-1) A^(-1)
+	 * 
+	 * c. If A is an invertible matrix, then so is A^T, and the inverse of A^T is the transpose of A^(-1). That is,
+	 * 
+	 * (A^T)^(-1) = (A^(-1))^T
+	 * 
+	 * [Fact]
+	 * 
+	 * The product of n x n invertible matrices is invertible, and the inverse is the product of their inverses in the reverse order.
+	 * 
+	 * [Theorem 2.8 - The Invertible Matrix Theorem]
+	 * 
+	 * Let A be a square n x n matrix. Then the following statements are equivalent. That is, for a given A, the statements are either all
+	 * true or all false.
+	 * 
+	 * a. A is an invertible matrix.
+	 * 
+	 * b. A is row equivalent to the n x n identity matrix.
+	 * 
+	 * c. A has n pivot positions.
+	 * 
+	 * d. The equation Ax=0 has only the trivial solution.
+	 * 
+	 * e. The columns of A form a linearly independent set.
+	 * 
+	 * f. The linear transformation x -> Ax is one-to-one.
+	 * 
+	 * g. The equation Ax=b has at least one solution for each b in R^n.
+	 * 
+	 * h. The columns of A span R^n.
+	 * 
+	 * i. The linear transformation x-> Ax maps R^n onto R^n.
+	 * 
+	 * j There is an n x n matrix C such that CA = I.
+	 * 
+	 * k. There is an n x n matrix D such that AD = I.
+	 * 
+	 * l. A^T is an invertible matrix.
+	 * 
+	 * [Fact]
+	 * 
+	 * Let A and B be square matrices. If AB = I, then A and B are both invertible, with B = A^(-1) and A = B^(-1).
+	 * 
+	 * 
+	 * 
+	 * 
+	 * [Theorem 3.8 - An Inverse Formula]
+	 * 
+	 * Let A be an invertible n x n matrix. Then
+	 * 
+	 * A^-1 = (1 / det A) * adj A
+	 * 
+	 * 
+	 * 
+	 * @param a
+	 *            input
+	 * @param b
+	 *            output
+	 * @return
+	 */
+	public static void inverse(double[][] a, double[][] b) {
+		int rowDim = a.length;
+		int colDim = a[0].length;
+
+		double[][] identity = ArrayUtils.newIdentityMatrix(rowDim, 1);
+		double[][] ai = joinColumns(a, identity);
+		double[][] ia_inverse = ArrayUtils.copy(ai);
+
+		GaussElimination(ia_inverse);
+
+		for (int i = 0; i < rowDim; i++) {
+			for (int j = 0; j < colDim; j++) {
+				b[i][j] = ia_inverse[i][j + colDim];
+			}
+		}
+	}
+
+	public static double[][] joinColumns(double[] a, double[] b) {
+		if (!ArrayChecker.isSameDimension(a, b)) {
+			throw new IllegalArgumentException();
+		}
+
+		int rowDim = a.length;
+
+		double[][] ret = new double[rowDim][2];
+
+		for (int i = 0; i < a.length; i++) {
+			ret[i][0] = a[i];
+		}
+
+		for (int i = 0; i < a.length; i++) {
+			ret[i][1] = b[i];
+		}
+
+		return ret;
+
+	}
+
+	public static double[][] joinColumns(double[][] a, double[] b) {
+		if (!ArrayChecker.isSameRowDimension(a, b)) {
+			throw new IllegalArgumentException();
+		}
+
+		int aRowDim = a.length;
+		int aColDim = a[0].length;
+
+		double[][] ret = new double[aRowDim][aColDim + 1];
+		for (int i = 0; i < aRowDim; i++) {
+			for (int j = 0; j < aColDim; j++) {
+				ret[i][j] = a[i][j];
+			}
+			ret[i][aColDim] = b[i];
+		}
+		return ret;
+	}
+
+	/**
+	 * 
+	 * http://en.wikipedia.org/wiki/Augmented_matrix
+	 * 
+	 * @param a
+	 * @param b
+	 * @return
+	 */
+	public static double[][] joinColumns(double[][] a, double[][] b) {
+		if (!ArrayChecker.isSameRowDimension(a, b)) {
+			throw new IllegalArgumentException();
+		}
+
+		int aRowDim = a.length;
+		int aColDim = a[0].length;
+		int bRowDim = b.length;
+		int bColDim = b[0].length;
+
+		double[][] ret = new double[aRowDim][aColDim + bColDim];
+
+		for (int i = 0; i < aRowDim; i++) {
+			for (int j = 0; j < aColDim; j++) {
+				ret[i][j] = a[i][j];
+			}
+		}
+
+		for (int i = 0; i < bRowDim; i++) {
+			for (int j = 0; j < bColDim; j++) {
+				ret[i][aColDim + j] = b[i][j];
+			}
+		}
+
+		return ret;
+	}
+
+	public static double leastSquareError(double[] a, double[] b) {
+		// Vector X = leastSquaresSolution(B);
+		// Vector AX = product(A, X);
+		// return norm(B.subtract(AX));
+
+		return 0;
+	}
+
+	public static Vector leastSquaresSolution(Matrix A, Vector B) {
+		Vector X = null;
+
+		// if (ArrayChecker.isLinearlyIndependent()) {
+		// MatPair QR = QRdecomposition();
+		// Matrix Q = QR.getFirst();
+		// Matrix R = QR.getSecond();
+		// Vector QtY = product(transpose(Q), B);
+		// X = solve(R, QtY, false);
+		// } else {
+		// Matrix At = transpose(A);
+		// Matrix AtA = product(At, A);
+		// Vector AtY = product(At, B);
+		// X = solve(AtA, AtY, false);
+		// }
+		return X;
+	}
+
+	public static Vector leastSquaresSolution(Vector B) {
+		Vector X = null;
+		// if (isLinearlyIndependent()) {
+		// Pair<Matrix, Matrix> QR = QRdecomposition();
+		// Matrix Q = QR.getFirst();
+		// Matrix R = QR.getSecond();
+		// Vector QtransB = Q.transpose().product(B);
+		// X = R.solve(QtransB);
+		// } else {
+		// Matrix Atrans = transpose();
+		// Matrix AtransA = Atrans.product(this);
+		// Vector AtransB = Atrans.product(B);
+		// X = AtransA.solve(AtransB);
+		// }
+		return X;
+	}
+
+	/**
+	 * 
+	 * * In linear algebra, the LU decomposition is a matrix decomposition which writes a matrix as the product of a lower and upper
+	 * triangular matrix. The product sometimes includes a permutation matrix as well. This decomposition is used in numerical analysis to
+	 * solve systems of linear equations or calculate the determinant.
+	 * 
+	 * 
+	 * [LU factorization algorithm]
+	 * 
+	 * Decompose A into L(lower triangular) * U(upper triangular).
+	 * 
+	 * Algorithm: (p. 145)
+	 * 
+	 * 1. Reduce A to to an echelon form U by a sequence of row replacement operations.
+	 * 
+	 * 2. Place entries in L such that the same sequence of row operations reduces L to I.
+	 * 
+	 * [Reference]
+	 * 
+	 * 1. http://en.wikipedia.org/wiki/LU_decomposition
+	 * 
+	 * 
+	 * @param a
+	 *            input (M x N matrix)
+	 * @param l
+	 *            output (M x M matrix)
+	 * @param u
+	 *            output (M x N matrix)
+	 */
+	public static void LUFactorization(double[][] a, double[][] l, double[][] u) {
+		int aRowDim = a.length;
+		int aColDim = a[0].length;
+
+		if (!ArrayChecker.isProductable(l, u, a)) {
+			throw new IllegalArgumentException();
+		}
+
+		ArrayUtils.copy(a, u);
+
+		int[] pivotColumns = new int[a.length];
+
+		for (int i = 0; i < aRowDim; i++) {
+			pivotColumns[i] = -1;
+		}
+
+		int numPivotColumns = 0;
+		/*
+		 * Row Echelon Form
+		 */
+
+		for (int i = 0, j = 0; i < aRowDim && j < aColDim; j++) {
+			if (u[i][j] == 0) {
+
+				/*
+				 * Partial pivoting - selects as a pivot the entry in a column having the largest absolute value to reduce roundoff errors
+				 * in the calculations.
+				 */
+				int max_abs_nonzero_i = -1;
+				double max_abs_value = 0;
+
+				for (int ii = i + 1; ii < aRowDim; ii++) {
+					double value = u[ii][j];
+					if (value != 0 && Math.abs(value) > Math.abs(max_abs_value)) {
+						max_abs_nonzero_i = ii;
+						max_abs_value = value;
+					}
+				}
+
+				if (max_abs_nonzero_i > 0) {
+					ArrayUtils.swapRows(a, i, max_abs_nonzero_i);
+				}
+			}
+
+			if (u[i][j] != 0) {
+				pivotColumns[i] = j;
+
+				double lScaleFactor = 1f / u[i][j];
+				l[i][numPivotColumns] = u[i][j] * lScaleFactor;
+
+				for (int ii = i + 1; ii < aRowDim; ii++) {
+					System.out.println(ArrayUtils.toString(l));
+					System.out.println();
+
+					l[ii][numPivotColumns] = u[ii][j] * lScaleFactor;
+
+					System.out.println(ArrayUtils.toString(l));
+					System.out.println();
+
+					double scaleFactor = u[ii][j] / u[i][j];
+
+					if (scaleFactor != 0) {
+						for (int jj = 0; jj < aColDim; jj++) {
+							u[ii][jj] = u[ii][jj] - scaleFactor * u[i][jj];
+						}
+					}
+				}
+				i++;
+				numPivotColumns++;
+			}
+		}
 	}
 
 	public static void main(String[] args) {
@@ -1006,448 +1247,60 @@ public class LA {
 
 	/**
 	 * 
-	 * * In linear algebra, the LU decomposition is a matrix decomposition which writes a matrix as the product of a lower and upper
-	 * triangular matrix. The product sometimes includes a permutation matrix as well. This decomposition is used in numerical analysis to
-	 * solve systems of linear equations or calculate the determinant.
+	 * Return the determinant of a minor matrix which is a matrix excluding ith row and jth column. the value of ith row and jth column is
+	 * called as cofactor of aij.
 	 * 
 	 * 
-	 * [LU factorization algorithm]
+	 * @param A
+	 * @param i
+	 * @param j
+	 * @param b
+	 *            Reusable matrix for computing minor matrix which is b[aRowDim-1][aColDim-1]
 	 * 
-	 * Decompose A into L(lower triangular) * U(upper triangular).
+	 * @return
+	 */
+	public static double minor(double[][] a, int i, int j, double[][] b) {
+		minorMatrix(a, i, j, b);
+		return determinant(b);
+	}
+
+	/**
 	 * 
-	 * Algorithm: (p. 145)
-	 * 
-	 * 1. Reduce A to to an echelon form U by a sequence of row replacement operations.
-	 * 
-	 * 2. Place entries in L such that the same sequence of row operations reduces L to I.
-	 * 
-	 * [Reference]
-	 * 
-	 * 1. http://en.wikipedia.org/wiki/LU_decomposition
-	 * 
+	 * Return a minor matrix that is a sub-matrix excludes ith row and jth column from a matrix.
 	 * 
 	 * @param a
-	 *            input (M x N matrix)
-	 * @param l
-	 *            output (M x M matrix)
-	 * @param u
-	 *            output (M x N matrix)
+	 * @param i
+	 * @param j
+	 * @param b
+	 *            Reusable matrix for computing minor matrix which is b[aRowDim-1][aColDim-1]
 	 */
-	public static void LUFactorization(double[][] a, double[][] l, double[][] u) {
+	public static void minorMatrix(double[][] a, int i, int j, double[][] b) {
+
 		int aRowDim = a.length;
 		int aColDim = a[0].length;
 
-		if (!ArrayChecker.isProductable(l, u, a)) {
-			throw new IllegalArgumentException();
-		}
+		int bRowDim = b.length;
+		int BColDim = b[0].length;
 
-		ArrayUtils.copy(a, u);
+		if (aRowDim - 1 == bRowDim && aColDim - 1 == BColDim) {
 
-		int[] pivotColumns = new int[a.length];
-
-		for (int i = 0; i < aRowDim; i++) {
-			pivotColumns[i] = -1;
-		}
-
-		int numPivotColumns = 0;
-		/*
-		 * Row Echelon Form
-		 */
-
-		for (int i = 0, j = 0; i < aRowDim && j < aColDim; j++) {
-			if (u[i][j] == 0) {
-
-				/*
-				 * Partial pivoting - selects as a pivot the entry in a column having the largest absolute value to reduce roundoff errors
-				 * in the calculations.
-				 */
-				int max_abs_nonzero_i = -1;
-				double max_abs_value = 0;
-
-				for (int ii = i + 1; ii < aRowDim; ii++) {
-					double value = u[ii][j];
-					if (value != 0 && Math.abs(value) > Math.abs(max_abs_value)) {
-						max_abs_nonzero_i = ii;
-						max_abs_value = value;
-					}
-				}
-
-				if (max_abs_nonzero_i > 0) {
-					ArrayUtils.swapRows(a, i, max_abs_nonzero_i);
-				}
-			}
-
-			if (u[i][j] != 0) {
-				pivotColumns[i] = j;
-
-				double lScaleFactor = 1f / u[i][j];
-				l[i][numPivotColumns] = u[i][j] * lScaleFactor;
-
-				for (int ii = i + 1; ii < aRowDim; ii++) {
-					System.out.println(ArrayUtils.toString(l));
-					System.out.println();
-
-					l[ii][numPivotColumns] = u[ii][j] * lScaleFactor;
-
-					System.out.println(ArrayUtils.toString(l));
-					System.out.println();
-
-					double scaleFactor = u[ii][j] / u[i][j];
-
-					if (scaleFactor != 0) {
-						for (int jj = 0; jj < aColDim; jj++) {
-							u[ii][jj] = u[ii][jj] - scaleFactor * u[i][jj];
-						}
-					}
-				}
-				i++;
-				numPivotColumns++;
-			}
-		}
-	}
-
-	/**
-	 * 
-	 * [Theorem 6.11 - The Gram-Schmidt Process]
-	 * 
-	 * Given a basis {x1,...,xp} for a subspace W of R^n, define
-	 * 
-	 * v1 = x1
-	 * 
-	 * v2 = x2 - ((InnerProduct(x2,v1) / InnerProduct(v1,v1)) * v1)
-	 * 
-	 * v3 = x3 - ((InnerProduct(x3,v1) / InnerProduct(v1,v1)) * v1) - ((InnerProduct(x3,v2) / InnerProduct(v2,v2)) * v2)
-	 * 
-	 * vp = xp - ((InnerProduct(xp,v1) / InnerProduct(v1,v1)) * v1) - ... - ((InnerProduct(xp,v(p-1)) / InnerProduct(v(p-1),v(p-1))) *
-	 * v(p-1) )
-	 * 
-	 * Then {v1
-	 * 
-	 * http://en.wikipedia.org/wiki/Gram%E2%80%93Schmidt_process
-	 * 
-	 * @param a
-	 *            input
-	 * @param b
-	 *            output
-	 */
-	public static void GramSchmidtProcess(double[][] a, double[][] b) {
-
-		if (!ArrayChecker.isSameDimensions(a, b)) {
-			throw new IllegalArgumentException();
-		}
-
-		int rowDim = a.length;
-		int colDim = a[0].length;
-
-		double[] vk = new double[colDim];
-		double[] uj = new double[colDim];
-		double[] uk = new double[colDim];
-		double[] temp = new double[colDim];
-
-		ArrayUtils.copyColumn(a, 0, b, 0);
-
-		for (int k = 1; k < colDim; k++) {
-			ArrayUtils.copyColumn(a, k, vk);
-			ArrayUtils.setAll(uk, 0);
-
-			for (int j = 0; j < k; j++) {
-				ArrayUtils.copyColumn(b, j, uj);
-				projectionAonB(vk, uj, temp);
-
-				ArrayMath.add(temp, uk);
-			}
-			ArrayMath.substract(vk, uk, uk);
-			ArrayUtils.copyColumn(uk, b, k);
-		}
-	}
-
-	private static void improve(double[][] a, double[] x, double[] b, double[] newx) {
-		double[] ax = new double[x.length];
-		double[] r = new double[x.length];
-		double[] z = new double[x.length];
-
-		for (int u = 0; u < MAX_ITER; u++) {
-			product(a, x, ax);
-			ArrayMath.substract(b, ax, r);
-			solve(a, r, z, false);
-
-			if (ArrayChecker.isZeroVector(z)) {
-				break;
-			}
-
-			ArrayMath.add(newx, z, newx);
-		}
-	}
-
-	public Matrix eigenVectors(Matrix A, Matrix eigenValues, boolean isSymmetric) {
-		// Vector lambdas = eigenValues.diagonalVector();
-		// Map<Integer, Matrix> lambdaMap = new HashMap<Integer, Matrix>();
-		// Indexer<Double> lambdaIndexer = new Indexer<Double>();
-		//
-		// for (int k = 0; k < lambdas.dim(); k++) {
-		// double lambda = lambdas.get(k);
-		// int lambdaIdx = lambdaIndexer.add(lambda);
-		//
-		// if (!lambdaMap.containsKey(lambdaIdx)) {
-		// Matrix diagonal = newDiagonalMatrix(A.rowDim(), lambda);
-		// Matrix C = A.subtract(diagonal);
-		// Vector B = new SparseVector(A.rowDim(), 0);
-		// Matrix nullBasis = nullBasis(C, B);
-		// if (isSymmetric && nullBasis.colDim() > 1) {
-		// nullBasis = GramSchmidtProcess(nullBasis);
-		// }
-		// lambdaMap.put(lambdaIdx, nullBasis);
-		// }
-		// }
-		//
-		// Matrix eigenVectors = new SparseMatrix(eigenValues.rowDim(),
-		// eigenValues.colDim(), 0);
-		//
-		// int k = 0;
-		// for (double lambda : lambdaIndexer.objects()) {
-		// int lambdaIdx = lambdaIndexer.indexOf(lambda);
-		// Matrix nullBasis = lambdaMap.get(lambdaIdx);
-		// for (int j = 0; j < nullBasis.colDim(); j++) {
-		// eigenVectors.setColVector(k++, nullBasis.colVector(j));
-		// }
-		// if (eigenVectors.colDim() == k) {
-		// break;
-		// }
-		// }
-		//
-		// return eigenVectors;
-
-		return null;
-	}
-
-	/**
-	 * 
-	 * [Fact]
-	 * 
-	 * A^(-1) A = I and A A^(-1) = I
-	 * 
-	 * [Theorem 2.4]
-	 * 
-	 * Let A = {{a, b},{c,d}}. If ad-bc != 0, then A is invertible and
-	 * 
-	 * A^(-1) = 1 / (ad-bc) {{d,-b},{-c,a}}
-	 * 
-	 * If ad-bc=0, then A is not invertible.
-	 * 
-	 * [Fact]
-	 * 
-	 * det A = ad-bc
-	 * 
-	 * [Theorem 2.5]
-	 * 
-	 * If A is an invertible n x n matrix, then for each b in R^n, the equation Ax=b has the unique solution x=A^(-1) b.
-	 * 
-	 * [Theorem 2.6]
-	 * 
-	 * a. If A is an invertible matrix, then A^(-1) is invertible and
-	 * 
-	 * (A^(-1)) = A
-	 * 
-	 * b. If A and B are n x n invertible matrices, then so is AB, and the inverse of AB is the product of the inverses of A and B in the
-	 * reverse order. That is,
-	 * 
-	 * (AB)^(-1) = B^(-1) A^(-1)
-	 * 
-	 * c. If A is an invertible matrix, then so is A^T, and the inverse of A^T is the transpose of A^(-1). That is,
-	 * 
-	 * (A^T)^(-1) = (A^(-1))^T
-	 * 
-	 * [Fact]
-	 * 
-	 * The product of n x n invertible matrices is invertible, and the inverse is the product of their inverses in the reverse order.
-	 * 
-	 * [Theorem 2.8 - The Invertible Matrix Theorem]
-	 * 
-	 * Let A be a square n x n matrix. Then the following statements are equivalent. That is, for a given A, the statements are either all
-	 * true or all false.
-	 * 
-	 * a. A is an invertible matrix.
-	 * 
-	 * b. A is row equivalent to the n x n identity matrix.
-	 * 
-	 * c. A has n pivot positions.
-	 * 
-	 * d. The equation Ax=0 has only the trivial solution.
-	 * 
-	 * e. The columns of A form a linearly independent set.
-	 * 
-	 * f. The linear transformation x -> Ax is one-to-one.
-	 * 
-	 * g. The equation Ax=b has at least one solution for each b in R^n.
-	 * 
-	 * h. The columns of A span R^n.
-	 * 
-	 * i. The linear transformation x-> Ax maps R^n onto R^n.
-	 * 
-	 * j There is an n x n matrix C such that CA = I.
-	 * 
-	 * k. There is an n x n matrix D such that AD = I.
-	 * 
-	 * l. A^T is an invertible matrix.
-	 * 
-	 * [Fact]
-	 * 
-	 * Let A and B be square matrices. If AB = I, then A and B are both invertible, with B = A^(-1) and A = B^(-1).
-	 * 
-	 * 
-	 * 
-	 * 
-	 * [Theorem 3.8 - An Inverse Formula]
-	 * 
-	 * Let A be an invertible n x n matrix. Then
-	 * 
-	 * A^-1 = (1 / det A) * adj A
-	 * 
-	 * 
-	 * 
-	 * @param a
-	 *            input
-	 * @param b
-	 *            output
-	 * @return
-	 */
-	public static void inverse(double[][] a, double[][] b) {
-		int rowDim = a.length;
-		int colDim = a[0].length;
-
-		double[][] identity = ArrayUtils.newIdentityMatrix(rowDim, 1);
-		double[][] ai = joinColumns(a, identity);
-		double[][] ia_inverse = ArrayUtils.copy(ai);
-
-		GaussElimination(ia_inverse);
-
-		for (int i = 0; i < rowDim; i++) {
-			for (int j = 0; j < colDim; j++) {
-				b[i][j] = ia_inverse[i][j + colDim];
-			}
-		}
-	}
-
-	public static double leastSquareError(double[] a, double[] b) {
-		// Vector X = leastSquaresSolution(B);
-		// Vector AX = product(A, X);
-		// return norm(B.subtract(AX));
-
-		return 0;
-	}
-
-	public static Vector leastSquaresSolution(Vector B) {
-		Vector X = null;
-		// if (isLinearlyIndependent()) {
-		// Pair<Matrix, Matrix> QR = QRdecomposition();
-		// Matrix Q = QR.getFirst();
-		// Matrix R = QR.getSecond();
-		// Vector QtransB = Q.transpose().product(B);
-		// X = R.solve(QtransB);
-		// } else {
-		// Matrix Atrans = transpose();
-		// Matrix AtransA = Atrans.product(this);
-		// Vector AtransB = Atrans.product(B);
-		// X = AtransA.solve(AtransB);
-		// }
-		return X;
-	}
-
-	public static Vector leastSquaresSolution(Matrix A, Vector B) {
-		Vector X = null;
-
-		// if (ArrayChecker.isLinearlyIndependent()) {
-		// MatPair QR = QRdecomposition();
-		// Matrix Q = QR.getFirst();
-		// Matrix R = QR.getSecond();
-		// Vector QtY = product(transpose(Q), B);
-		// X = solve(R, QtY, false);
-		// } else {
-		// Matrix At = transpose(A);
-		// Matrix AtA = product(At, A);
-		// Vector AtY = product(At, B);
-		// X = solve(AtA, AtY, false);
-		// }
-		return X;
-	}
-
-	public void quadraticConstrainedOptimization() {
-		// if (!isSymmetric()) {
-		// throw new
-		// IllegalArgumentException("Invalid matrix constrainedOptimization");
-		// }
-		// Pair<Matrix, Matrix> PD = diagonalization();
-		// Matrix P = PD.getFirst();
-		// Matrix D = PD.getSecond();
-		// Counter<Integer> lambdaCounter = D.diagonalVector().asCounter();
-		// int minLambdaIdx = lambdaCounter.argMin();
-		// int maxLambdaIdx = lambdaCounter.argMax();
-		// double minLambda = lambdaCounter.getCount(minLambdaIdx);
-		// double maxLambda = lambdaCounter.getCount(maxLambdaIdx);
-		// return new Pair<Double, Double>(minLambda, maxLambda);
-	}
-
-	public void quadraticFormType() {
-		// Matrix eigenValues = eigenValues();
-		// Vector lambdaVec = eigenValues.diagonalVector();
-		// int numPositives = 0;
-		// int numNegatives = 0;
-		//
-		// for (int i = 0; i < lambdaVec.get(i); i++) {
-		// double lambda = lambdaVec.get(i);
-		// if (lambda > 0) {
-		// numPositives++;
-		// } else if (lambda < 0) {
-		// numNegatives++;
-		// }
-		// }
-		//
-		// QuadraticFormType ret;
-		// if (numPositives > 0 && numNegatives == 0) {
-		// ret = QuadraticFormType.POSITIVE_DEFINITE;
-		// } else if (numNegatives > 0 && numPositives == 0) {
-		// ret = QuadraticFormType.NEGATIVE_DEFINITE;
-		// } else {
-		// ret = QuadraticFormType.INDEFINITE;
-		// }
-	}
-
-	public static int rank(double[][] a, boolean useQRalgorithm) {
-		int ret = 0;
-		if (useQRalgorithm) {
-			// Pair<Matrix, Matrix> PD = diagonalization();
-			// Matrix D = PD.getSecond();
-			// Vector lambdaVec = D.diagonalVector();
-			// ret = lambdaVec.nonZeroSize();
 		} else {
-			GaussElimination(a);
-
-			int numColumnPivots = 0;
-
-			for (int i = 0; i < a.length; i++) {
-				for (int j = i; j < a[i].length; j++) {
-					if (a[i][j] != 0) {
-						ret++;
-						break;
-					}
-				}
-			}
-
+			throw new IllegalArgumentException();
 		}
-		return ret;
-	}
 
-	public Matrix rowBasis() {
-		// Matrix p = REF();
-		// List<IntPair> pivotIndexes = p.pivotIndex();
-		//
-		// Matrix ret = new SparseMatrix(pivotIndexes.size(), colDim(), 0);
-		// int k = 0;
-		// for (IntPair pair : pivotIndexes) {
-		// int i = pair.getFirst();
-		// ret.setRowVector(k++, p.rowVector(i));
-		// }
-		return null;
+		for (int ii = 0, m = 0; ii < aRowDim; ii++) {
+			if (ii == i) {
+				continue;
+			}
+			for (int jj = 0, n = 0; jj < aColDim; jj++) {
+				if (jj == j) {
+					continue;
+				}
+				b[m][n] = a[ii][jj];
+				n++;
+			}
+			m++;
+		}
 	}
 
 	public static Matrix nullBasis(double[][] a) {
@@ -1468,23 +1321,6 @@ public class LA {
 	}
 
 	/**
-	 * @param a
-	 *            input
-	 * @param b
-	 *            input
-	 * @param c
-	 *            output
-	 */
-	public static void orthogonalToProjection(double[][] a, double[] b, double[] c) {
-		if (a.length != b.length) {
-			throw new IllegalArgumentException("Matrix invalid orthogonalToProjection");
-		}
-
-		projection(a, b, c);
-		ArrayMath.substract(b, c, c);
-	}
-
-	/**
 	 * 
 	 * Component of y orthogonal to u.
 	 * 
@@ -1500,6 +1336,23 @@ public class LA {
 		for (int i = 0; i < a.length; i++) {
 			c[i] = a[i] - c[i];
 		}
+	}
+
+	/**
+	 * @param a
+	 *            input
+	 * @param b
+	 *            input
+	 * @param c
+	 *            output
+	 */
+	public static void orthogonalToProjection(double[][] a, double[] b, double[] c) {
+		if (a.length != b.length) {
+			throw new IllegalArgumentException("Matrix invalid orthogonalToProjection");
+		}
+
+		projection(a, b, c);
+		ArrayMath.substract(b, c, c);
 	}
 
 	public static void outerProduct(double[] a, double[] b, double[] c) {
@@ -1541,78 +1394,109 @@ public class LA {
 		}
 	}
 
-	public void SpectralDecomposition() {
+	/**
+	 * @param a
+	 *            input
+	 * @param b
+	 *            input
+	 * @param c
+	 *            output
+	 */
+	public static void product(double[] a, double[][] b, double[] c) {
+		double[][] aa = new double[1][];
+		aa[0] = a;
+
+		double[][] cc = new double[1][];
+		cc[0] = c;
+
+		product(aa, b, cc);
 	}
 
-	public void SVD() {
-		// if (ArrayChecker.isSquare()) {
-		// throw new IllegalArgumentException("Invalid matrix SVD");
-		// }
-		//
-		// Matrix AtransA = transpose().product(this);
-		// Pair<Matrix, Matrix> diagonalization = AtransA.diagonalization();
-		// Matrix V = diagonalization.getFirst().unitVectors();
-		// Matrix D = diagonalization.getSecond();
-		// Vector lambdaVec = D.diagonalVector();
-		//
-		// Matrix SIGMA = new SparseMatrix(rowDim(), colDim(), 0);
-		// Matrix tempV = new SparseMatrix(V.rowDim(), V.colDim(), 0);
-		// PriorityQueue<Integer> pq = lambdaVec.asPriorityQueue();
-		// List<Double> orderedSingularValues = new ArrayList<Double>();
-		// int min = Math.min(rowDim(), colDim());
-		// int aj = 0;
-		//
-		// while (pq.hasNext()) {
-		// double lambda = pq.getPriority();
-		// int j = pq.next();
-		// double singularValue = Math.sqrt(lambda);
-		// if (singularValue == 0) {
-		// break;
-		// }
-		//
-		// SIGMA.set(aj, aj, singularValue);
-		// orderedSingularValues.add(singularValue);
-		//
-		// tempV.setColVector(aj, V.colVector(j));
-		// aj++;
-		// }
-		// V = tempV;
-		//
-		// Matrix U = new SparseMatrix(rowDim(), rowDim(), 0);
-		// int numNonZeroVecs = 0;
-		// int rank = orderedSingularValues.size();
-		//
-		// for (int j = 0; j < rank; j++) {
-		// double singularValue = orderedSingularValues.get(j);
-		// Vector v = V.colVector(j);
-		// Vector Av = product(v);
-		// Vector u = Av.multiplyScalar(1 / singularValue);
-		//
-		// if (!u.isZeroVector()) {
-		// U.setColVector(j, u);
-		// numNonZeroVecs++;
-		// }
-		// }
-		//
-		// if (numNonZeroVecs != U.colDim()) {
-		// Matrix A = new SparseMatrix(lambdaVec.size(), U.rowDim(), 0);
-		//
-		// for (int k = 0; k < rank; k++) {
-		// A.setRowVector(k, U.colVector(k));
-		// }
-		//
-		// Vector B = new SparseVector(lambdaVec.size(), 0);
-		// Matrix nullBasis = A.nullBasis(B).GramSchmidtProcess();
-		//
-		// for (int bj = 0, cj = rank; bj < nullBasis.colDim() && cj <
-		// U.colDim(); bj++, cj++) {
-		// Vector w = nullBasis.colVector(bj).unitVector();
-		// U.setColVector(cj, w);
-		// }
-		//
-		// }
-		//
-		// return new Triple<Matrix, Matrix, Matrix>(U, SIGMA, V.transpose());
+	/**
+	 * @param a
+	 *            input
+	 * @param b
+	 *            input
+	 * @param c
+	 *            output
+	 */
+	public static void product(double[][] a, double[] b, double[] c) {
+		for (int i = 0; i < a.length; i++) {
+			c[i] = dotProduct(a[i], b);
+		}
+	}
+
+	/**
+	 * 
+	 * /** [Theorem 2.1]
+	 * 
+	 * Let A, B, and C be matrices of the same size, and let r and s be scalars.
+	 * 
+	 * a. A + B = B + A
+	 * 
+	 * b. (A + B) + C = A + (B + C)
+	 * 
+	 * c. A + 0 = A
+	 * 
+	 * d. r(A + B) = rA + rB
+	 * 
+	 * e. (r + s)A = rA + sA
+	 * 
+	 * f. r(sA) = (rs)A
+	 * 
+	 * [Fact]
+	 * 
+	 * Each columns of AB is a linear combination of the columns of A using weights from the corresponding column of B.
+	 * 
+	 * [Row-Column Rule for Computing AB]
+	 * 
+	 * If the product AB is defined, then the entry in row i and column j of AB is the sum of the products of corresponding entries from row
+	 * i of A and column j of B. If (AB)_ij denotes the (i,j)-entry in AB, and if A is an m x n matrix, then
+	 * 
+	 * (AB)_ij = a_i1b_1j + a_i2b_2j + ... + a_inb_nj
+	 * 
+	 * [Theorem 2.2]
+	 * 
+	 * Let A be an m x n matrix, let B and C have sizes for which indicated sums and products are defined.
+	 * 
+	 * a. A(BC) = (AB)C (associative law of multiplication)
+	 * 
+	 * b. A(B+C) = AB + AC (left distributive law)
+	 * 
+	 * c. (B+C)A = BA + CA (right distributive law)
+	 * 
+	 * d. r(AB) = (rA)B = A(rB) for any scalar r
+	 * 
+	 * e. I_mA = A = AI_n (identity for matrix multiplication)
+	 * 
+	 * 
+	 * http://introcs.cs.princeton.edu/java/95linear/
+	 * 
+	 * @param a
+	 * @param b
+	 * @param c
+	 *            output
+	 */
+	public static void product(double[][] a, double[][] b, double[][] c) {
+		if (!ArrayChecker.isProductable(a, b, c)) {
+			throw new IllegalArgumentException();
+		}
+
+		int aRowDim = a.length;
+		int aColDim = a[0].length;
+		int bRowDim = b.length;
+		int bColDim = b[0].length;
+
+		double[] aRow; // row i of A
+		double[] bColumn = new double[bRowDim]; // column j of B
+
+		for (int j = 0; j < bColDim; j++) {
+			ArrayUtils.copyColumn(b, j, bColumn);
+			for (int i = 0; i < aRowDim; i++) {
+				aRow = a[i];
+				c[i][j] = dotProduct(aRow, bColumn);
+			}
+		}
 	}
 
 	/**
@@ -1768,6 +1652,31 @@ public class LA {
 		colOrthonormalBasis(a, q);
 
 		product(transpose(q), a, r);
+	}
+
+	public static int rank(double[][] a, boolean useQRalgorithm) {
+		int ret = 0;
+		if (useQRalgorithm) {
+			// Pair<Matrix, Matrix> PD = diagonalization();
+			// Matrix D = PD.getSecond();
+			// Vector lambdaVec = D.diagonalVector();
+			// ret = lambdaVec.nonZeroSize();
+		} else {
+			GaussElimination(a);
+
+			int numColumnPivots = 0;
+
+			for (int i = 0; i < a.length; i++) {
+				for (int j = i; j < a[i].length; j++) {
+					if (a[i][j] != 0) {
+						ret++;
+						break;
+					}
+				}
+			}
+
+		}
+		return ret;
 	}
 
 	/**
@@ -1976,6 +1885,23 @@ public class LA {
 		return 0;
 	}
 
+	public static double trace(double[][] x) {
+		int min = Math.min(x.length, x[0].length);
+		double ret = 0;
+		for (int i = 0; i < min; i++) {
+			ret += x[i][i];
+		}
+		return ret;
+	}
+
+	public static double[][] transpose(double[][] a) {
+		int rowDim = a.length;
+		int colDim = a[0].length;
+		double[][] b = new double[colDim][rowDim];
+		transpose(a, b);
+		return b;
+	}
+
 	/**
 	 * 
 	 * Let A and B denotes matrices whose sizes are appropriate for the following sums and products.
@@ -2008,14 +1934,6 @@ public class LA {
 		}
 	}
 
-	public static double[][] transpose(double[][] a) {
-		int rowDim = a.length;
-		int colDim = a[0].length;
-		double[][] b = new double[colDim][rowDim];
-		transpose(a, b);
-		return b;
-	}
-
 	/**
 	 * @param a
 	 *            input
@@ -2037,6 +1955,45 @@ public class LA {
 			ArrayMath.unitVector(column, column);
 			ArrayUtils.copyColumn(column, a, j);
 		}
+	}
+
+	/**
+	 * @param a
+	 *            Reduced Row Echelon Form using GaussElimination
+	 * @return
+	 */
+	public static VariableType[] variableTypes(double[][] a) {
+		int rowDim = a.length;
+		int colDim = a[0].length;
+		VariableType[] ret = new VariableType[colDim];
+
+		for (int j = 0; j < ret.length; j++) {
+			ret[j] = VariableType.Free;
+		}
+		for (int i = 0; i < rowDim; i++) {
+			for (int j = 0; j < colDim; j++) {
+				if (a[i][j] == 1) {
+					ret[j] = VariableType.Basic;
+					break;
+				}
+			}
+		}
+
+		return ret;
+	}
+
+	public double[][] colBasis(double[][] a) {
+		double[][] b = ArrayUtils.copy(a);
+		int[] pivotColumns = GaussElimination(b);
+
+		double[][] c = new double[a.length][pivotColumns.length];
+
+		for (int i = 0; i < pivotColumns.length; i++) {
+			int column = pivotColumns[i];
+			ArrayUtils.copyColumn(b, column, c, i);
+		}
+
+		return c;
 	}
 
 	public int dimCol(double[][] a) {
@@ -2102,130 +2059,173 @@ public class LA {
 		}
 	}
 
-	/**
-	 * @param a
-	 *            input
-	 * @param b
-	 *            input
-	 * @param c
-	 *            output
-	 */
-	public static void product(double[] a, double[][] b, double[] c) {
-		double[][] aa = new double[1][];
-		aa[0] = a;
+	public Matrix eigenVectors(Matrix A, Matrix eigenValues, boolean isSymmetric) {
+		// Vector lambdas = eigenValues.diagonalVector();
+		// Map<Integer, Matrix> lambdaMap = new HashMap<Integer, Matrix>();
+		// Indexer<Double> lambdaIndexer = new Indexer<Double>();
+		//
+		// for (int k = 0; k < lambdas.dim(); k++) {
+		// double lambda = lambdas.get(k);
+		// int lambdaIdx = lambdaIndexer.add(lambda);
+		//
+		// if (!lambdaMap.containsKey(lambdaIdx)) {
+		// Matrix diagonal = newDiagonalMatrix(A.rowDim(), lambda);
+		// Matrix C = A.subtract(diagonal);
+		// Vector B = new SparseVector(A.rowDim(), 0);
+		// Matrix nullBasis = nullBasis(C, B);
+		// if (isSymmetric && nullBasis.colDim() > 1) {
+		// nullBasis = GramSchmidtProcess(nullBasis);
+		// }
+		// lambdaMap.put(lambdaIdx, nullBasis);
+		// }
+		// }
+		//
+		// Matrix eigenVectors = new SparseMatrix(eigenValues.rowDim(),
+		// eigenValues.colDim(), 0);
+		//
+		// int k = 0;
+		// for (double lambda : lambdaIndexer.objects()) {
+		// int lambdaIdx = lambdaIndexer.indexOf(lambda);
+		// Matrix nullBasis = lambdaMap.get(lambdaIdx);
+		// for (int j = 0; j < nullBasis.colDim(); j++) {
+		// eigenVectors.setColVector(k++, nullBasis.colVector(j));
+		// }
+		// if (eigenVectors.colDim() == k) {
+		// break;
+		// }
+		// }
+		//
+		// return eigenVectors;
 
-		double[][] cc = new double[1][];
-		cc[0] = c;
-
-		product(aa, b, cc);
+		return null;
 	}
 
-	/**
-	 * @param a
-	 *            input
-	 * @param b
-	 *            input
-	 * @param c
-	 *            output
-	 */
-	public static void product(double[][] a, double[] b, double[] c) {
-		for (int i = 0; i < a.length; i++) {
-			c[i] = dotProduct(a[i], b);
-		}
+	public void quadraticConstrainedOptimization() {
+		// if (!isSymmetric()) {
+		// throw new
+		// IllegalArgumentException("Invalid matrix constrainedOptimization");
+		// }
+		// Pair<Matrix, Matrix> PD = diagonalization();
+		// Matrix P = PD.getFirst();
+		// Matrix D = PD.getSecond();
+		// Counter<Integer> lambdaCounter = D.diagonalVector().asCounter();
+		// int minLambdaIdx = lambdaCounter.argMin();
+		// int maxLambdaIdx = lambdaCounter.argMax();
+		// double minLambda = lambdaCounter.getCount(minLambdaIdx);
+		// double maxLambda = lambdaCounter.getCount(maxLambdaIdx);
+		// return new Pair<Double, Double>(minLambda, maxLambda);
 	}
 
-	/**
-	 * 
-	 * /** [Theorem 2.1]
-	 * 
-	 * Let A, B, and C be matrices of the same size, and let r and s be scalars.
-	 * 
-	 * a. A + B = B + A
-	 * 
-	 * b. (A + B) + C = A + (B + C)
-	 * 
-	 * c. A + 0 = A
-	 * 
-	 * d. r(A + B) = rA + rB
-	 * 
-	 * e. (r + s)A = rA + sA
-	 * 
-	 * f. r(sA) = (rs)A
-	 * 
-	 * [Fact]
-	 * 
-	 * Each columns of AB is a linear combination of the columns of A using weights from the corresponding column of B.
-	 * 
-	 * [Row-Column Rule for Computing AB]
-	 * 
-	 * If the product AB is defined, then the entry in row i and column j of AB is the sum of the products of corresponding entries from row
-	 * i of A and column j of B. If (AB)_ij denotes the (i,j)-entry in AB, and if A is an m x n matrix, then
-	 * 
-	 * (AB)_ij = a_i1b_1j + a_i2b_2j + ... + a_inb_nj
-	 * 
-	 * [Theorem 2.2]
-	 * 
-	 * Let A be an m x n matrix, let B and C have sizes for which indicated sums and products are defined.
-	 * 
-	 * a. A(BC) = (AB)C (associative law of multiplication)
-	 * 
-	 * b. A(B+C) = AB + AC (left distributive law)
-	 * 
-	 * c. (B+C)A = BA + CA (right distributive law)
-	 * 
-	 * d. r(AB) = (rA)B = A(rB) for any scalar r
-	 * 
-	 * e. I_mA = A = AI_n (identity for matrix multiplication)
-	 * 
-	 * 
-	 * http://introcs.cs.princeton.edu/java/95linear/
-	 * 
-	 * @param a
-	 * @param b
-	 * @param c
-	 *            output
-	 */
-	public static void product(double[][] a, double[][] b, double[][] c) {
-		if (!ArrayChecker.isProductable(a, b, c)) {
-			throw new IllegalArgumentException();
-		}
-
-		int aRowDim = a.length;
-		int aColDim = a[0].length;
-		int bRowDim = b.length;
-		int bColDim = b[0].length;
-
-		double[] aRow; // row i of A
-		double[] bColumn = new double[bRowDim]; // column j of B
-
-		for (int j = 0; j < bColDim; j++) {
-			ArrayUtils.copyColumn(b, j, bColumn);
-			for (int i = 0; i < aRowDim; i++) {
-				aRow = a[i];
-				c[i][j] = dotProduct(aRow, bColumn);
-			}
-		}
+	public void quadraticFormType() {
+		// Matrix eigenValues = eigenValues();
+		// Vector lambdaVec = eigenValues.diagonalVector();
+		// int numPositives = 0;
+		// int numNegatives = 0;
+		//
+		// for (int i = 0; i < lambdaVec.get(i); i++) {
+		// double lambda = lambdaVec.get(i);
+		// if (lambda > 0) {
+		// numPositives++;
+		// } else if (lambda < 0) {
+		// numNegatives++;
+		// }
+		// }
+		//
+		// QuadraticFormType ret;
+		// if (numPositives > 0 && numNegatives == 0) {
+		// ret = QuadraticFormType.POSITIVE_DEFINITE;
+		// } else if (numNegatives > 0 && numPositives == 0) {
+		// ret = QuadraticFormType.NEGATIVE_DEFINITE;
+		// } else {
+		// ret = QuadraticFormType.INDEFINITE;
+		// }
 	}
 
-	public static double dotProduct(double[] a, double[] b) {
-		if (!ArrayChecker.isSameDimension(a, b)) {
-			throw new IllegalArgumentException();
-		}
-
-		double ret = 0;
-		for (int i = 0; i < a.length; i++) {
-			ret += a[i] * b[i];
-		}
-		return ret;
+	public Matrix rowBasis() {
+		// Matrix p = REF();
+		// List<IntPair> pivotIndexes = p.pivotIndex();
+		//
+		// Matrix ret = new SparseMatrix(pivotIndexes.size(), colDim(), 0);
+		// int k = 0;
+		// for (IntPair pair : pivotIndexes) {
+		// int i = pair.getFirst();
+		// ret.setRowVector(k++, p.rowVector(i));
+		// }
+		return null;
 	}
 
-	public static double trace(double[][] x) {
-		int min = Math.min(x.length, x[0].length);
-		double ret = 0;
-		for (int i = 0; i < min; i++) {
-			ret += x[i][i];
-		}
-		return ret;
+	public void SpectralDecomposition() {
+	}
+
+	public void SVD() {
+		// if (ArrayChecker.isSquare()) {
+		// throw new IllegalArgumentException("Invalid matrix SVD");
+		// }
+		//
+		// Matrix AtransA = transpose().product(this);
+		// Pair<Matrix, Matrix> diagonalization = AtransA.diagonalization();
+		// Matrix V = diagonalization.getFirst().unitVectors();
+		// Matrix D = diagonalization.getSecond();
+		// Vector lambdaVec = D.diagonalVector();
+		//
+		// Matrix SIGMA = new SparseMatrix(rowDim(), colDim(), 0);
+		// Matrix tempV = new SparseMatrix(V.rowDim(), V.colDim(), 0);
+		// PriorityQueue<Integer> pq = lambdaVec.asPriorityQueue();
+		// List<Double> orderedSingularValues = new ArrayList<Double>();
+		// int min = Math.min(rowDim(), colDim());
+		// int aj = 0;
+		//
+		// while (pq.hasNext()) {
+		// double lambda = pq.getPriority();
+		// int j = pq.next();
+		// double singularValue = Math.sqrt(lambda);
+		// if (singularValue == 0) {
+		// break;
+		// }
+		//
+		// SIGMA.set(aj, aj, singularValue);
+		// orderedSingularValues.add(singularValue);
+		//
+		// tempV.setColVector(aj, V.colVector(j));
+		// aj++;
+		// }
+		// V = tempV;
+		//
+		// Matrix U = new SparseMatrix(rowDim(), rowDim(), 0);
+		// int numNonZeroVecs = 0;
+		// int rank = orderedSingularValues.size();
+		//
+		// for (int j = 0; j < rank; j++) {
+		// double singularValue = orderedSingularValues.get(j);
+		// Vector v = V.colVector(j);
+		// Vector Av = product(v);
+		// Vector u = Av.multiplyScalar(1 / singularValue);
+		//
+		// if (!u.isZeroVector()) {
+		// U.setColVector(j, u);
+		// numNonZeroVecs++;
+		// }
+		// }
+		//
+		// if (numNonZeroVecs != U.colDim()) {
+		// Matrix A = new SparseMatrix(lambdaVec.size(), U.rowDim(), 0);
+		//
+		// for (int k = 0; k < rank; k++) {
+		// A.setRowVector(k, U.colVector(k));
+		// }
+		//
+		// Vector B = new SparseVector(lambdaVec.size(), 0);
+		// Matrix nullBasis = A.nullBasis(B).GramSchmidtProcess();
+		//
+		// for (int bj = 0, cj = rank; bj < nullBasis.colDim() && cj <
+		// U.colDim(); bj++, cj++) {
+		// Vector w = nullBasis.colVector(bj).unitVector();
+		// U.setColVector(cj, w);
+		// }
+		//
+		// }
+		//
+		// return new Triple<Matrix, Matrix, Matrix>(U, SIGMA, V.transpose());
 	}
 
 }

@@ -74,20 +74,6 @@ public class FuncMath {
 	}
 
 	/**
-	 * Z = (x - mu) / sigma
-	 * 
-	 * Z ~ N(0,1)
-	 * 
-	 * @param x
-	 * @param mu
-	 * @param sigma
-	 * @return
-	 */
-	public static double zTransform(double x, double mu, double sigma) {
-		return (x - mu) / sigma;
-	}
-
-	/**
 	 * @param k
 	 *            free parameter 30<= k <= 100
 	 * @param b
@@ -310,6 +296,20 @@ public class FuncMath {
 		double c = 1 / Math.log(M);
 		double ret = (L * c) / rank;
 		return ret;
+	}
+
+	/**
+	 * Z = (x - mu) / sigma
+	 * 
+	 * Z ~ N(0,1)
+	 * 
+	 * @param x
+	 * @param mu
+	 * @param sigma
+	 * @return
+	 */
+	public static double zTransform(double x, double mu, double sigma) {
+		return (x - mu) / sigma;
 	}
 
 }

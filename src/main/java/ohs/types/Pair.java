@@ -61,16 +61,16 @@ public class Pair<F, S> implements Serializable {
 		return result;
 	}
 
+	public void set(F first, S second) {
+		this.first = first;
+		this.second = second;
+	}
+
 	public void setFirst(F first) {
 		this.first = first;
 	}
 
 	public void setSecond(S second) {
-		this.second = second;
-	}
-
-	public void set(F first, S second) {
-		this.first = first;
 		this.second = second;
 	}
 

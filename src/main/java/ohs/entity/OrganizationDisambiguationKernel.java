@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.sun.org.apache.xpath.internal.operations.Or;
+
 import ohs.classifier.centroid.CentroidClassifier;
 import ohs.entity.OrganizationDetector.UnivComponent;
 import ohs.entity.data.struct.BilingualText;
@@ -51,6 +53,118 @@ public class OrganizationDisambiguationKernel implements Serializable {
 		// test();
 		prepareTestData();
 		System.out.println("process ends.");
+	}
+
+	public static void prepareTestData() {
+		String orgFileName = ENTPath.BASE_ORG_NAME_FILE;
+		String extOrgFileName = ENTPath.DOMESTIC_PAPER_ORG_NAME_FILE;
+		String abbrFileName = ENTPath.COMMON_DEPT_ABBR_DICT_FILE;
+
+		OrganizationDisambiguationKernel odk = new OrganizationDisambiguationKernel();
+		odk.readOrganizations(orgFileName);
+		odk.createOrganizationNormalizer(abbrFileName);
+		odk.createSearchers(null);
+		// odk.createClassifiers();
+		// odk.write(ENTPath.ODK_FILE);
+
+		TextFileWriter writer = new TextFileWriter(ENTPath.ODK_TEST_DATA);
+
+		{
+			System.out.println(ENTPath.PATENT_ORG_FILE_2);
+			TextFileReader reader = new TextFileReader(ENTPath.PATENT_ORG_FILE_2);
+
+			reader.setPrintNexts(false);
+
+			while (reader.hasNext()) {
+				reader.print(100);
+
+				String line = reader.next();
+				String[] parts = line.split("\t");
+
+				String korName = null;
+				Counter<String> engNameCounts = new Counter<String>();
+
+				for (int i = 0; i < parts.length; i++) {
+					String[] two = StrUtils.split2Two(":", parts[i]);
+					String name = two[0];
+					double cnt = Double.parseDouble(two[1]);
+					if (i == 0) {
+						korName = name;
+					} else {
+						engNameCounts.incrementCount(name, cnt);
+					}
+				}
+
+				if (engNameCounts.totalCount() < 200000) {
+					break;
+				}
+
+				BilingualText orgName = new BilingualText(korName, engNameCounts.argMax());
+
+				Counter<Organization> ret = odk.disambiguate(orgName);
+
+				List<Organization> keys = ret.getSortedKeys();
+				int num_candidates = 10;
+				StringBuffer sb = new StringBuffer();
+				sb.append("#PATENT");
+				sb.append("\nINPUT:");
+				sb.append("\n" + orgName.toString());
+				sb.append("\nOUTPUT:");
+				for (int i = 0; i < keys.size() && i < num_candidates; i++) {
+					Organization sr = keys.get(i);
+					double score = ret.getCount(sr);
+					String output = String.format("\n%d\t%s\t%s\t%f",
+
+					i + 1, sr.getName().getKorean(), sr.getName().getEnglish(), score);
+					sb.append(output);
+				}
+
+				writer.write(sb.toString() + "\n\n");
+			}
+			reader.printLast();
+		}
+
+		{
+			System.out.println(ENTPath.ODK_OUTPUT_PAPER_FILE);
+			Counter<BilingualText> orgNames = DataReader.readBilingualTextCounter(extOrgFileName);
+			int num_orgs = 0;
+			StopWatch stopWatch = new StopWatch();
+			stopWatch.start();
+
+			for (BilingualText orgName : orgNames.getSortedKeys()) {
+				double cnt = orgNames.getCount(orgName);
+
+				if (cnt < 50) {
+					break;
+				}
+
+				if (++num_orgs % 100 == 0) {
+					System.out.printf("\r[%d, %s]", num_orgs, stopWatch.stop());
+				}
+
+				Counter<Organization> ret = odk.disambiguate(orgName);
+
+				List<Organization> keys = ret.getSortedKeys();
+				int num_candidates = 10;
+				StringBuffer sb = new StringBuffer();
+				sb.append("#PAPER");
+				sb.append("\nINPUT:");
+				sb.append("\n" + orgName.toString());
+				sb.append("\nOUTPUT:");
+				for (int i = 0; i < keys.size() && i < num_candidates; i++) {
+					Organization sr = keys.get(i);
+					double score = ret.getCount(sr);
+					String output = String.format("\n%d\t%s\t%s\t%f",
+
+					i + 1, sr.getName().getKorean(), sr.getName().getEnglish(), score);
+					sb.append(output);
+				}
+
+				writer.write(sb.toString() + "\n\n");
+			}
+			writer.close();
+			System.out.printf("\r[%d, %s]\n", num_orgs, stopWatch.stop());
+		}
 	}
 
 	public static void test() {
@@ -98,16 +212,16 @@ public class OrganizationDisambiguationKernel implements Serializable {
 
 				BilingualText orgName = new BilingualText(korName, engNameCounts.argMax());
 
-				Counter<StringRecord> ret = odk.disambiguate(orgName);
+				Counter<Organization> ret = odk.disambiguate(orgName);
 
-				List<StringRecord> keys = ret.getSortedKeys();
+				List<Organization> keys = ret.getSortedKeys();
 				int num_candidates = 10;
 				StringBuffer sb = new StringBuffer();
 				sb.append("#PATENT\n");
 				sb.append(orgName.toString() + "\n");
 
 				for (int i = 0; i < keys.size() && i < num_candidates; i++) {
-					StringRecord sr = keys.get(i);
+					Organization sr = keys.get(i);
 					double score = ret.getCount(sr);
 					sb.append(String.format("\n%d\t%s\t%f", i + 1, sr, score));
 				}
@@ -137,114 +251,15 @@ public class OrganizationDisambiguationKernel implements Serializable {
 					System.out.printf("\r[%d, %s]", num_orgs, stopWatch.stop());
 				}
 
-				Counter<StringRecord> ret = odk.disambiguate(orgName);
+				Counter<Organization> ret = odk.disambiguate(orgName);
 
-				List<StringRecord> keys = ret.getSortedKeys();
+				List<Organization> keys = ret.getSortedKeys();
 				int num_candidates = 10;
 				StringBuffer sb = new StringBuffer();
 				sb.append("#PAPER\n");
 				sb.append(orgName.toString() + "\n");
 				for (int i = 0; i < keys.size() && i < num_candidates; i++) {
-					StringRecord sr = keys.get(i);
-					double score = ret.getCount(sr);
-					sb.append(String.format("\n%d\t%s\t%f", i + 1, sr, score));
-				}
-
-				writer.write(sb.toString() + "\n\n");
-			}
-			writer.close();
-			System.out.printf("\r[%d, %s]\n", num_orgs, stopWatch.stop());
-		}
-	}
-
-	public static void prepareTestData() {
-		String orgFileName = ENTPath.BASE_ORG_NAME_FILE;
-		String extOrgFileName = ENTPath.DOMESTIC_PAPER_ORG_NAME_FILE;
-		String abbrFileName = ENTPath.COMMON_DEPT_ABBR_DICT_FILE;
-
-		OrganizationDisambiguationKernel odk = new OrganizationDisambiguationKernel();
-		odk.readOrganizations(orgFileName);
-		odk.createOrganizationNormalizer(abbrFileName);
-		odk.createSearchers(null);
-		// odk.createClassifiers();
-		// odk.write(ENTPath.ODK_FILE);
-
-		TextFileWriter writer = new TextFileWriter(ENTPath.ODK_TEST_DATA);
-
-		{
-			System.out.println(ENTPath.PATENT_ORG_FILE_2);
-			TextFileReader reader = new TextFileReader(ENTPath.PATENT_ORG_FILE_2);
-
-			reader.setPrintNexts(false);
-
-			while (reader.hasNext()) {
-				reader.print(100);
-
-				String line = reader.next();
-				String[] parts = line.split("\t");
-
-				String korName = null;
-				Counter<String> engNameCounts = new Counter<String>();
-
-				for (int i = 0; i < parts.length; i++) {
-					String[] two = StrUtils.split2Two(":", parts[i]);
-					String name = two[0];
-					double cnt = Double.parseDouble(two[1]);
-					if (i == 0) {
-						korName = name;
-					} else {
-						engNameCounts.incrementCount(name, cnt);
-					}
-				}
-
-				BilingualText orgName = new BilingualText(korName, engNameCounts.argMax());
-
-				Counter<StringRecord> ret = odk.disambiguate(orgName);
-
-				List<StringRecord> keys = ret.getSortedKeys();
-				int num_candidates = 10;
-				StringBuffer sb = new StringBuffer();
-				sb.append("#PATENT\n");
-				sb.append(orgName.toString() + "\n");
-				for (int i = 0; i < keys.size() && i < num_candidates; i++) {
-					StringRecord sr = keys.get(i);
-					double score = ret.getCount(sr);
-					sb.append(String.format("\n%d\t%s\t%f", i + 1, sr, score));
-				}
-
-				writer.write(sb.toString() + "\n\n");
-			}
-			writer.close();
-			reader.printLast();
-		}
-
-		{
-			System.out.println(ENTPath.ODK_OUTPUT_PAPER_FILE);
-			Counter<BilingualText> orgNames = DataReader.readBilingualTextCounter(extOrgFileName);
-			int num_orgs = 0;
-			StopWatch stopWatch = new StopWatch();
-			stopWatch.start();
-
-			for (BilingualText orgName : orgNames.getSortedKeys()) {
-				double cnt = orgNames.getCount(orgName);
-
-				if (cnt < 50 || cnt > 100) {
-					continue;
-				}
-
-				if (++num_orgs % 100 == 0) {
-					System.out.printf("\r[%d, %s]", num_orgs, stopWatch.stop());
-				}
-
-				Counter<StringRecord> ret = odk.disambiguate(orgName);
-
-				List<StringRecord> keys = ret.getSortedKeys();
-				int num_candidates = 10;
-				StringBuffer sb = new StringBuffer();
-				sb.append("#PAPER\n");
-				sb.append(orgName.toString() + "\n");
-				for (int i = 0; i < keys.size() && i < num_candidates; i++) {
-					StringRecord sr = keys.get(i);
+					Organization sr = keys.get(i);
 					double score = ret.getCount(sr);
 					sb.append(String.format("\n%d\t%s\t%f", i + 1, sr, score));
 				}
@@ -417,7 +432,7 @@ public class OrganizationDisambiguationKernel implements Serializable {
 		}
 	}
 
-	public Counter<StringRecord> disambiguate(BilingualText orgName) {
+	public Counter<Organization> disambiguate(BilingualText orgName) {
 		orgName = normalizer.normalize(orgName);
 		ListMap<UnivComponent, IntPair>[] labelMaps = detector.detect(orgName);
 
@@ -458,24 +473,21 @@ public class OrganizationDisambiguationKernel implements Serializable {
 
 			{
 				Map<Integer, Integer> recordToOrgMap = recordToOrgMaps[i];
-				CounterMap<Integer, Integer> cm1 = new CounterMap<Integer, Integer>();
-				// CounterMap<String, String> cm2 = new CounterMap<String, String>();
+				CounterMap<Integer, Integer> cm = new CounterMap<Integer, Integer>();
 
 				Counter<StringRecord> tempScores = new Counter<StringRecord>();
 
 				for (StringRecord sr : searchScore.keySet()) {
 					double score = searchScore.getCount(sr);
 					int rid = sr.getId();
-					int orgid = recordToOrgMap.get(rid);
-					// Organization org = orgMap.get(orgid);
-					cm1.incrementCount(orgid, rid, score);
-					// cm2.incrementCount(org.getName().getKorean(), sr.getString(), score);
+					int oid = recordToOrgMap.get(rid);
+					cm.incrementCount(oid, rid, score);
 				}
 
-				for (int orgid : cm1.keySet()) {
-					Counter<Integer> c = cm1.getCounter(orgid);
-					Organization org = orgMap.get(orgid);
-					tempScores.setCount(new StringRecord(orgid, org.getName().getKorean()), c.max());
+				for (int oid : cm.keySet()) {
+					Counter<Integer> c = cm.getCounter(oid);
+					Organization org = orgMap.get(oid);
+					tempScores.setCount(new StringRecord(oid, org.getName().getKorean()), c.max());
 				}
 
 				searchScore = tempScores;
@@ -485,41 +497,41 @@ public class OrganizationDisambiguationKernel implements Serializable {
 
 			Counter<StringRecord> classifierScores = new Counter<StringRecord>(searchScore);
 
-			if (classifier != null) {
-				Indexer<String> featIndexer = classifier.getFeatureIndexer();
-
-				Set<Integer> labelSet = new HashSet<Integer>();
-
-				for (StringRecord sr : searchScore.keySet()) {
-					labelSet.add(sr.getId());
-				}
-
-				Counter<Integer> c = new Counter<Integer>();
-				Gram[] grams = searcher.getGramGenerator().generate(name);
-
-				for (int j = 0; j < grams.length; j++) {
-					int f = featIndexer.indexOf(grams[j].getString());
-					if (f < 0) {
-						continue;
-					}
-					c.incrementCount(f, 1);
-				}
-
-				// System.out.println(VectorUtils.toCounter(c, featIndexer));
-
-				SparseVector q = VectorUtils.toSparseVector(c);
-				VectorMath.unitVector(q);
-
-				SparseVector output = classifier.score(q, labelSet);
-				Map<Integer, StringRecord> idMap = searcher.getStringRecordIdMap();
-
-				for (int j = 0; j < output.size(); j++) {
-					int orgId = output.indexAtLoc(j);
-					StringRecord sr = idMap.get(orgId);
-					double score = output.valueAtLoc(j);
-					classifierScores.setCount(sr, score);
-				}
-			}
+			// if (classifier != null) {
+			// Indexer<String> featIndexer = classifier.getFeatureIndexer();
+			//
+			// Set<Integer> labelSet = new HashSet<Integer>();
+			//
+			// for (StringRecord sr : searchScore.keySet()) {
+			// labelSet.add(sr.getId());
+			// }
+			//
+			// Counter<Integer> c = new Counter<Integer>();
+			// Gram[] grams = searcher.getGramGenerator().generate(name);
+			//
+			// for (int j = 0; j < grams.length; j++) {
+			// int f = featIndexer.indexOf(grams[j].getString());
+			// if (f < 0) {
+			// continue;
+			// }
+			// c.incrementCount(f, 1);
+			// }
+			//
+			// // System.out.println(VectorUtils.toCounter(c, featIndexer));
+			//
+			// SparseVector q = VectorUtils.toSparseVector(c);
+			// VectorMath.unitVector(q);
+			//
+			// SparseVector output = classifier.score(q, labelSet);
+			// Map<Integer, StringRecord> idMap = searcher.getStringRecordIdMap();
+			//
+			// for (int j = 0; j < output.size(); j++) {
+			// int orgId = output.indexAtLoc(j);
+			// StringRecord sr = idMap.get(orgId);
+			// double score = output.valueAtLoc(j);
+			// classifierScores.setCount(sr, score);
+			// }
+			// }
 
 			searchScoreData[i] = searchScore;
 			classifierScoreData[i] = classifierScores;
@@ -536,23 +548,24 @@ public class OrganizationDisambiguationKernel implements Serializable {
 
 		logWriter.write("\n\n");
 
-		Counter<StringRecord> ret = new Counter<StringRecord>();
+		Counter<Organization> ret = new Counter<Organization>();
 		// Counter<StringRecord> c = new Counter<StringRecord>();
 
 		for (int i = 0; i < searchScoreData.length; i++) {
 			Counter<StringRecord> searchScores = searchScoreData[i];
 			for (StringRecord sr : searchScores.keySet()) {
 				double score = searchScores.getCount(sr);
-				ret.incrementCount(sr, score);
+				Organization org = orgMap.get(sr.getId());
+				ret.incrementCount(org, score);
 				// c.incrementCount(sr, 1);
 			}
 		}
 
-		for (StringRecord sr : ret.keySet()) {
-			double score = ret.getCount(sr);
+		for (Organization org : ret.keySet()) {
+			double score = ret.getCount(org);
 			// double cnt = c.getCount(sr);
 			// score /= cnt;
-			ret.setCount(sr, score / 2);
+			ret.setCount(org, score / 2);
 		}
 
 		// logWriter.write(orgScores2.toString() + "\n\n");
@@ -566,7 +579,6 @@ public class OrganizationDisambiguationKernel implements Serializable {
 
 		for (int i = 0; i < orgs.size(); i++) {
 			Organization org = orgs.get(i);
-			org.setId(i);
 			orgMap.put(org.getId(), org);
 		}
 	}

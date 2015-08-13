@@ -500,13 +500,6 @@ public class SparseMatrix implements Matrix {
 		return rows[loc];
 	}
 
-	public void write(String fileName) throws Exception {
-		System.out.printf("write to [%s].\n", fileName);
-		ObjectOutputStream oos = IOUtils.openObjectOutputStream(fileName);
-		write(oos);
-		oos.close();
-	}
-
 	public void write(ObjectOutputStream oos) throws Exception {
 		oos.writeInt(rowDim());
 		oos.writeInt(colDim());
@@ -517,6 +510,13 @@ public class SparseMatrix implements Matrix {
 			oos.writeInt(indexAtRowLoc(i));
 			vectorAtRowLoc(i).write(oos);
 		}
+	}
+
+	public void write(String fileName) throws Exception {
+		System.out.printf("write to [%s].\n", fileName);
+		ObjectOutputStream oos = IOUtils.openObjectOutputStream(fileName);
+		write(oos);
+		oos.close();
 	}
 
 }

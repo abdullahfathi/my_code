@@ -46,10 +46,6 @@ public class CentralityEstimator {
 
 	private StringBuffer logBuff;
 
-	public String getLog() {
-		return logBuff.toString();
-	}
-
 	private StrIndexer docIndexer;
 
 	public SparseVector estimate(SparseVector queryConceptWeights, SparseMatrix docConceptWeightData) {
@@ -93,5 +89,9 @@ public class CentralityEstimator {
 		}
 		return VectorUtils.toSparseVector(ret);
 
+	}
+
+	public String getLog() {
+		return logBuff.toString();
 	}
 }

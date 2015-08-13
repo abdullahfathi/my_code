@@ -49,15 +49,13 @@ public class DocumentCentralityEstimator {
 
 	private StringBuffer logBuff;
 
-	public String getLog() {
-		return logBuff.toString();
-	}
-
 	private double dirichlet_prior = 1500;
 
 	private double mixture_for_col = 0;
 
 	private SparseVector collWordCounts;
+
+	private int num_top_docs = 10;
 
 	public DocumentCentralityEstimator(SparseVector collWordCounts) {
 		this.collWordCounts = collWordCounts;
@@ -82,8 +80,6 @@ public class DocumentCentralityEstimator {
 		}
 		return ret;
 	}
-
-	private int num_top_docs = 10;
 
 	private double[][] computeSimilarityMatrix(Indexer<Integer> docIndexer, SparseMatrix docWordCounts) {
 		int num_docs = docIndexer.size();
@@ -167,5 +163,9 @@ public class DocumentCentralityEstimator {
 		ret.summation();
 		return ret;
 
+	}
+
+	public String getLog() {
+		return logBuff.toString();
 	}
 }

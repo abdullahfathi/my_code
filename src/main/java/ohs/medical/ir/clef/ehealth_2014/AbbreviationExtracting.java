@@ -27,12 +27,51 @@ import org.apache.lucene.store.FSDirectory;
 
 public class AbbreviationExtracting {
 
-	public static void main(String[] args) throws Exception {
-		System.out.println("process begins.");
-		extract();
-		group();
-		filter();
-		System.out.println("process ends.");
+	public static void extract() throws Exception {
+		System.out.println("extract abbreviations.");
+
+		IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(EHPath.INDEX_DIR);
+		IndexReader indexReader = indexSearcher.getIndexReader();
+
+		File outputFile = new File(EHPath.ABBREVIATION_FILE);
+
+		TextFileWriter writer = new TextFileWriter(outputFile);
+
+		AbbreviationExtractor ext = new AbbreviationExtractor();
+
+		int maxDoc = indexReader.maxDoc();
+
+		StopWatch stopWatch = new StopWatch();
+		stopWatch.start();
+
+		for (int i = 0; i < maxDoc; i++) {
+			if ((i + 1) % 1000 == 0) {
+				System.out.printf("\r[%d / %d, %s]", i + 1, maxDoc, stopWatch.stop());
+			}
+			Document doc = indexReader.document(i);
+			String docId = doc.getField(IndexFieldName.DOCUMENT_ID).stringValue();
+			String date = doc.getField(IndexFieldName.DATE).stringValue();
+			String url = doc.getField(IndexFieldName.URL).stringValue();
+			String content = doc.getField(IndexFieldName.CONTENT).stringValue();
+			content = content.replaceAll("<NL>", "\n");
+
+			String[] sents = content.split("\n");
+
+			for (int j = 0; j < sents.length; j++) {
+				String sent = sents[j];
+				List<StrPair> pairs = ext.extract(sent);
+				List<Span[]> spansList = getSpans(pairs, sent);
+
+				for (Span[] spans : spansList) {
+					String shortForm = spans[0].getString();
+					String longForm = spans[1].getString();
+					String output = String.format("%s\t%s\t%d\t%d", shortForm, longForm, i, j);
+					writer.write(output + "\n");
+				}
+			}
+		}
+		System.out.printf("\r[%d / %d, %s]\n", maxDoc, maxDoc, stopWatch.stop());
+		writer.close();
 	}
 
 	// public static void extractContext() {
@@ -45,42 +84,6 @@ public class AbbreviationExtracting {
 	// }
 	// reader.close();
 	// }
-
-	public static void group() {
-		CounterMap<String, String> short_long_count = new CounterMap<String, String>();
-
-		TextFileReader reader = new TextFileReader(EHPath.ABBREVIATION_FILE);
-		while (reader.hasNext()) {
-			String[] parts = reader.next().split("\t");
-			String shortForm = parts[0];
-			String longForm = parts[1].toLowerCase();
-			int indexId = Integer.parseInt(parts[2]);
-			short_long_count.incrementCount(shortForm, longForm, 1);
-		}
-		reader.close();
-
-		for (String shortForm : short_long_count.keySet()) {
-			Counter<String> long_count = short_long_count.getCounter(shortForm);
-			// long_count.pruneKeysBelowThreshold(5);
-		}
-
-		Counter<String> short_count = short_long_count.getInnerCountSums();
-
-		TextFileWriter writer = new TextFileWriter(new File(EHPath.ABBREVIATION_GROUPED_FILE));
-
-		for (String shortForm : short_count.getSortedKeys()) {
-			StringBuffer sb = new StringBuffer();
-			sb.append(shortForm);
-
-			Counter<String> long_count = short_long_count.getCounter(shortForm);
-			for (String longForm : long_count.getSortedKeys()) {
-				int count = (int) long_count.getCount(longForm);
-				sb.append(String.format("\n%s\t%d", longForm, count));
-			}
-			writer.write(sb.toString() + "\n\n");
-		}
-		writer.close();
-	}
 
 	public static void filter() {
 		TextFileReader reader = new TextFileReader(EHPath.ABBREVIATION_GROUPED_FILE);
@@ -163,53 +166,6 @@ public class AbbreviationExtracting {
 		writer.close();
 	}
 
-	public static void extract() throws Exception {
-		System.out.println("extract abbreviations.");
-
-		IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(EHPath.INDEX_DIR);
-		IndexReader indexReader = indexSearcher.getIndexReader();
-
-		File outputFile = new File(EHPath.ABBREVIATION_FILE);
-
-		TextFileWriter writer = new TextFileWriter(outputFile);
-
-		AbbreviationExtractor ext = new AbbreviationExtractor();
-
-		int maxDoc = indexReader.maxDoc();
-
-		StopWatch stopWatch = new StopWatch();
-		stopWatch.start();
-
-		for (int i = 0; i < maxDoc; i++) {
-			if ((i + 1) % 1000 == 0) {
-				System.out.printf("\r[%d / %d, %s]", i + 1, maxDoc, stopWatch.stop());
-			}
-			Document doc = indexReader.document(i);
-			String docId = doc.getField(IndexFieldName.DOCUMENT_ID).stringValue();
-			String date = doc.getField(IndexFieldName.DATE).stringValue();
-			String url = doc.getField(IndexFieldName.URL).stringValue();
-			String content = doc.getField(IndexFieldName.CONTENT).stringValue();
-			content = content.replaceAll("<NL>", "\n");
-
-			String[] sents = content.split("\n");
-
-			for (int j = 0; j < sents.length; j++) {
-				String sent = sents[j];
-				List<StrPair> pairs = ext.extract(sent);
-				List<Span[]> spansList = getSpans(pairs, sent);
-
-				for (Span[] spans : spansList) {
-					String shortForm = spans[0].getString();
-					String longForm = spans[1].getString();
-					String output = String.format("%s\t%s\t%d\t%d", shortForm, longForm, i, j);
-					writer.write(output + "\n");
-				}
-			}
-		}
-		System.out.printf("\r[%d / %d, %s]\n", maxDoc, maxDoc, stopWatch.stop());
-		writer.close();
-	}
-
 	private static List<Span[]> getSpans(List<StrPair> pairs, String content) {
 		List<Span[]> ret = new ArrayList<Span[]>();
 
@@ -235,6 +191,50 @@ public class AbbreviationExtracting {
 			}
 		}
 		return ret;
+	}
+
+	public static void group() {
+		CounterMap<String, String> short_long_count = new CounterMap<String, String>();
+
+		TextFileReader reader = new TextFileReader(EHPath.ABBREVIATION_FILE);
+		while (reader.hasNext()) {
+			String[] parts = reader.next().split("\t");
+			String shortForm = parts[0];
+			String longForm = parts[1].toLowerCase();
+			int indexId = Integer.parseInt(parts[2]);
+			short_long_count.incrementCount(shortForm, longForm, 1);
+		}
+		reader.close();
+
+		for (String shortForm : short_long_count.keySet()) {
+			Counter<String> long_count = short_long_count.getCounter(shortForm);
+			// long_count.pruneKeysBelowThreshold(5);
+		}
+
+		Counter<String> short_count = short_long_count.getInnerCountSums();
+
+		TextFileWriter writer = new TextFileWriter(new File(EHPath.ABBREVIATION_GROUPED_FILE));
+
+		for (String shortForm : short_count.getSortedKeys()) {
+			StringBuffer sb = new StringBuffer();
+			sb.append(shortForm);
+
+			Counter<String> long_count = short_long_count.getCounter(shortForm);
+			for (String longForm : long_count.getSortedKeys()) {
+				int count = (int) long_count.getCount(longForm);
+				sb.append(String.format("\n%s\t%d", longForm, count));
+			}
+			writer.write(sb.toString() + "\n\n");
+		}
+		writer.close();
+	}
+
+	public static void main(String[] args) throws Exception {
+		System.out.println("process begins.");
+		extract();
+		group();
+		filter();
+		System.out.println("process ends.");
 	}
 
 }

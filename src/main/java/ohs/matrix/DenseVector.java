@@ -28,15 +28,6 @@ public class DenseVector implements Vector {
 		return ret;
 	}
 
-	public static List<DenseVector> readList(String fileName) throws Exception {
-		System.out.printf("read [%s].\n", fileName);
-		ObjectInputStream ois = IOUtils.openObjectInputStream(fileName);
-		List<DenseVector> ret = readList(ois);
-		ois.close();
-		System.out.printf("read [%d] vectors.\n", ret.size());
-		return ret;
-	}
-
 	public static List<DenseVector> readList(ObjectInputStream ois) throws Exception {
 		List<DenseVector> ret = new ArrayList<DenseVector>();
 		int size = ois.readInt();
@@ -44,6 +35,15 @@ public class DenseVector implements Vector {
 			DenseVector vector = readStream(ois);
 			ret.add(vector);
 		}
+		return ret;
+	}
+
+	public static List<DenseVector> readList(String fileName) throws Exception {
+		System.out.printf("read [%s].\n", fileName);
+		ObjectInputStream ois = IOUtils.openObjectInputStream(fileName);
+		List<DenseVector> ret = readList(ois);
+		ois.close();
+		System.out.printf("read [%d] vectors.\n", ret.size());
 		return ret;
 	}
 
@@ -106,20 +106,20 @@ public class DenseVector implements Vector {
 		return ret;
 	}
 
-	public static void write(String fileName, List<DenseVector> vectors) throws Exception {
-		System.out.printf("write to [%s].\n", fileName);
-		ObjectOutputStream oos = IOUtils.openObjectOutputStream(fileName);
-		write(oos, vectors);
-		oos.close();
-		System.out.printf("write [%d] vectors.\n", vectors.size());
-	}
-
 	public static void write(ObjectOutputStream oos, List<DenseVector> xs) throws Exception {
 		oos.writeInt(xs.size());
 		for (int i = 0; i < xs.size(); i++) {
 			DenseVector x = xs.get(i);
 			x.write(oos);
 		}
+	}
+
+	public static void write(String fileName, List<DenseVector> vectors) throws Exception {
+		System.out.printf("write to [%s].\n", fileName);
+		ObjectOutputStream oos = IOUtils.openObjectOutputStream(fileName);
+		write(oos, vectors);
+		oos.close();
+		System.out.printf("write [%d] vectors.\n", vectors.size());
 	}
 
 	private double[] values;
@@ -491,13 +491,6 @@ public class DenseVector implements Vector {
 		return values;
 	}
 
-	public void write(String fileName) throws Exception {
-		System.out.printf("write to [%s].\n", fileName);
-		ObjectOutputStream oos = IOUtils.openObjectOutputStream(fileName);
-		write(oos);
-		oos.close();
-	}
-
 	public void write(ObjectOutputStream oos) throws IOException {
 		int size = size();
 		int label = label();
@@ -515,5 +508,12 @@ public class DenseVector implements Vector {
 			oos.writeInt(i);
 			oos.writeDouble(value);
 		}
+	}
+
+	public void write(String fileName) throws Exception {
+		System.out.printf("write to [%s].\n", fileName);
+		ObjectOutputStream oos = IOUtils.openObjectOutputStream(fileName);
+		write(oos);
+		oos.close();
 	}
 }

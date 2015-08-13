@@ -15,20 +15,20 @@ public class LString {
 		this.labels = labels;
 	}
 
-	public String getString() {
-		return s;
-	}
-
-	public void setString(String s) {
-		this.s = s;
-	}
-
 	public String[] getLabels() {
 		return labels;
 	}
 
+	public String getString() {
+		return s;
+	}
+
 	public void setLabels(String[] labels) {
 		this.labels = labels;
+	}
+
+	public void setString(String s) {
+		this.s = s;
 	}
 
 }

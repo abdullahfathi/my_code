@@ -102,8 +102,8 @@ public interface Vector extends Serializable {
 
 	public double[] values();
 
-	public void write(String fileName) throws Exception;
-
 	public void write(ObjectOutputStream oos) throws Exception;
+
+	public void write(String fileName) throws Exception;
 
 }

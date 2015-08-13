@@ -139,37 +139,6 @@ public class ExtractICD10 {
 		searchCacheMap = new HashMap<String, Integer>();
 	}
 
-	private Map<String, String> readRedirects() {
-		System.out.println("read redirects.");
-		Map<String, String> ret = new HashMap<String, String>();
-
-		TextFileReader reader = new TextFileReader(MIRPath.WIKI_REDIRECT_TITLE_FILE);
-		while (reader.hasNext()) {
-			String line = reader.next();
-			String[] parts = line.split("\t");
-
-			if (parts.length != 2) {
-				continue;
-			}
-
-			String from = parts[0].toLowerCase();
-			String to = parts[1].toLowerCase();
-
-			if (reader.getNumLines() == 1 || from.equals(to)) {
-				continue;
-			}
-
-			if (from.contains("bile ducts")) {
-				System.out.println(line);
-			}
-
-			ret.put(from, to);
-		}
-		reader.close();
-		System.out.println("read ends.");
-		return ret;
-	}
-
 	public void attachWikiPages() throws Exception {
 		Counter<String> sectionCounts = new Counter<String>();
 		int numRedirects = 0;
@@ -417,6 +386,37 @@ public class ExtractICD10 {
 		}
 
 		IOUtils.write(CDSPath.ICD10_TOP_LEVEL_CHAPTER_FILE, sb.toString().trim());
+	}
+
+	private Map<String, String> readRedirects() {
+		System.out.println("read redirects.");
+		Map<String, String> ret = new HashMap<String, String>();
+
+		TextFileReader reader = new TextFileReader(MIRPath.WIKI_REDIRECT_TITLE_FILE);
+		while (reader.hasNext()) {
+			String line = reader.next();
+			String[] parts = line.split("\t");
+
+			if (parts.length != 2) {
+				continue;
+			}
+
+			String from = parts[0].toLowerCase();
+			String to = parts[1].toLowerCase();
+
+			if (reader.getNumLines() == 1 || from.equals(to)) {
+				continue;
+			}
+
+			if (from.contains("bile ducts")) {
+				System.out.println(line);
+			}
+
+			ret.put(from, to);
+		}
+		reader.close();
+		System.out.println("read ends.");
+		return ret;
 	}
 
 	public void refineStructure() throws Exception {

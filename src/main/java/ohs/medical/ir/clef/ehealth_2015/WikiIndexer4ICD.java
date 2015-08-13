@@ -29,14 +29,6 @@ import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParserFactory;
 
 public class WikiIndexer4ICD {
 
-	public static void main(String[] args) throws Exception {
-		System.out.println("process begins.");
-
-		// indexWiki();
-
-		System.out.println("process ends.");
-	}
-
 	public static void indexWiki() throws Exception {
 
 		Set<String> stopSectionNames = DocumentIndexer.getStopSectionNames();
@@ -130,6 +122,14 @@ public class WikiIndexer4ICD {
 		reader.close();
 
 		indexWriter.close();
+	}
+
+	public static void main(String[] args) throws Exception {
+		System.out.println("process begins.");
+
+		// indexWiki();
+
+		System.out.println("process ends.");
 	}
 
 }

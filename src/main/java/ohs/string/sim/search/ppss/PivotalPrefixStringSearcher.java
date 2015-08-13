@@ -282,6 +282,8 @@ public class PivotalPrefixStringSearcher implements Serializable {
 
 	private Map<Integer, StringRecord> idMap;
 
+	private Counter<Character> chWeights;
+
 	public PivotalPrefixStringSearcher() {
 		this(2, 2, false);
 	}
@@ -303,6 +305,31 @@ public class PivotalPrefixStringSearcher implements Serializable {
 		pivotSelector = useOptimalPivotSelector
 
 		? new OptimalPivotSelector(q, prefix_size, pivot_size) : new RandomPivotSelector(q, prefix_size, pivot_size);
+	}
+
+	private void computeCharacterWeights() {
+		chWeights = new Counter<Character>();
+
+		for (int i = 0; i < ss.size(); i++) {
+			String s = ss.get(i).getString();
+
+			Set<Character> chs = new HashSet<Character>();
+
+			for (int j = 0; j < s.length(); j++) {
+				chs.add(s.charAt(j));
+			}
+
+			for (char ch : chs) {
+				chWeights.incrementCount(ch, 1);
+			}
+		}
+
+		for (char ch : chWeights.keySet()) {
+			double df = chWeights.getCount(ch);
+			double num_docs = ss.size();
+			double idf = Math.log((num_docs + 1) / df);
+			chWeights.setCount(ch, idf);
+		}
 	}
 
 	private int[] determineSearchRange(int len, Type indexType, GramPostings postings) {
@@ -504,33 +531,6 @@ public class PivotalPrefixStringSearcher implements Serializable {
 		}
 
 		computeCharacterWeights();
-	}
-
-	private Counter<Character> chWeights;
-
-	private void computeCharacterWeights() {
-		chWeights = new Counter<Character>();
-
-		for (int i = 0; i < ss.size(); i++) {
-			String s = ss.get(i).getString();
-
-			Set<Character> chs = new HashSet<Character>();
-
-			for (int j = 0; j < s.length(); j++) {
-				chs.add(s.charAt(j));
-			}
-
-			for (char ch : chs) {
-				chWeights.incrementCount(ch, 1);
-			}
-		}
-
-		for (char ch : chWeights.keySet()) {
-			double df = chWeights.getCount(ch);
-			double num_docs = ss.size();
-			double idf = Math.log((num_docs + 1) / df);
-			chWeights.setCount(ch, idf);
-		}
 	}
 
 	public void read(BufferedReader reader) throws Exception {

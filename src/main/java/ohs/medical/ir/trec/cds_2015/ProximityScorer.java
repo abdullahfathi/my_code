@@ -48,6 +48,31 @@ public class ProximityScorer {
 		this.makeLog = makeLog;
 	}
 
+	public double[] getDistances(List<Integer> locs1, List<Integer> locs2) {
+		List<Double> dists = new ArrayList<Double>();
+
+		for (int i = 0, k = 0; i < locs1.size(); i++) {
+			int loc1 = locs1.get(i);
+			for (int j = 0; j < locs2.size(); j++) {
+				int loc2 = locs2.get(j);
+				double dist = Math.abs(loc1 - loc2);
+				dists.add(dist);
+			}
+		}
+
+		double[] ret = new double[dists.size()];
+
+		for (int i = 0; i < dists.size(); i++) {
+			ret[i] = dists.get(i);
+		}
+
+		return ret;
+	}
+
+	public StringBuffer getLogBuffer() {
+		return logBuf;
+	}
+
 	public SparseVector score(WordCountBox wcb, SparseVector queryModel) {
 		setDocWordLocs(wcb.getDocWords());
 
@@ -111,31 +136,6 @@ public class ProximityScorer {
 		ret.normalize();
 
 		return ret;
-	}
-
-	public double[] getDistances(List<Integer> locs1, List<Integer> locs2) {
-		List<Double> dists = new ArrayList<Double>();
-
-		for (int i = 0, k = 0; i < locs1.size(); i++) {
-			int loc1 = locs1.get(i);
-			for (int j = 0; j < locs2.size(); j++) {
-				int loc2 = locs2.get(j);
-				double dist = Math.abs(loc1 - loc2);
-				dists.add(dist);
-			}
-		}
-
-		double[] ret = new double[dists.size()];
-
-		for (int i = 0; i < dists.size(); i++) {
-			ret[i] = dists.get(i);
-		}
-
-		return ret;
-	}
-
-	public StringBuffer getLogBuffer() {
-		return logBuf;
 	}
 
 	private void setDocWordLocs(ListMap<Integer, Integer> docWords) {

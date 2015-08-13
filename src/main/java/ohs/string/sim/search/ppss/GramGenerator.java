@@ -53,10 +53,6 @@ public class GramGenerator implements Serializable {
 
 	private boolean isCaseInsensitive = false;
 
-	public int getQ() {
-		return q;
-	}
-
 	public GramGenerator(int q) {
 		this.q = q;
 	}
@@ -78,5 +74,9 @@ public class GramGenerator implements Serializable {
 		}
 
 		return ret;
+	}
+
+	public int getQ() {
+		return q;
 	}
 }

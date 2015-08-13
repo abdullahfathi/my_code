@@ -75,16 +75,6 @@ public class MySqlDataLoader {
 		return sb.toString();
 	}
 
-	private void open() throws Exception {
-		String text = IOUtils.readText("../../data/entity_iden/db_account.txt");
-		String[] parts = text.split("\t");
-		String url = String.format("jdbc:mysql://%s??useUnicode=true&characterEncoding=UTF-8&rewriteBatchedStatements=true", parts[0]);
-		String id = parts[1];
-		String password = parts[2];
-
-		conn = DriverManager.getConnection(url, id, password);
-	}
-
 	public void downloadPatents() throws Exception {
 		System.out.println("download patents.");
 		open();
@@ -204,6 +194,16 @@ public class MySqlDataLoader {
 		pstmt.close();
 
 		close();
+	}
+
+	private void open() throws Exception {
+		String text = IOUtils.readText("../../data/entity_iden/db_account.txt");
+		String[] parts = text.split("\t");
+		String url = String.format("jdbc:mysql://%s??useUnicode=true&characterEncoding=UTF-8&rewriteBatchedStatements=true", parts[0]);
+		String id = parts[1];
+		String password = parts[2];
+
+		conn = DriverManager.getConnection(url, id, password);
 	}
 
 	public void uploadPapers() throws Exception {

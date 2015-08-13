@@ -62,14 +62,6 @@ public class MultiLayerPerceptron {
 		}
 	}
 
-	public void train(List<SparseVector> trainData) {
-		for (int i = 0; i < trainData.size(); i++) {
-			SparseVector x = trainData.get(i);
-			InputLayer inputLayer = (InputLayer) layers.get(0);
-			inputLayer.setInput(x);
-		}
-	}
-
 	public SparseVector output(SparseVector x) {
 		inputLayer.setInput(x);
 
@@ -78,6 +70,14 @@ public class MultiLayerPerceptron {
 		}
 
 		return null;
+	}
+
+	public void train(List<SparseVector> trainData) {
+		for (int i = 0; i < trainData.size(); i++) {
+			SparseVector x = trainData.get(i);
+			InputLayer inputLayer = (InputLayer) layers.get(0);
+			inputLayer.setInput(x);
+		}
 	}
 
 }

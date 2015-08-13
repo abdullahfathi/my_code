@@ -14,13 +14,6 @@ import ohs.types.CounterMap;
 
 public class Eval {
 
-	public static void main(String[] args) throws Exception {
-		System.out.println("process begins. ");
-		doSignificanceTests();
-
-		System.out.println("process ends. ");
-	}
- 
 	public static void doSignificanceTests() throws Exception {
 		String dirName = EHPath.TASK_THREE_DIR + "evals/";
 
@@ -73,27 +66,7 @@ public class Eval {
 
 		System.out.println(sb.toString());
 	}
-
-	public static boolean[] tests(Counter<String> c1, Counter<String> c2) throws Exception {
-		Set<String> set = new TreeSet<String>();
-		set.addAll(c1.keySet());
-		set.addAll(c2.keySet());
-
-		List<String> keys = new ArrayList<String>(set);
-		double[] v1 = new double[keys.size()];
-		double[] v2 = new double[keys.size()];
-
-		for (int i = 0; i < keys.size(); i++) {
-			v1[i] = c1.getCount(keys.get(i));
-			v2[i] = c2.getCount(keys.get(i));
-		}
-
-		TTestImpl tt = new TTestImpl();
-		boolean isSignificantlyImproved1 = tt.pairedTTest(v1, v2, 0.05);
-		boolean isSignificantlyImproved2 = tt.pairedTTest(v1, v2, 0.01);
-		return new boolean[] { isSignificantlyImproved1, isSignificantlyImproved2 };
-	}
-
+ 
 	public static Counter<String> getValues(String fn, String type) throws Exception {
 		Counter<String> ret = new Counter<String>();
 
@@ -114,5 +87,32 @@ public class Eval {
 		}
 		ret.removeKey("all");
 		return ret;
+	}
+
+	public static void main(String[] args) throws Exception {
+		System.out.println("process begins. ");
+		doSignificanceTests();
+
+		System.out.println("process ends. ");
+	}
+
+	public static boolean[] tests(Counter<String> c1, Counter<String> c2) throws Exception {
+		Set<String> set = new TreeSet<String>();
+		set.addAll(c1.keySet());
+		set.addAll(c2.keySet());
+
+		List<String> keys = new ArrayList<String>(set);
+		double[] v1 = new double[keys.size()];
+		double[] v2 = new double[keys.size()];
+
+		for (int i = 0; i < keys.size(); i++) {
+			v1[i] = c1.getCount(keys.get(i));
+			v2[i] = c2.getCount(keys.get(i));
+		}
+
+		TTestImpl tt = new TTestImpl();
+		boolean isSignificantlyImproved1 = tt.pairedTTest(v1, v2, 0.05);
+		boolean isSignificantlyImproved2 = tt.pairedTTest(v1, v2, 0.01);
+		return new boolean[] { isSignificantlyImproved1, isSignificantlyImproved2 };
 	}
 }

@@ -80,10 +80,6 @@ public class CDSQuery {
 
 	private String type;
 
-	public String getType() {
-		return type;
-	}
-
 	public CDSQuery(String id, String description, String summary, String type) {
 		super();
 		this.id = id;
@@ -130,6 +126,10 @@ public class CDSQuery {
 
 	public String getId() {
 		return id;
+	}
+
+	public String getType() {
+		return type;
 	}
 
 	@Override

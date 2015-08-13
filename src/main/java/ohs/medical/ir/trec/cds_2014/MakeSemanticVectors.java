@@ -65,6 +65,26 @@ public class MakeSemanticVectors {
 
 	}
 
+	private void makeConceptCategoryWeights(CounterMap<Integer, Integer> conceptCategoryCounts, Counter<Integer> conceptCategoryFreqs) {
+		for (int conceptId : conceptCategoryCounts.keySet()) {
+			Counter<Integer> categoryCounts = conceptCategoryCounts.getCounter(conceptId);
+			double norm = 0;
+			for (int cat : categoryCounts.keySet()) {
+				double tf = categoryCounts.getCount(cat);
+				tf = Math.log(tf) + 1;
+				double categoryFreq = conceptCategoryFreqs.getCount(cat);
+				double numCategories = conceptCategoryCounts.size();
+				// double tf = 1 + (count == 0 ? 0 : Math.log(count));
+				double idf = categoryFreq == 0 ? 0 : Math.log((numCategories + 1) / categoryFreq);
+				double tfidf = tf * idf;
+				norm += tfidf * tfidf;
+				categoryCounts.setCount(cat, tfidf);
+			}
+			norm = Math.sqrt(norm);
+			categoryCounts.scale(1f / norm);
+		}
+	}
+
 	public void makeVectors() throws Exception {
 		Indexer<String> wordIndexer = IOUtils.readIndexer(CDSPath.WORD_INDEXER_FILE);
 
@@ -213,26 +233,6 @@ public class MakeSemanticVectors {
 			}
 			norm = Math.sqrt(norm);
 			wordCounts.scale(1f / norm);
-		}
-	}
-
-	private void makeConceptCategoryWeights(CounterMap<Integer, Integer> conceptCategoryCounts, Counter<Integer> conceptCategoryFreqs) {
-		for (int conceptId : conceptCategoryCounts.keySet()) {
-			Counter<Integer> categoryCounts = conceptCategoryCounts.getCounter(conceptId);
-			double norm = 0;
-			for (int cat : categoryCounts.keySet()) {
-				double tf = categoryCounts.getCount(cat);
-				tf = Math.log(tf) + 1;
-				double categoryFreq = conceptCategoryFreqs.getCount(cat);
-				double numCategories = conceptCategoryCounts.size();
-				// double tf = 1 + (count == 0 ? 0 : Math.log(count));
-				double idf = categoryFreq == 0 ? 0 : Math.log((numCategories + 1) / categoryFreq);
-				double tfidf = tf * idf;
-				norm += tfidf * tfidf;
-				categoryCounts.setCount(cat, tfidf);
-			}
-			norm = Math.sqrt(norm);
-			categoryCounts.scale(1f / norm);
 		}
 	}
 

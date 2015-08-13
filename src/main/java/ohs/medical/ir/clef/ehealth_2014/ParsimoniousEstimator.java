@@ -44,6 +44,8 @@ public class ParsimoniousEstimator {
 
 	private Indexer<String> wordIndexer;
 
+	private SparseVector collWordCounts;
+
 	public ParsimoniousEstimator(Indexer<String> wordIndexer, SparseVector collWordCounts, int max_iter, double document_mixture) {
 		this.wordIndexer = wordIndexer;
 		this.collWordCounts = collWordCounts;
@@ -51,8 +53,6 @@ public class ParsimoniousEstimator {
 		this.document_mixture = document_mixture;
 		epsilon = 0.000001;
 	}
-
-	private SparseVector collWordCounts;
 
 	/**
 	 * Run EM to estimate a parsimonious language model

@@ -55,14 +55,6 @@ public class LibLinearWrapper implements Serializable {
 		return new LibLinearWrapper(model, labelIndexer, featIndexer);
 	}
 
-	public Indexer<String> labelIndexer() {
-		return labelIndexer;
-	}
-
-	public Indexer<String> featureIndexer() {
-		return featureIndexer;
-	}
-
 	private Model model;
 
 	private Indexer<String> labelIndexer;
@@ -96,6 +88,14 @@ public class LibLinearWrapper implements Serializable {
 		}
 
 		return TopicEval.evalute(null, label_answer, label_predict, label_correct);
+	}
+
+	public Indexer<String> featureIndexer() {
+		return featureIndexer;
+	}
+
+	public Indexer<String> labelIndexer() {
+		return labelIndexer;
 	}
 
 	public Counter<String> score(Counter<String> query) {

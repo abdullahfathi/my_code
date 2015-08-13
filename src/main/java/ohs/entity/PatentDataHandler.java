@@ -19,6 +19,14 @@ import ohs.utils.StrUtils;
 
 public class PatentDataHandler {
 
+	class MyCom implements Comparator<BilingualText> {
+		@Override
+		public int compare(BilingualText o1, BilingualText o2) {
+			return o1.getKorean().compareTo(o2.getKorean());
+		}
+
+	}
+
 	private static boolean isNull(String s) {
 		return s.equals("null") ? true : false;
 	}
@@ -89,14 +97,6 @@ public class PatentDataHandler {
 		// }
 		// }
 		// writer.close();
-
-	}
-
-	class MyCom implements Comparator<BilingualText> {
-		@Override
-		public int compare(BilingualText o1, BilingualText o2) {
-			return o1.getKorean().compareTo(o2.getKorean());
-		}
 
 	}
 

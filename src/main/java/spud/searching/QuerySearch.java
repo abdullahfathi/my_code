@@ -38,34 +38,72 @@ public class QuerySearch {
     
     private final static Logger logger = Logger.getLogger( QuerySearch.class.getName());
  
-    private final IndexSearcher searcher;
-    private final IndexReader reader;
-    private final Analyzer analyzer;
-    
     public static final int title = 1;
     public static final int title_desc = 2;
     public static final int title_desc_narr = 3;
+    
     public static final int desc = 4;
     public static final int narr = 5;
+    public static int query_type = 1;
+    public static void main(String[] args) throws ParseException, IOException{
+        
+        LoggerInitializer.setup();
+        
+        if (args.length >2){
+            
+            //set this to true to do the esimation of the DCM background parameter
+            //else it will be set to the average document length
+            SPUDLMSimilarity.b0est = true;
 
+            // Open the lucene index dir in args[0]
+            QuerySearch i = new QuerySearch(args[0]);
+            
+            i.loadTopics(args[1]);
+            i.loadQrels(args[2]);
+            
+            //set to run title queries
+            i.setQuerySet(QuerySearch.title);
+            //run the set of queries
+            i.runQuerySet();
+            
+            
+            
+            
+            
+        }else{
+            logger.info("QueryIndex (index) (topics_file) (qrels_file) \n\n"
+                    + "\t\"index\" is the lucene index directory\n"
+                    + "\t\"topics_file\" is the trec topics file\n"
+                    + "\t\"qrels\" is the qrels file (binary relevance is assumed)\n"
+                    + "\n\n\tNote: The estimate of the background model is calculated each time. "
+                    + "\n\t      It could be stored in the index once its calculated to save time.\n"
+                    + "\t      Also note that the query effectiveness metrics are written to stdout\n"
+                    + "\t      so they can be redirected to a file for analysis.");
+        }
+    }
+    private final IndexSearcher searcher;
+
+    private final IndexReader reader;
+    private final Analyzer analyzer;
     private final HashMap<String, String[]> title_queries;
     private final HashMap<String, String[]> desc_queries;
     private final HashMap<String, String[]> narr_queries;
+    
     private final HashMap<String, String[]> title_desc_queries;
     private final HashMap<String, String[]> title_desc_narr_queries;
-    
     private final TreeMap<String,Double> AP_values;
+    
+    
     private final TreeMap<String,Double> NDCG10_values;
+    
     private final TreeMap<String,Double> NDCG20_values;
-    
-    
-    public static int query_type = 1;
     
     private Evaluator eval;
     
     private HashMap<String, String[]> current_set;
     
     private int max_iterations = 10;
+    
     
     public QuerySearch(String location) throws IOException{
 
@@ -89,6 +127,7 @@ public class QuerySearch {
         NDCG20_values = new TreeMap<>();
                
     }
+    
     
     
     /**
@@ -134,8 +173,6 @@ public class QuerySearch {
         return s;
     }
     
-    
-    
     /**
      * prels is not implemented here. 
      * Just use qrels
@@ -145,6 +182,8 @@ public class QuerySearch {
     public void loadQrels(String _qrels) throws IOException{
         eval = new Evaluator(_qrels);
     }
+
+    
     
     /**
      * 
@@ -334,36 +373,6 @@ public class QuerySearch {
         br.close();
 
     }
-
-    
-    
-    public void setQuerySet(int type) {
-
-        QuerySearch.query_type = type;
-        if (QuerySearch.query_type == QuerySearch.title) {
-            this.current_set = title_queries;
-        } else if (QuerySearch.query_type == QuerySearch.title_desc) {
-            this.current_set = title_desc_queries;
-        } else if (QuerySearch.query_type == QuerySearch.title_desc_narr) {
-            this.current_set = title_desc_narr_queries;
-        } else if (QuerySearch.query_type == QuerySearch.desc) {
-            this.current_set = desc_queries;
-        } else if (QuerySearch.query_type == QuerySearch.narr) {
-            this.current_set = narr_queries;
-        } else {
-            this.current_set = title_queries;
-        }
-
-        int avg_len = 0;
-        for (String key : current_set.keySet()) {
-
-            String[] val = current_set.get(key);
-            avg_len += val.length;
-
-        }
-
-        logger.info("Average query length: " + (double) avg_len / (double) current_set.size());
-    }
     
     
     /**
@@ -486,41 +495,32 @@ public class QuerySearch {
     }
     
     
-    public static void main(String[] args) throws ParseException, IOException{
-        
-        LoggerInitializer.setup();
-        
-        if (args.length >2){
-            
-            //set this to true to do the esimation of the DCM background parameter
-            //else it will be set to the average document length
-            SPUDLMSimilarity.b0est = true;
+    public void setQuerySet(int type) {
 
-            // Open the lucene index dir in args[0]
-            QuerySearch i = new QuerySearch(args[0]);
-            
-            i.loadTopics(args[1]);
-            i.loadQrels(args[2]);
-            
-            //set to run title queries
-            i.setQuerySet(QuerySearch.title);
-            //run the set of queries
-            i.runQuerySet();
-            
-            
-            
-            
-            
-        }else{
-            logger.info("QueryIndex (index) (topics_file) (qrels_file) \n\n"
-                    + "\t\"index\" is the lucene index directory\n"
-                    + "\t\"topics_file\" is the trec topics file\n"
-                    + "\t\"qrels\" is the qrels file (binary relevance is assumed)\n"
-                    + "\n\n\tNote: The estimate of the background model is calculated each time. "
-                    + "\n\t      It could be stored in the index once its calculated to save time.\n"
-                    + "\t      Also note that the query effectiveness metrics are written to stdout\n"
-                    + "\t      so they can be redirected to a file for analysis.");
+        QuerySearch.query_type = type;
+        if (QuerySearch.query_type == QuerySearch.title) {
+            this.current_set = title_queries;
+        } else if (QuerySearch.query_type == QuerySearch.title_desc) {
+            this.current_set = title_desc_queries;
+        } else if (QuerySearch.query_type == QuerySearch.title_desc_narr) {
+            this.current_set = title_desc_narr_queries;
+        } else if (QuerySearch.query_type == QuerySearch.desc) {
+            this.current_set = desc_queries;
+        } else if (QuerySearch.query_type == QuerySearch.narr) {
+            this.current_set = narr_queries;
+        } else {
+            this.current_set = title_queries;
         }
+
+        int avg_len = 0;
+        for (String key : current_set.keySet()) {
+
+            String[] val = current_set.get(key);
+            avg_len += val.length;
+
+        }
+
+        logger.info("Average query length: " + (double) avg_len / (double) current_set.size());
     }
 
     

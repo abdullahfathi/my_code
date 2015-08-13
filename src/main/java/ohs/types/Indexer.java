@@ -25,24 +25,15 @@ public class Indexer<E> extends AbstractList<E> implements Serializable {
 	protected List<E> objects;
 	protected Map<E, Integer> indexes;
 
-	public void clear() {
-		objects.clear();
-		indexes.clear();
+	public Indexer() {
+		objects = new ArrayList<E>();
+		indexes = new HashMap<E, Integer>();
 	}
 
-	/**
-	 * Return the object with the given index
-	 * 
-	 * @param index
-	 */
-	@Override
-	@Deprecated
-	public E get(int index) {
-		return objects.get(index);
-	}
-
-	public E getObject(int index) {
-		return objects.get(index);
+	public Indexer(Collection<? extends E> c) {
+		this();
+		for (E a : c)
+			getIndex(a);
 	}
 
 	/**
@@ -58,12 +49,62 @@ public class Indexer<E> extends AbstractList<E> implements Serializable {
 		return true;
 	}
 
+	public void clear() {
+		objects.clear();
+		indexes.clear();
+	}
+
 	/**
-	 * Returns the number of objects indexed.
+	 * Constant time override for contains.
 	 */
 	@Override
-	public int size() {
-		return objects.size();
+	public boolean contains(Object o) {
+		return indexes.keySet().contains(o);
+	}
+
+	/**
+	 * Return the object with the given index
+	 * 
+	 * @param index
+	 */
+	@Override
+	@Deprecated
+	public E get(int index) {
+		return objects.get(index);
+	}
+
+	// Return the index of the element
+	// If doesn't exist, add it.
+	public int getIndex(E e) {
+		if (e == null)
+			return -1;
+		Integer index = indexes.get(e);
+		if (index == null) {
+			index = size();
+			objects.add(e);
+			indexes.put(e, index);
+		}
+		return index;
+	}
+
+	public E getObject(int index) {
+		return objects.get(index);
+	}
+
+	// Not really safe; trust them not to modify it
+	public List<E> getObjects() {
+		return objects;
+	}
+
+	public E[] getObjects(int[] is) {
+		if (size() == 0)
+			throw new IllegalArgumentException("bad");
+		int n = is.length;
+		Class c = objects.get(0).getClass();
+		E[] os = (E[]) Array.newInstance(c, n);
+		for (int i = 0; i < n; i++)
+			os[i] = is[i] == -1 ? null : getObject(is[i]);
+		return os;
 	}
 
 	/**
@@ -82,52 +123,11 @@ public class Indexer<E> extends AbstractList<E> implements Serializable {
 	}
 
 	/**
-	 * Constant time override for contains.
+	 * Returns the number of objects indexed.
 	 */
 	@Override
-	public boolean contains(Object o) {
-		return indexes.keySet().contains(o);
-	}
-
-	// Return the index of the element
-	// If doesn't exist, add it.
-	public int getIndex(E e) {
-		if (e == null)
-			return -1;
-		Integer index = indexes.get(e);
-		if (index == null) {
-			index = size();
-			objects.add(e);
-			indexes.put(e, index);
-		}
-		return index;
-	}
-
-	public Indexer() {
-		objects = new ArrayList<E>();
-		indexes = new HashMap<E, Integer>();
-	}
-
-	public Indexer(Collection<? extends E> c) {
-		this();
-		for (E a : c)
-			getIndex(a);
-	}
-
-	// Not really safe; trust them not to modify it
-	public List<E> getObjects() {
-		return objects;
-	}
-
-	public E[] getObjects(int[] is) {
-		if (size() == 0)
-			throw new IllegalArgumentException("bad");
-		int n = is.length;
-		Class c = objects.get(0).getClass();
-		E[] os = (E[]) Array.newInstance(c, n);
-		for (int i = 0; i < n; i++)
-			os[i] = is[i] == -1 ? null : getObject(is[i]);
-		return os;
+	public int size() {
+		return objects.size();
 	}
 
 }

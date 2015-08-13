@@ -13,16 +13,6 @@ import ohs.types.Indexer;
 
 public class LibSvmTrainer {
 
-	private svm_parameter param;
-
-	private Indexer<String> featureIndexer;
-
-	private Indexer<String> labelIndexer;
-
-	public LibSvmTrainer() {
-		setParameter(getDefaultParameters());
-	}
-
 	public static svm_parameter getDefaultParameters() {
 		svm_parameter param = new svm_parameter();
 		param.svm_type = svm_parameter.C_SVC;
@@ -41,6 +31,16 @@ public class LibSvmTrainer {
 		param.weight_label = new int[0];
 		param.weight = new double[0];
 		return param;
+	}
+
+	private svm_parameter param;
+
+	private Indexer<String> featureIndexer;
+
+	private Indexer<String> labelIndexer;
+
+	public LibSvmTrainer() {
+		setParameter(getDefaultParameters());
 	}
 
 	public LibSvmTrainer(svm_parameter param) {

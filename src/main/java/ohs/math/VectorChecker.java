@@ -11,22 +11,6 @@ public class VectorChecker {
 		return a.colDim() == b.rowDim() ? true : false;
 	}
 
-	public static boolean isProductable(Matrix a, Vector b) {
-		return a.colDim() == b.dim() ? true : false;
-	}
-
-	public static boolean isSameDimension(Vector a, Vector b) {
-		return a.dim() == b.dim() ? true : false;
-	}
-
-	public static boolean isSameDimensions(Matrix a, Matrix b) {
-		return a.rowDim() == b.rowDim() && a.colDim() == b.colDim() ? true : false;
-	}
-
-	public static boolean isProductable(Matrix a, Vector b, Vector c) {
-		return isProductable(a, b) && isProductable(b, c) ? true : false;
-	}
-
 	public static boolean isProductable(Matrix a, Matrix b, Matrix c) {
 		int aRowDim = a.rowDim();
 		int aColDim = a.colDim();
@@ -44,8 +28,24 @@ public class VectorChecker {
 		}
 	}
 
+	public static boolean isProductable(Matrix a, Vector b) {
+		return a.colDim() == b.dim() ? true : false;
+	}
+
+	public static boolean isProductable(Matrix a, Vector b, Vector c) {
+		return isProductable(a, b) && isProductable(b, c) ? true : false;
+	}
+
 	public static boolean isProductable(Vector a, Vector b) {
 		return a.dim() == b.dim() ? true : false;
+	}
+
+	public static boolean isSameDimension(Vector a, Vector b) {
+		return a.dim() == b.dim() ? true : false;
+	}
+
+	public static boolean isSameDimensions(Matrix a, Matrix b) {
+		return a.rowDim() == b.rowDim() && a.colDim() == b.colDim() ? true : false;
 	}
 
 	public static boolean isSparse(Matrix a) {

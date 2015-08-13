@@ -21,16 +21,16 @@ public class HiddenLayer extends Layer {
 		nodes = new DenseVector(size);
 	}
 
+	public int size() {
+		return nodes.size();
+	}
+
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append(String.format("Hidden Layer"));
 		sb.append(String.format("useBias:\t%s\n", useBias));
 		sb.append(String.format("Nodes:\t%d\n", nodes.size()));
 		return sb.toString();
-	}
-
-	public int size() {
-		return nodes.size();
 	}
 
 }

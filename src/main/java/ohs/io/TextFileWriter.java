@@ -22,12 +22,12 @@ public class TextFileWriter {
 
 	private Writer writer;
 
-	public TextFileWriter(String fileName) {
-		this(fileName, IOUtils.UTF_8, false);
-	}
-
 	public TextFileWriter(File file) {
 		this(file.getPath(), IOUtils.UTF_8, false);
+	}
+
+	public TextFileWriter(String fileName) {
+		this(fileName, IOUtils.UTF_8, false);
 	}
 
 	public TextFileWriter(String fileName, String encoding, boolean append) {

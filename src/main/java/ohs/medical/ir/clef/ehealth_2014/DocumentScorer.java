@@ -76,46 +76,6 @@ public class DocumentScorer {
 		abbrTransMatrix = computeAbbreviationTranslationMatrix();
 	}
 
-	public void setDirichletPrior(double dirichlet_prior) {
-		this.dirichlet_prior = dirichlet_prior;
-	}
-
-	public void setFbMixture(double fb_mixture) {
-		this.fb_mixture = fb_mixture;
-	}
-
-	public void setFbWordSize(int fb_word_size) {
-		this.fb_word_size = fb_word_size;
-	}
-
-	public void setFbDocSize(int fb_doc_size) {
-		this.fb_doc_size = fb_doc_size;
-	}
-
-	public void setAbbrPortion(double abbr_portion) {
-		this.abbr_portion = abbr_portion;
-	}
-
-	public void setTransMixture(double trans_mixture) {
-		this.trans_mixture = trans_mixture;
-	}
-
-	public void setUseDocCentralities(boolean useDocCentralities) {
-		this.useDocCentralities = useDocCentralities;
-	}
-
-	public void setRMmixtures(double[] rm_mixtures) {
-		this.rm_mixtures = rm_mixtures;
-	}
-
-	public void setUseClustering(boolean useClustering) {
-		this.useClustering = useClustering;
-	}
-
-	public void setUseDischargeSummary(boolean useDischargeSummary) {
-		this.useDischargeSummary = useDischargeSummary;
-	}
-
 	private SparseMatrix computeAbbreviationTranslationMatrix() throws Exception {
 		CounterMap<Integer, Integer> counterMap = new CounterMap<Integer, Integer>();
 
@@ -191,6 +151,58 @@ public class DocumentScorer {
 				if (prob_w_in_cluster > 0) {
 					double div = prob_w_in_query * Math.log(prob_w_in_query / prob_w_in_cluster);
 					ret.incrementAtLoc(j, j, div);
+				}
+			}
+		}
+
+		for (int i = 0; i < ret.size(); i++) {
+			double divSum = ret.valueAtLoc(i);
+			double approx_prob = Math.exp(-divSum);
+			ret.setAtLoc(i, approx_prob);
+		}
+		ret.normalizeAfterSummation();
+		return ret;
+	}
+
+	private SparseVector computeDocumentScores(SparseVector queryModel, SparseMatrix docWordCounts, SparseVector collWordCounts, SparseMatrix transModels) {
+		SparseVector ret = new SparseVector(docWordCounts.rowSize());
+
+		for (int i = 0; i < queryModel.size(); i++) {
+			int w = queryModel.indexAtLoc(i);
+			double prob_w_in_query = queryModel.probAtLoc(i);
+			double prob_w_in_collection = collWordCounts.probAlways(w);
+
+			SparseVector transModel = transModels.rowAlways(w);
+
+			for (int j = 0; j < docWordCounts.rowSize(); j++) {
+				int docId = docWordCounts.indexAtRowLoc(j);
+				SparseVector dwc = docWordCounts.rowAtLoc(j);
+
+				double count_w_in_doc = dwc.valueAlways(w);
+				double count_sum_in_doc = dwc.sum();
+				double prob_w_in_doc = (count_w_in_doc + dirichlet_prior * prob_w_in_collection) / (count_sum_in_doc + dirichlet_prior);
+
+				double prob_w_in_tr_doc = 0;
+				for (int k = 0; k < transModel.size(); k++) {
+					int t = transModel.indexAtLoc(k);
+					if (w == t) {
+						continue;
+					}
+					double prob_w_from_t = transModel.valueAlways(t);
+					double prob_t_in_doc = dwc.probAlways(t);
+					// double prob_t_in_collection =
+					// collWordCounts.probAlways(t);
+					// double count_t_in_doc = dwc.valueAlways(t);
+					// double prob_t_in_doc = (count_t_in_doc + dirichlet_prior
+					// * prob_t_in_collection)
+					// / (count_sum_in_doc + dirichlet_prior);
+					prob_w_in_tr_doc += prob_w_from_t * prob_t_in_doc;
+				}
+				prob_w_in_doc = (1 - trans_mixture) * prob_w_in_doc + trans_mixture * prob_w_in_tr_doc;
+
+				if (prob_w_in_doc > 0) {
+					double div = prob_w_in_query * Math.log(prob_w_in_query / prob_w_in_doc);
+					ret.incrementAtLoc(j, docId, div);
 				}
 			}
 		}
@@ -307,58 +319,6 @@ public class DocumentScorer {
 		return VectorUtils.toSparseVector(ret);
 	}
 
-	private SparseVector computeDocumentScores(SparseVector queryModel, SparseMatrix docWordCounts, SparseVector collWordCounts, SparseMatrix transModels) {
-		SparseVector ret = new SparseVector(docWordCounts.rowSize());
-
-		for (int i = 0; i < queryModel.size(); i++) {
-			int w = queryModel.indexAtLoc(i);
-			double prob_w_in_query = queryModel.probAtLoc(i);
-			double prob_w_in_collection = collWordCounts.probAlways(w);
-
-			SparseVector transModel = transModels.rowAlways(w);
-
-			for (int j = 0; j < docWordCounts.rowSize(); j++) {
-				int docId = docWordCounts.indexAtRowLoc(j);
-				SparseVector dwc = docWordCounts.rowAtLoc(j);
-
-				double count_w_in_doc = dwc.valueAlways(w);
-				double count_sum_in_doc = dwc.sum();
-				double prob_w_in_doc = (count_w_in_doc + dirichlet_prior * prob_w_in_collection) / (count_sum_in_doc + dirichlet_prior);
-
-				double prob_w_in_tr_doc = 0;
-				for (int k = 0; k < transModel.size(); k++) {
-					int t = transModel.indexAtLoc(k);
-					if (w == t) {
-						continue;
-					}
-					double prob_w_from_t = transModel.valueAlways(t);
-					double prob_t_in_doc = dwc.probAlways(t);
-					// double prob_t_in_collection =
-					// collWordCounts.probAlways(t);
-					// double count_t_in_doc = dwc.valueAlways(t);
-					// double prob_t_in_doc = (count_t_in_doc + dirichlet_prior
-					// * prob_t_in_collection)
-					// / (count_sum_in_doc + dirichlet_prior);
-					prob_w_in_tr_doc += prob_w_from_t * prob_t_in_doc;
-				}
-				prob_w_in_doc = (1 - trans_mixture) * prob_w_in_doc + trans_mixture * prob_w_in_tr_doc;
-
-				if (prob_w_in_doc > 0) {
-					double div = prob_w_in_query * Math.log(prob_w_in_query / prob_w_in_doc);
-					ret.incrementAtLoc(j, docId, div);
-				}
-			}
-		}
-
-		for (int i = 0; i < ret.size(); i++) {
-			double divSum = ret.valueAtLoc(i);
-			double approx_prob = Math.exp(-divSum);
-			ret.setAtLoc(i, approx_prob);
-		}
-		ret.normalizeAfterSummation();
-		return ret;
-	}
-
 	private CounterMap<Integer, Integer> computeTranslatedDocumentModels(SparseMatrix docWordCounts, SparseVector collWordCounts, SparseMatrix transMatrix) {
 
 		CounterMap<Integer, Integer> ret = new CounterMap<Integer, Integer>();
@@ -402,40 +362,6 @@ public class DocumentScorer {
 		}
 		return ret;
 	}
-
-	// private SparseVector expandQueryModel(SparseVector queryModel,
-	// SparseMatrix abbrTransMatrix) {
-	// Counter<Integer> newQM = new Counter<Integer>();
-	//
-	// for (int i = 0; i < queryModel.size(); i++) {
-	// int w = queryModel.indexAtLoc(i);
-	// double prob_w_in_query = queryModel.valueAtLoc(i);
-	// SparseVector trwp = abbrTransMatrix.rowAlways(w);
-	//
-	// if (trwp.size() > 0) {
-	// double discounted_prob_w_in_query = (1 - abbr_portion) * prob_w_in_query;
-	// double remain_mass = abbr_portion * prob_w_in_query;
-	// Counter<Integer> counter = new Counter<Integer>();
-	// for (int j = 0; j < trwp.size(); j++) {
-	// int t = trwp.indexAtLoc(j);
-	// double prob_t = trwp.valueAtLoc(j);
-	// double prob_t_by_distribution = remain_mass * prob_t;
-	// counter.incrementCount(t, prob_t_by_distribution);
-	// }
-	// counter.incrementCount(w, discounted_prob_w_in_query);
-	// newQM.incrementAll(counter);
-	// } else {
-	// newQM.incrementCount(w, prob_w_in_query);
-	// }
-	// }
-	// newQM.normalize();
-	//
-	// SparseVector ret = VectorUtils.toSparseVector(newQM);
-	//
-	// System.out.printf("QM-2:\t%s\n", VectorUtils.toCounter(newQM,
-	// wordIndexer));
-	// return ret;
-	// }
 
 	private SparseVector computeWordCentralities(SparseMatrix co) {
 		Indexer<Integer> newWordIndexer = new Indexer<Integer>();
@@ -964,6 +890,80 @@ public class DocumentScorer {
 		SparseVector newDocScores = computeDocumentScores(queryModel, docWordCountData.get(0), collWordCountData.get(0), transModels);
 
 		return VectorUtils.toCounter(newDocScores);
+	}
+
+	// private SparseVector expandQueryModel(SparseVector queryModel,
+	// SparseMatrix abbrTransMatrix) {
+	// Counter<Integer> newQM = new Counter<Integer>();
+	//
+	// for (int i = 0; i < queryModel.size(); i++) {
+	// int w = queryModel.indexAtLoc(i);
+	// double prob_w_in_query = queryModel.valueAtLoc(i);
+	// SparseVector trwp = abbrTransMatrix.rowAlways(w);
+	//
+	// if (trwp.size() > 0) {
+	// double discounted_prob_w_in_query = (1 - abbr_portion) * prob_w_in_query;
+	// double remain_mass = abbr_portion * prob_w_in_query;
+	// Counter<Integer> counter = new Counter<Integer>();
+	// for (int j = 0; j < trwp.size(); j++) {
+	// int t = trwp.indexAtLoc(j);
+	// double prob_t = trwp.valueAtLoc(j);
+	// double prob_t_by_distribution = remain_mass * prob_t;
+	// counter.incrementCount(t, prob_t_by_distribution);
+	// }
+	// counter.incrementCount(w, discounted_prob_w_in_query);
+	// newQM.incrementAll(counter);
+	// } else {
+	// newQM.incrementCount(w, prob_w_in_query);
+	// }
+	// }
+	// newQM.normalize();
+	//
+	// SparseVector ret = VectorUtils.toSparseVector(newQM);
+	//
+	// System.out.printf("QM-2:\t%s\n", VectorUtils.toCounter(newQM,
+	// wordIndexer));
+	// return ret;
+	// }
+
+	public void setAbbrPortion(double abbr_portion) {
+		this.abbr_portion = abbr_portion;
+	}
+
+	public void setDirichletPrior(double dirichlet_prior) {
+		this.dirichlet_prior = dirichlet_prior;
+	}
+
+	public void setFbDocSize(int fb_doc_size) {
+		this.fb_doc_size = fb_doc_size;
+	}
+
+	public void setFbMixture(double fb_mixture) {
+		this.fb_mixture = fb_mixture;
+	}
+
+	public void setFbWordSize(int fb_word_size) {
+		this.fb_word_size = fb_word_size;
+	}
+
+	public void setRMmixtures(double[] rm_mixtures) {
+		this.rm_mixtures = rm_mixtures;
+	}
+
+	public void setTransMixture(double trans_mixture) {
+		this.trans_mixture = trans_mixture;
+	}
+
+	public void setUseClustering(boolean useClustering) {
+		this.useClustering = useClustering;
+	}
+
+	public void setUseDischargeSummary(boolean useDischargeSummary) {
+		this.useDischargeSummary = useDischargeSummary;
+	}
+
+	public void setUseDocCentralities(boolean useDocCentralities) {
+		this.useDocCentralities = useDocCentralities;
 	}
 
 	private SparseVector updateModel(SparseVector targetModel, SparseVector otherModel, double other_mixture) {

@@ -22,20 +22,20 @@ public class InputLayer extends Layer {
 		nodes = new DenseVector(size);
 	}
 
-	public String toString() {
-		StringBuffer sb = new StringBuffer();
-		sb.append(String.format("Input Layer"));
-		sb.append(String.format("useBias:\t%s\n", useBias));
-		sb.append(String.format("Nodes:\t%d\n", nodes.size()));
-		return sb.toString();
-	}
-
 	public SparseVector getInput() {
 		return input;
 	}
 
 	public void setInput(SparseVector input) {
 		this.input = input;
+	}
+
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		sb.append(String.format("Input Layer"));
+		sb.append(String.format("useBias:\t%s\n", useBias));
+		sb.append(String.format("Nodes:\t%d\n", nodes.size()));
+		return sb.toString();
 	}
 
 }

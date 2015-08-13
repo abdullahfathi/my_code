@@ -11,6 +11,8 @@ import ohs.types.CounterMap;
 
 public class OrganizationTokenizer {
 
+	private static final String SINGLE_SPACE = " ";
+
 	public static void main(String[] args) {
 		System.out.println("process begins.");
 
@@ -118,8 +120,6 @@ public class OrganizationTokenizer {
 
 		System.out.println(counterMap);
 	}
-
-	private static final String SINGLE_SPACE = " ";
 
 	public String tokenize(String s) {
 		String ret = String.format("^%s$", s);

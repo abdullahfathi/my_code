@@ -51,123 +51,6 @@ public class DocumentClusterer {
 		this.wordIndexer = wordIndexer;
 	}
 
-	private void performKMeans() {
-
-	}
-
-	private void performHAC() {
-		docScores.sortByValue();
-
-		SetMap<Integer, Integer> tempClusterDocMap = new SetMap<Integer, Integer>();
-		Map<Integer, SparseVector> tempClusterWordCountData = new TreeMap<Integer, SparseVector>();
-
-		for (int i = 0; i < docScores.size() && i < top_k; i++) {
-			int docId = docScores.indexAtLoc(i);
-			int cId = tempClusterDocMap.size();
-			tempClusterDocMap.put(cId, docId);
-			tempClusterWordCountData.put(cId, docWordCounts.rowAlways(docId).copy());
-		}
-
-		docScores.sortByIndex();
-
-		for (int i = 0; i < 1000; i++) {
-			List<Integer> clusterIds = new ArrayList<Integer>(tempClusterDocMap.keySet());
-			int num_clusters = clusterIds.size();
-
-			if (num_clusters == 1) {
-				break;
-			}
-
-			int best_cId1 = -1, best_cId2 = -1;
-			double best_sim = 0;
-			double[][] sims = new double[num_clusters][num_clusters];
-
-			for (int j = 0; j < clusterIds.size(); j++) {
-				int cId1 = clusterIds.get(j);
-				SparseVector sv1 = tempClusterWordCountData.get(cId1);
-
-				for (int k = j + 1; k < clusterIds.size(); k++) {
-					int cId2 = clusterIds.get(k);
-					SparseVector sv2 = tempClusterWordCountData.get(cId2);
-
-					double sim = computeCosineSimilarity(sv1, sv2);
-					sims[j][k] = sim;
-					sims[k][j] = sim;
-
-					if (sim > best_sim) {
-						best_sim = sim;
-						best_cId1 = cId1;
-						best_cId2 = cId2;
-					}
-				}
-			}
-
-			NumberFormat nf = NumberFormat.getInstance();
-			nf.setMinimumFractionDigits(5);
-
-			// System.out.printf("[%d] clusters, similarity [%s] between [%s] and [%s]\n",
-			//
-			// tempClusterDocMap.size(), nf.format(best_sim), best_cId1,
-			// best_cId2);
-
-			if (best_sim > merge_threshold) {
-				SparseVector sv1 = tempClusterWordCountData.remove(best_cId1);
-				SparseVector sv2 = tempClusterWordCountData.remove(best_cId2);
-				// System.out.println(VectorUtils.toCounter(sv1, wordIndexer));
-				// System.out.println(VectorUtils.toCounter(sv2, wordIndexer));
-				// System.out.println(ArrayUtils.toString(simMatrix,
-				// simMatrix.length, simMatrix.length, true,
-				// NumberFormat.getInstance()));
-				// System.out.println();
-				VectorMath.add(sv1, sv2, sv1);
-
-				tempClusterWordCountData.put(best_cId1, sv1);
-
-				Set<Integer> docsInCluster1 = tempClusterDocMap.remove(best_cId1);
-				Set<Integer> docsInCluster2 = tempClusterDocMap.remove(best_cId2);
-				docsInCluster1.addAll(docsInCluster2);
-				tempClusterDocMap.put(best_cId1, docsInCluster1);
-			} else {
-				break;
-			}
-
-			Counter<Integer> clusterDocCounts = new Counter<Integer>();
-
-			for (int cId : tempClusterDocMap.keySet()) {
-				clusterDocCounts.setCount(cId, tempClusterDocMap.get(cId).size());
-			}
-
-			System.out.printf("[%d]th iter\t[%d] clusters\t%s\n", i + 1, clusterDocCounts.size(), clusterDocCounts.toString());
-		}
-
-		clusterDocMap = new SetMap<Integer, Integer>();
-		docClusterMap = new TreeMap<Integer, Integer>();
-
-		for (int cId : tempClusterDocMap.keySet()) {
-			Set<Integer> docIds = tempClusterDocMap.get(cId);
-			int newClusterId = clusterDocMap.keySet().size();
-			clusterDocMap.put(newClusterId, docIds);
-
-			for (int docId : docIds) {
-				docClusterMap.put(docId, cId);
-			}
-		}
-
-		Counter<Integer> clusterDocCounts = new Counter<Integer>();
-
-		for (int cId : clusterDocMap.keySet()) {
-			clusterDocCounts.setCount(cId, clusterDocMap.get(cId).size());
-		}
-
-		System.out.printf("[%d] clusters\t%s\n", clusterDocCounts.size(), clusterDocCounts.toString());
-
-		clusterWordCountData = new ArrayList<SparseVector>(tempClusterWordCountData.values());
-	}
-
-	public void doClustering() {
-		performHAC();
-	}
-
 	public double computeCosineSimilarity(SparseVector doc1, SparseVector doc2) {
 		double ret = 0;
 		double dirichlet_prior = 1500;
@@ -286,6 +169,10 @@ public class DocumentClusterer {
 		return cosine;
 	}
 
+	public void doClustering() {
+		performHAC();
+	}
+
 	public SetMap<Integer, Integer> getClusterDocumentMap() {
 		return clusterDocMap;
 	}
@@ -296,6 +183,119 @@ public class DocumentClusterer {
 
 	public Map<Integer, Integer> getDocumentClusterMap() {
 		return docClusterMap;
+	}
+
+	private void performHAC() {
+		docScores.sortByValue();
+
+		SetMap<Integer, Integer> tempClusterDocMap = new SetMap<Integer, Integer>();
+		Map<Integer, SparseVector> tempClusterWordCountData = new TreeMap<Integer, SparseVector>();
+
+		for (int i = 0; i < docScores.size() && i < top_k; i++) {
+			int docId = docScores.indexAtLoc(i);
+			int cId = tempClusterDocMap.size();
+			tempClusterDocMap.put(cId, docId);
+			tempClusterWordCountData.put(cId, docWordCounts.rowAlways(docId).copy());
+		}
+
+		docScores.sortByIndex();
+
+		for (int i = 0; i < 1000; i++) {
+			List<Integer> clusterIds = new ArrayList<Integer>(tempClusterDocMap.keySet());
+			int num_clusters = clusterIds.size();
+
+			if (num_clusters == 1) {
+				break;
+			}
+
+			int best_cId1 = -1, best_cId2 = -1;
+			double best_sim = 0;
+			double[][] sims = new double[num_clusters][num_clusters];
+
+			for (int j = 0; j < clusterIds.size(); j++) {
+				int cId1 = clusterIds.get(j);
+				SparseVector sv1 = tempClusterWordCountData.get(cId1);
+
+				for (int k = j + 1; k < clusterIds.size(); k++) {
+					int cId2 = clusterIds.get(k);
+					SparseVector sv2 = tempClusterWordCountData.get(cId2);
+
+					double sim = computeCosineSimilarity(sv1, sv2);
+					sims[j][k] = sim;
+					sims[k][j] = sim;
+
+					if (sim > best_sim) {
+						best_sim = sim;
+						best_cId1 = cId1;
+						best_cId2 = cId2;
+					}
+				}
+			}
+
+			NumberFormat nf = NumberFormat.getInstance();
+			nf.setMinimumFractionDigits(5);
+
+			// System.out.printf("[%d] clusters, similarity [%s] between [%s] and [%s]\n",
+			//
+			// tempClusterDocMap.size(), nf.format(best_sim), best_cId1,
+			// best_cId2);
+
+			if (best_sim > merge_threshold) {
+				SparseVector sv1 = tempClusterWordCountData.remove(best_cId1);
+				SparseVector sv2 = tempClusterWordCountData.remove(best_cId2);
+				// System.out.println(VectorUtils.toCounter(sv1, wordIndexer));
+				// System.out.println(VectorUtils.toCounter(sv2, wordIndexer));
+				// System.out.println(ArrayUtils.toString(simMatrix,
+				// simMatrix.length, simMatrix.length, true,
+				// NumberFormat.getInstance()));
+				// System.out.println();
+				VectorMath.add(sv1, sv2, sv1);
+
+				tempClusterWordCountData.put(best_cId1, sv1);
+
+				Set<Integer> docsInCluster1 = tempClusterDocMap.remove(best_cId1);
+				Set<Integer> docsInCluster2 = tempClusterDocMap.remove(best_cId2);
+				docsInCluster1.addAll(docsInCluster2);
+				tempClusterDocMap.put(best_cId1, docsInCluster1);
+			} else {
+				break;
+			}
+
+			Counter<Integer> clusterDocCounts = new Counter<Integer>();
+
+			for (int cId : tempClusterDocMap.keySet()) {
+				clusterDocCounts.setCount(cId, tempClusterDocMap.get(cId).size());
+			}
+
+			System.out.printf("[%d]th iter\t[%d] clusters\t%s\n", i + 1, clusterDocCounts.size(), clusterDocCounts.toString());
+		}
+
+		clusterDocMap = new SetMap<Integer, Integer>();
+		docClusterMap = new TreeMap<Integer, Integer>();
+
+		for (int cId : tempClusterDocMap.keySet()) {
+			Set<Integer> docIds = tempClusterDocMap.get(cId);
+			int newClusterId = clusterDocMap.keySet().size();
+			clusterDocMap.put(newClusterId, docIds);
+
+			for (int docId : docIds) {
+				docClusterMap.put(docId, cId);
+			}
+		}
+
+		Counter<Integer> clusterDocCounts = new Counter<Integer>();
+
+		for (int cId : clusterDocMap.keySet()) {
+			clusterDocCounts.setCount(cId, clusterDocMap.get(cId).size());
+		}
+
+		System.out.printf("[%d] clusters\t%s\n", clusterDocCounts.size(), clusterDocCounts.toString());
+
+		clusterWordCountData = new ArrayList<SparseVector>(tempClusterWordCountData.values());
+	}
+
+	private void performKMeans() {
+
 	}
 
 }

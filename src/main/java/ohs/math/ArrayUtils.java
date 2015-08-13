@@ -132,25 +132,17 @@ public class ArrayUtils {
 		}
 	}
 
+	public static void copyAs(double[] a, List<Double> b) {
+		for (int i = 0; i < a.length; i++) {
+			b.add(a[i]);
+		}
+	}
+
 	public static void copyAs(double[][] a, int[][] b) {
 		for (int i = 0; i < a.length; i++) {
 			for (int j = 0; j < a[i].length; j++) {
 				b[i][j] = (int) a[i][j];
 			}
-		}
-	}
-
-	public static void copyAs(int[][] a, double[][] b) {
-		for (int i = 0; i < a.length; i++) {
-			for (int j = 0; j < a[i].length; j++) {
-				b[i][j] = a[i][j];
-			}
-		}
-	}
-
-	public static void copyAs(double[] a, List<Double> b) {
-		for (int i = 0; i < a.length; i++) {
-			b.add(a[i]);
 		}
 	}
 
@@ -175,6 +167,20 @@ public class ArrayUtils {
 	public static void copyAs(int[] a, List<Integer> b) {
 		for (int i = 0; i < a.length; i++) {
 			b.add(a[i]);
+		}
+	}
+
+	public static void copyAs(int[] a, Set<Integer> b) {
+		for (int value : a) {
+			b.add(value);
+		}
+	}
+
+	public static void copyAs(int[][] a, double[][] b) {
+		for (int i = 0; i < a.length; i++) {
+			for (int j = 0; j < a[i].length; j++) {
+				b[i][j] = a[i][j];
+			}
 		}
 	}
 
@@ -494,12 +500,6 @@ public class ArrayUtils {
 			double temp = x[index1][i];
 			x[index1][i] = x[index2][i];
 			x[index2][i] = temp;
-		}
-	}
-
-	public static void copyAs(int[] a, Set<Integer> b) {
-		for (int value : a) {
-			b.add(value);
 		}
 	}
 

@@ -38,73 +38,60 @@ public class PaperDataHandler {
 		System.out.println("process ends.");
 	}
 
-	public void selectSubsetForOrgHistory() throws Exception {
-		List<String> lines = IOUtils.readLines(ENTPath.ORG_HISTORY_DIR + "base_orgs.txt", IOUtils.EUC_KR, Integer.MAX_VALUE);
-		// TextFileWriter writer = new TextFileWriter(ENTPath.ORG_HISTORY_SUBSET_FILE_1);
+	public void extractKoreanAuthorNames() throws Exception {
+		TextFileReader reader = new TextFileReader(ENTPath.AUTHOR_META_FILE);
+		reader.setPrintNexts(false);
 
-		List<Integer> locs = new ArrayList<Integer>();
+		// TextFileWriter writer = new TextFileWriter(ENTPath.PERSON_SUBSET_FILE);
 
-		for (int i = 1; i < lines.size(); i++) {
-			String line = "##" + lines.get(i) + "##";
-			String[] parts = line.replace("\t", "##\t").split("\t");
+		StrCounterMap cm = new StrCounterMap();
 
-			if (parts.length != 13) {
-				System.out.println();
-			}
+		while (reader.hasNext()) {
+			reader.print(1000000);
 
-			for (int j = 0; j < parts.length; j++) {
-				parts[j] = parts[j].replace("##", "");
-			}
+			String line = reader.next();
 
-			String type = parts[2];
-			String name = parts[3];
-
-			boolean isSelected = true;
-
-			if (name.startsWith("(")) {
-				isSelected = false;
-			}
-
-			if (name.contains("대학") || name.contains("과학기술원") || name.contains("연구")) {
-
-			} else {
-				isSelected = false;
-			}
-
-			if (type.length() > 0 && type.equals("공기업")) {
-				isSelected = true;
-			}
 			// System.out.println(line);
 
-			if (!isSelected) {
+			// if (reader.getNumLines() > 100) {
+			// break;
+			// }
+			String[] parts = line.split("\t");
+			String id = parts[0];
+			String auk = parts[1];
+			String aue = parts[2];
+			String orgk = parts[3];
+			String orge = parts[4];
+			String aid = parts[9];
+
+			String name = auk;
+
+			cm.incrementCount(aid, auk, 1);
+
+		}
+		reader.printLast();
+		reader.close();
+
+		TextFileWriter writer = new TextFileWriter(ENTPath.AUTHOR_NAME_FILE);
+
+		List<String> aids = cm.getInnerCountSums().getSortedKeys();
+
+		for (int i = 0; i < aids.size(); i++) {
+			String aid = aids.get(i);
+			String name = cm.getCounter(aid).argMax();
+
+			if (name.length() == 0) {
 				continue;
 			}
 
-			locs.add(i);
-		}
+			writer.write(aid + "\t" + name);
 
-		int num_persons = 6;
-
-		int num_orgs_per_person = locs.size() / num_persons;
-		int person_id = 0;
-
-		List<String> sublines = new ArrayList<String>();
-
-		for (int i = 0; i < locs.size(); i++) {
-			if (i % num_orgs_per_person == 0) {
-				person_id++;
+			if (i != aids.size() - 1) {
+				writer.write("\n");
 			}
-
-			if (person_id > num_persons) {
-				person_id = num_persons;
-			}
-
-			int loc = locs.get(i);
-			String line = person_id + "\t" + lines.get(loc);
-			sublines.add(line);
 		}
+		writer.close();
 
-		IOUtils.write(ENTPath.ORG_HISTORY_SUBSET_FILE_1, StrUtils.join("\n", sublines));
 	}
 
 	public void process() throws Exception {
@@ -175,62 +162,6 @@ public class PaperDataHandler {
 		}
 	}
 
-	public void extractKoreanAuthorNames() throws Exception {
-		TextFileReader reader = new TextFileReader(ENTPath.AUTHOR_META_FILE);
-		reader.setPrintNexts(false);
-
-		// TextFileWriter writer = new TextFileWriter(ENTPath.PERSON_SUBSET_FILE);
-
-		StrCounterMap cm = new StrCounterMap();
-
-		while (reader.hasNext()) {
-			reader.print(1000000);
-
-			String line = reader.next();
-
-			// System.out.println(line);
-
-			// if (reader.getNumLines() > 100) {
-			// break;
-			// }
-			String[] parts = line.split("\t");
-			String id = parts[0];
-			String auk = parts[1];
-			String aue = parts[2];
-			String orgk = parts[3];
-			String orge = parts[4];
-			String aid = parts[9];
-
-			String name = auk;
-
-			cm.incrementCount(aid, auk, 1);
-
-		}
-		reader.printLast();
-		reader.close();
-
-		TextFileWriter writer = new TextFileWriter(ENTPath.AUTHOR_NAME_FILE);
-
-		List<String> aids = cm.getInnerCountSums().getSortedKeys();
-
-		for (int i = 0; i < aids.size(); i++) {
-			String aid = aids.get(i);
-			String name = cm.getCounter(aid).argMax();
-
-			if (name.length() == 0) {
-				continue;
-			}
-
-			writer.write(aid + "\t" + name);
-
-			if (i != aids.size() - 1) {
-				writer.write("\n");
-			}
-		}
-		writer.close();
-
-	}
-
 	public void process2() throws Exception {
 
 		Map<String, String> nameMap = IOUtils.readMap(ENTPath.AUTHOR_NAME_FILE);
@@ -299,5 +230,74 @@ public class PaperDataHandler {
 		writer.close();
 
 		IOUtils.write(ENTPath.AUTHOR_SUBSET_FILE_2, cm2);
+	}
+
+	public void selectSubsetForOrgHistory() throws Exception {
+		List<String> lines = IOUtils.readLines(ENTPath.ORG_HISTORY_DIR + "base_orgs.txt", IOUtils.EUC_KR, Integer.MAX_VALUE);
+		// TextFileWriter writer = new TextFileWriter(ENTPath.ORG_HISTORY_SUBSET_FILE_1);
+
+		List<Integer> locs = new ArrayList<Integer>();
+
+		for (int i = 1; i < lines.size(); i++) {
+			String line = "##" + lines.get(i) + "##";
+			String[] parts = line.replace("\t", "##\t").split("\t");
+
+			if (parts.length != 13) {
+				System.out.println();
+			}
+
+			for (int j = 0; j < parts.length; j++) {
+				parts[j] = parts[j].replace("##", "");
+			}
+
+			String type = parts[2];
+			String name = parts[3];
+
+			boolean isSelected = true;
+
+			if (name.startsWith("(")) {
+				isSelected = false;
+			}
+
+			if (name.contains("대학") || name.contains("과학기술원") || name.contains("연구")) {
+
+			} else {
+				isSelected = false;
+			}
+
+			if (type.length() > 0 && type.equals("공기업")) {
+				isSelected = true;
+			}
+			// System.out.println(line);
+
+			if (!isSelected) {
+				continue;
+			}
+
+			locs.add(i);
+		}
+
+		int num_persons = 6;
+
+		int num_orgs_per_person = locs.size() / num_persons;
+		int person_id = 0;
+
+		List<String> sublines = new ArrayList<String>();
+
+		for (int i = 0; i < locs.size(); i++) {
+			if (i % num_orgs_per_person == 0) {
+				person_id++;
+			}
+
+			if (person_id > num_persons) {
+				person_id = num_persons;
+			}
+
+			int loc = locs.get(i);
+			String line = person_id + "\t" + lines.get(loc);
+			sublines.add(line);
+		}
+
+		IOUtils.write(ENTPath.ORG_HISTORY_SUBSET_FILE_1, StrUtils.join("\n", sublines));
 	}
 }

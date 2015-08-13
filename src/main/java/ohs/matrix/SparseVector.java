@@ -690,18 +690,6 @@ public class SparseVector implements Vector {
 		return toString(false, 20, null, null);
 	}
 
-	public String toSvmString() {
-		StringBuffer sb = new StringBuffer();
-		sb.append(label);
-		for (int i = 0; i < size(); i++) {
-			sb.append(String.format(" %d:%s", indexes[i], values[i] + ""));
-			if (i != size() - 1) {
-				sb.append(" ");
-			}
-		}
-		return sb.toString();
-	}
-
 	public String toString(boolean vertical, int numKeys, Indexer<String> labelIndexer, Indexer<String> featIndexer) {
 		NumberFormat nf = NumberFormat.getInstance();
 		nf.setMinimumFractionDigits(4);
@@ -738,6 +726,18 @@ public class SparseVector implements Vector {
 		// sortByIndex();
 
 		return sb.toString().trim();
+	}
+
+	public String toSvmString() {
+		StringBuffer sb = new StringBuffer();
+		sb.append(label);
+		for (int i = 0; i < size(); i++) {
+			sb.append(String.format(" %d:%s", indexes[i], values[i] + ""));
+			if (i != size() - 1) {
+				sb.append(" ");
+			}
+		}
+		return sb.toString();
 	}
 
 	public double value(int index) {

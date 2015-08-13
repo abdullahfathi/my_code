@@ -14,16 +14,16 @@ abstract class Layer implements Serializable {
 
 	protected List<Layer> layers = new ArrayList<Layer>();
 
-	public int size() {
-		return nodes.size();
-	}
-
 	public List<Connection> getConnections() {
 		return conns;
 	}
 
 	public List<Layer> getLayers() {
 		return layers;
+	}
+
+	public int size() {
+		return nodes.size();
 	}
 
 }

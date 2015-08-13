@@ -35,12 +35,12 @@ public class TextFileReader {
 
 	private StopWatch stopWatch;
 
-	public TextFileReader(String fileName) {
-		this(fileName, IOUtils.UTF_8);
-	}
-
 	public TextFileReader(File file) {
 		this(file.getName(), IOUtils.UTF_8);
+	}
+
+	public TextFileReader(String fileName) {
+		this(fileName, IOUtils.UTF_8);
 	}
 
 	public TextFileReader(String fileName, String encoding) {

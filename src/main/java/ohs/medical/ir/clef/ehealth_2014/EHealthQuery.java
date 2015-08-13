@@ -20,24 +20,6 @@ import org.xml.sax.InputSource;
 
 public class EHealthQuery {
 
-	public static void tokenize(List<EHealthQuery> eHealthQueries) {
-		for (int i = 0; i < eHealthQueries.size(); i++) {
-			EHealthQuery q = eHealthQueries.get(i);
-
-			String title = q.getTitle();
-			String desc = q.getDescription();
-			String discharge = q.getDischarge();
-
-			title = DataHandler.tokenize(title).replace("\n", " ");
-			desc = DataHandler.tokenize(desc).replace("\n", " ");
-			discharge = DataHandler.tokenize(discharge);
-
-			q.setTitle(title);
-			q.setDescription(desc);
-			q.setDischarge(discharge);
-		}
-	}
-
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 
@@ -118,6 +100,24 @@ public class EHealthQuery {
 			ret.add(cq);
 		}
 		return ret;
+	}
+
+	public static void tokenize(List<EHealthQuery> eHealthQueries) {
+		for (int i = 0; i < eHealthQueries.size(); i++) {
+			EHealthQuery q = eHealthQueries.get(i);
+
+			String title = q.getTitle();
+			String desc = q.getDescription();
+			String discharge = q.getDischarge();
+
+			title = DataHandler.tokenize(title).replace("\n", " ");
+			desc = DataHandler.tokenize(desc).replace("\n", " ");
+			discharge = DataHandler.tokenize(discharge);
+
+			q.setTitle(title);
+			q.setDescription(desc);
+			q.setDischarge(discharge);
+		}
 	}
 
 	private String id;

@@ -23,24 +23,6 @@ public class CounterUtils {
 		return ret;
 	}
 
-	public static Counter<Integer> toIntegerKeys(Counter<String> c) {
-		Counter<Integer> ret = new Counter<Integer>();
-		for (String key : c.keySet()) {
-			double count = c.getCount(key);
-			ret.setCount(Integer.parseInt(key), count);
-		}
-		return ret;
-	}
-
-	public static Counter<String> toStringKeys(Counter<Integer> c) {
-		Counter<String> ret = new Counter<String>();
-		for (int key : c.keySet()) {
-			double count = c.getCount(key);
-			ret.setCount(Integer.toString(key), count);
-		}
-		return ret;
-	}
-
 	public static CounterMap<String, String> convert(CounterMap<Integer, Integer> counterMap, Indexer<String> rowIndexer,
 			Indexer<String> columnIndexer) {
 		CounterMap<String, String> ret = new CounterMap<String, String>();
@@ -55,6 +37,24 @@ public class CounterUtils {
 				rowStr = rowIndexer.getObject(rowId);
 			}
 			ret.setCounter(rowStr, newCounter);
+		}
+		return ret;
+	}
+
+	public static Counter<Integer> toIntegerKeys(Counter<String> c) {
+		Counter<Integer> ret = new Counter<Integer>();
+		for (String key : c.keySet()) {
+			double count = c.getCount(key);
+			ret.setCount(Integer.parseInt(key), count);
+		}
+		return ret;
+	}
+
+	public static Counter<String> toStringKeys(Counter<Integer> c) {
+		Counter<String> ret = new Counter<String>();
+		for (int key : c.keySet()) {
+			double count = c.getCount(key);
+			ret.setCount(Integer.toString(key), count);
 		}
 		return ret;
 	}

@@ -11,446 +11,53 @@ import ohs.matrix.Vector;
 
 public class ArrayChecker {
 
-	public static void main(String[] args) {
-		System.out.println("process begins.");
-
-		{
-			double[][] a = { { 1, 3, 4, 4, 6 }, { 0, 0, 2, 4, 5 }, { 0, 0, 0, 1, 6 } };
-			System.out.println(isRowEchelonForm(a));
-			System.out.println(isReducedRowEchelonForm(a));
-		}
-
-		{
-			double[][] a = { { 1, 0, 3, 0, 5 }, { 0, 1, 0, 0, 4 }, { 0, 0, 0, 1, 6 } };
-			System.out.println(isRowEchelonForm(a));
-			System.out.println(isReducedRowEchelonForm(a));
-		}
-
-		{
-			double[][] a = { { 1, 3 }, { -5, 0 } };
-			double[][] b = { { 1, 0 }, { 0, 1 } };
-
-			System.out.println(ArrayUtils.toString(LA.joinColumns(a, b)));
-		}
-
-		{
-			double[][] a = { { 1, 6, 2, -5, -2, -4 },
-
-			{ 0, 0, 2, -8, -1, 3 }, { 0, 0, 0, 0, 1, 7 } };
-
-			System.out.println(hasSolution(a));
-		}
-
-		{
-			double[][] a = { { 1, 5, 0, 21 }, { 0, 1, 1, 4 } };
-			System.out.println(hasSolution(a));
-		}
-
-		{
-			double[][] a = { { 0, 3, -6, 6, 4, -5 }, { 3, -7, 8, -5, 8, 9 }, { 3, -9, 12, -9, 6, 15 } };
-
-			System.out.println(hasSolution(a));
-		}
-
-		{
-			double[][] a = { { 1, 2, 7 }, { -2, 5, 4 }, { -5, 6, -3 } };
-			System.out.println(hasSolution(a));
-		}
-
-		{
-			double[][] a = { { 1, 5, -3 }, { -2, -13, 8 }, { 3, -3, 1 } };
-			System.out.println(hasSolution(a));
-		}
-
-		System.out.println("process ends.");
-	}
-
-	public static boolean isSameDimension(double[] a, double[] b) {
-		return a.length == b.length ? true : false;
-	}
-
-	public static boolean isSameDimension(int[] a, double[] b) {
-		return a.length == b.length ? true : false;
-	}
-
-	public static boolean isEqual(double[] a, double[] b) {
-		if (!isSameDimension(a, b)) {
-			throw new IllegalArgumentException();
-		}
-
-		for (int i = 0; i < a.length; i++) {
-			if (a[i] != b[i]) {
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	public static boolean isSameDimension(int[] a, int[] b) {
-		return a.length == b.length ? true : false;
-	}
-
-	public static boolean isSameDimension(double[] a, double[] b, double[] c) {
-		return isSameDimension(a, b) && isSameDimension(b, c) ? true : false;
-	}
-
-	public static boolean isSameDimensions(double[][] a, double[][] b, double[][] c) {
-		return isSameDimensions(a, b) && isSameDimensions(b, c) ? true : false;
-	}
-
-	public static boolean isSameDimensions(double[][] a, double[][] b) {
-		int aRowDim = a.length;
-		int aColDim = a[0].length;
-		int bRowDim = b.length;
-		int bColDim = b[0].length;
-
-		if (aRowDim == bRowDim && aColDim == bColDim) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	public static boolean isValidRealNumbers(double[] a) {
-		for (int i = 0; i < a.length; i++) {
-			if (Double.isNaN(a[i]) || Double.isInfinite(a[i]) || Double.POSITIVE_INFINITY == a[i] || Double.NEGATIVE_INFINITY == a[i]) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	public static boolean isValidProbabilityMassFunction(double[] a) {
-		boolean ret = true;
-		double sum = 0;
-		for (int i = 0; i < a.length; i++) {
-			if (a[i] >= 0 && a[i] <= 1) {
-
-			} else {
-				return false;
-			}
-		}
-
-		if (sum != 1) {
-			return false;
-		}
-
-		return true;
-	}
-
-	public static boolean isSameRowDimension(double[][] a, double[] b) {
-		int aRowDim = a.length;
-		int aColDim = a[0].length;
-		int bDim = b.length;
-
-		if (aRowDim == bDim) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	public static boolean isSameRowDimension(double[][] a, double[][] b) {
-		int aRowDim = a.length;
-		int bRowDim = b.length;
-
-		if (aRowDim == bRowDim) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	public static boolean isProductable(double[][] a, double[][] b) {
-		int aRowDim = a.length;
-		int aColDim = a[0].length;
-		int bRowDim = b.length;
-		int bColDim = b[0].length;
-
-		if (aColDim == bRowDim) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	public static boolean isProductable(double[][] a, double[][] b, double[][] c) {
-		int aRowDim = a.length;
-		int aColDim = a[0].length;
-		int bRowDim = b.length;
-		int bColDim = b[0].length;
-
-		int cRowDim = c.length;
-		int cColDim = c[0].length;
-
-		if (cRowDim == aRowDim && cColDim == bColDim && aColDim == bRowDim) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	/**
-	 * @param a
-	 *            M x K matrix
-	 * @param b
-	 *            K x N matrix
-	 * @param c
-	 *            M x N matrix
-	 * @return
-	 */
-	public static boolean isProductable(double[][] a, double[] b, double[] c) {
-		int aRowDim = a.length;
-		int aColDim = a[0].length;
-		int bDim = b.length;
-		int cDim = c.length;
-
-		if (aColDim == bDim && bDim == cDim) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	public static boolean isProductable(double[][] a, double[] b) {
-		int aRowDim = a.length;
-		int aColDim = a[0].length;
-		int bDim = b.length;
-
-		if (aColDim == bDim) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	public static boolean isSameColumnDimension(double[][] a, double[] b) {
-		int aRowDim = a.length;
-		int aColDim = a[0].length;
-		int bDim = b.length;
-
-		if (aColDim == bDim) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
 	/**
 	 * 
-	 * [Definition]
+	 * A system of linear equations has either
 	 * 
-	 * 1. All nonzero rows (rows with at least one nonzero element) are above
-	 * any rows of all zeroes (all zero rows, if any, belong at the bottom of
-	 * the matrix).
+	 * 1. no solution, or
 	 * 
-	 * 2. The leading coefficient (the first nonzero number from the left, also
-	 * called the pivot) of a nonzero row is always strictly to the right of the
-	 * leading coefficient of the row above it (some texts add the condition
-	 * that the leading coefficient must be 1.[1]).
+	 * 2. exactly one solution, or
 	 * 
-	 * 3. All entries in a column below a leading entry are zeroes (implied by
-	 * the first two criteria)
+	 * 3. infinitely many solutions.
+	 * 
+	 * A system of linear equations is said to be consistent if it has either
+	 * one solution or infinitely many solutions.
+	 * 
+	 * A system is inconsistent if it has no solution.
 	 * 
 	 * 
-	 * http://en.wikipedia.org/wiki/Row_echelon_form
+	 * [ Theorem 1.2 - Existence and Uniqueness Theorem ]
 	 * 
+	 * A linear system is consistent iff the rightmost column of the augmented
+	 * matrix is not a pivot column- that is, iff an echelon form of the
+	 * augmented matrix has no row of the form
+	 * 
+	 * [0 ... 0 b] with nonzero
+	 * 
+	 * If a linear system is consistent, then the solution set contains either
+	 * (i) a unique solution, when there are no free variables, or (ii)
+	 * infinitely many solutions, when there is at least one free variables.
 	 * 
 	 * @param a
 	 * @return
 	 */
-	public static boolean isRowEchelonForm(double[][] a) {
-		int rowDim = a.length;
-		int colDim = a[0].length;
+	public static SolutionType hasSolution(double[][] a) {
+		SolutionType ret = SolutionType.No;
 
-		int[] leadingEntries = new int[a.length];
+		LA.GaussElimination(a);
 
-		for (int i = 0; i < leadingEntries.length; i++) {
-			leadingEntries[i] = -1;
-		}
+		if (isConsistent(a)) {
+			VariableType[] types = LA.variableTypes(a);
 
-		for (int i = 0; i < rowDim; i++) {
-			for (int j = 0; j < colDim; j++) {
-				if (a[i][j] != 0) {
-					leadingEntries[i] = j;
-					break;
+			for (int i = 0; i < types.length; i++) {
+				if (types[i] == VariableType.Free) {
+					return SolutionType.Infinite;
 				}
 			}
+			ret = SolutionType.Unique;
 		}
-
-		for (int i = 1; i < rowDim; i++) {
-			int prev_j = leadingEntries[i - 1];
-			int j = leadingEntries[i];
-
-			if (prev_j == -1 && j != -1) {
-				return false;
-			}
-
-			if (prev_j != -1 && j != -1 && prev_j >= j) {
-				return false;
-			}
-		}
-
-		for (int i = 0; i < rowDim; i++) {
-			int j = leadingEntries[i];
-
-			for (int ii = i + 1; ii < rowDim; ii++) {
-				if (a[ii][j] != 0) {
-					return false;
-				}
-			}
-		}
-
-		return true;
-	}
-
-	/**
-	 * 
-	 * [Definition]
-	 * 
-	 * 1 . It is in row echelon form.
-	 * 
-	 * 2. Every leading coefficient is 1 and is the only nonzero entry in its
-	 * column
-	 * 
-	 * http://en.wikipedia.org/wiki/Row_echelon_form
-	 * 
-	 * 
-	 * @param a
-	 * @return
-	 */
-	public static boolean isReducedRowEchelonForm(double[][] a) {
-		if (!isRowEchelonForm(a)) {
-			return false;
-		}
-
-		int rowDim = a.length;
-		int colDim = a[0].length;
-
-		int[] leadingEntries = new int[a.length];
-
-		for (int i = 0; i < leadingEntries.length; i++) {
-			leadingEntries[i] = -1;
-		}
-
-		for (int i = 0; i < rowDim; i++) {
-			for (int j = 0; j < colDim; j++) {
-				if (a[i][j] != 0) {
-					leadingEntries[i] = j;
-					break;
-				}
-			}
-		}
-
-		for (int i = 0; i < rowDim; i++) {
-			int j = leadingEntries[i];
-
-			if (j == -1) {
-				continue;
-			}
-
-			if (a[i][j] != 1) {
-				return false;
-			}
-
-			for (int ii = 0; ii < rowDim; ii++) {
-				if (ii == i) {
-					continue;
-				}
-
-				if (a[ii][j] != 0) {
-					return false;
-				}
-			}
-		}
-
-		return true;
-	}
-
-	public static boolean isUpperTriangular(double[][] a) {
-		if (isSquare(a)) {
-			int rowDim = a.length;
-			int colDim = a[0].length;
-
-			for (int i = 1; i < rowDim; i++) {
-				for (int j = 0; j < i; j++) {
-					if (a[i][j] != 0) {
-						return false;
-					}
-				}
-			}
-		} else {
-			return false;
-		}
-
-		return true;
-	}
-
-	public static boolean isLowerTriangular(double[][] a) {
-		if (isSquare(a)) {
-			int rowDim = a.length;
-			int colDim = a[0].length;
-
-			for (int i = 0; i < rowDim; i++) {
-				for (int j = i + 1; j < colDim; j++) {
-					if (a[i][j] != 0) {
-						return false;
-					}
-				}
-			}
-		} else {
-			return false;
-		}
-		return true;
-	}
-
-	/**
-	 * A matrix that is not invertible is sometimes called a singular matrix,
-	 * and an invertible matrix is called a nonsingular matrix.
-	 * 
-	 * @param a
-	 * @return
-	 */
-	public static boolean isSingular(double[][] a) {
-		return (!isInvertible(a) ? true : false);
-	}
-
-	/**
-	 * In mathematics, and in particular linear algebra, a skew-symmetric (or
-	 * antisymmetric or antimetric[1]) matrix is a square matrix A whose
-	 * transpose is also its negative; that is, it satisfies the condition -A =
-	 * AT. If the entry in the i th row and j th column is aij, i.e. A = (aij)
-	 * then the skew symmetric condition is aij = −aji. For example, the
-	 * following matrix is skew-symmetric:
-	 * 
-	 * 
-	 * http://en.wikipedia.org/wiki/Skew-symmetric_matrix
-	 * 
-	 * @param a
-	 * @return
-	 */
-	public static boolean isSkewSymmetric(double[][] a) {
-		if (!isSquare(a)) {
-			return false;
-		}
-
-		int dim = a.length;
-
-		for (int i = 0; i < dim; i++) {
-			for (int j = i + 1; j < dim; j++) {
-				if (a[i][j] + a[j][i] != 0) {
-					return false;
-				}
-			}
-		}
-
-		return true;
-
-	}
-
-	public static boolean isSquare(double[][] a) {
-		return (a.length == a[0].length ? true : false);
+		return ret;
 	}
 
 	/**
@@ -511,55 +118,6 @@ public class ArrayChecker {
 
 	/**
 	 * 
-	 * A system of linear equations has either
-	 * 
-	 * 1. no solution, or
-	 * 
-	 * 2. exactly one solution, or
-	 * 
-	 * 3. infinitely many solutions.
-	 * 
-	 * A system of linear equations is said to be consistent if it has either
-	 * one solution or infinitely many solutions.
-	 * 
-	 * A system is inconsistent if it has no solution.
-	 * 
-	 * 
-	 * [ Theorem 1.2 - Existence and Uniqueness Theorem ]
-	 * 
-	 * A linear system is consistent iff the rightmost column of the augmented
-	 * matrix is not a pivot column- that is, iff an echelon form of the
-	 * augmented matrix has no row of the form
-	 * 
-	 * [0 ... 0 b] with nonzero
-	 * 
-	 * If a linear system is consistent, then the solution set contains either
-	 * (i) a unique solution, when there are no free variables, or (ii)
-	 * infinitely many solutions, when there is at least one free variables.
-	 * 
-	 * @param a
-	 * @return
-	 */
-	public static SolutionType hasSolution(double[][] a) {
-		SolutionType ret = SolutionType.No;
-
-		LA.GaussElimination(a);
-
-		if (isConsistent(a)) {
-			VariableType[] types = LA.variableTypes(a);
-
-			for (int i = 0; i < types.length; i++) {
-				if (types[i] == VariableType.Free) {
-					return SolutionType.Infinite;
-				}
-			}
-			ret = SolutionType.Unique;
-		}
-		return ret;
-	}
-
-	/**
-	 * 
 	 * 
 	 * http://en.wikipedia.org/wiki/Diagonal_matrix
 	 * 
@@ -580,6 +138,20 @@ public class ArrayChecker {
 			}
 		} else {
 			return false;
+		}
+
+		return true;
+	}
+
+	public static boolean isEqual(double[] a, double[] b) {
+		if (!isSameDimension(a, b)) {
+			throw new IllegalArgumentException();
+		}
+
+		for (int i = 0; i < a.length; i++) {
+			if (a[i] != b[i]) {
+				return false;
+			}
 		}
 
 		return true;
@@ -611,32 +183,6 @@ public class ArrayChecker {
 		}
 		return true;
 	}
-
-	public static boolean isTransposable(double[][] a, double[][] b) {
-		int aRowDim = a.length;
-		int aColDim = a[0].length;
-		int bRowDim = b.length;
-		int bColDim = b[0].length;
-
-		if (aRowDim == bColDim && aColDim == bRowDim) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	// public boolean isDiagonalizable() {
-	// if (isTriangular()) {
-	// Vector eigenValues = eigenValues().diagonalVector();
-	// Set<Double> eigenValueSet = new HashSet<Double>();
-	// for (int i = 0; i < eigenValues.size(); i++) {
-	// eigenValueSet.add(eigenValues.get(i));
-	// }
-	// return (eigenValues.dim() == eigenValueSet.size() ? true : false);
-	// } else {
-	// return isLinearlyIndependent();
-	// }
-	// }
 
 	/**
 	 * 
@@ -690,66 +236,6 @@ public class ArrayChecker {
 	 */
 	public static boolean isInvertible(double[][] a) {
 		return (LA.determinant(a) == 0 ? false : true);
-	}
-
-	// public boolean isInNullSpace(Vector B) {
-	// if (colDim() != B.dim()) {
-	// throw new IllegalArgumentException("Invalid Matrix isNullSpace");
-	// }
-	// return product(B).isZeroVector();
-	// }
-
-	// public boolean isLinearlyIndependent() {
-	// if (colDim() > rowDim()) {
-	// return false;
-	// }
-	//
-	// for (int j = 0; j < colDim(); j++) {
-	// if (colVector(j).isZeroVector()) {
-	// return false;
-	// }
-	// }
-	//
-	// Vector B = new SparseVector(rowDim(), 0);
-	// Vector X = solve(B);
-	// return X.isZeroVector();
-	// }
-
-	// public boolean isOneToOneMapping() {
-	// return isLinearlyIndependent();
-	// }
-
-	public boolean isOntoMapping(double[][] a) {
-		int rowDim = a.length;
-		int colDim = a[0].length;
-		double[][] b = new double[rowDim][colDim];
-
-		ArrayUtils.copy(a, b);
-
-		int[] pivotColumns = LA.GaussElimination(b);
-
-		int numPivots = 0;
-
-		for (int i = 0; i < pivotColumns.length; i++) {
-			if (pivotColumns[i] != -1) {
-				numPivots++;
-			}
-		}
-
-		return (numPivots == rowDim ? true : false);
-	}
-
-	public static boolean isTriangular(double[][] a) {
-		return (isUpperTriangular(a) || isLowerTriangular(a) ? true : false);
-	}
-
-	public static boolean isZeroVector(double[] a) {
-		for (int i = 0; i < a.length; i++) {
-			if (a[i] != 0) {
-				return false;
-			}
-		}
-		return true;
 	}
 
 	/**
@@ -879,6 +365,28 @@ public class ArrayChecker {
 		return isLinearlyDependent(LA.joinColumns(a, b));
 	}
 
+	public static boolean isLowerTriangular(double[][] a) {
+		if (isSquare(a)) {
+			int rowDim = a.length;
+			int colDim = a[0].length;
+
+			for (int i = 0; i < rowDim; i++) {
+				for (int j = i + 1; j < colDim; j++) {
+					if (a[i][j] != 0) {
+						return false;
+					}
+				}
+			}
+		} else {
+			return false;
+		}
+		return true;
+	}
+
+	public static boolean isOrthogonal(double[] a, double[] b) {
+		return (LA.dotProduct(a, b) == 0 ? true : false);
+	}
+
 	/**
 	 * 
 	 * 
@@ -912,8 +420,11 @@ public class ArrayChecker {
 		return true;
 	}
 
-	public static boolean isOrthogonal(double[] a, double[] b) {
-		return (LA.dotProduct(a, b) == 0 ? true : false);
+	public static boolean isOrthonormal(double[] a, double[] b) {
+		if (LA.dotProduct(a, b) != 0 || LA.dotProduct(a, a) != 1 || LA.dotProduct(b, b) != 1) {
+			return false;
+		}
+		return true;
 	}
 
 	/**
@@ -950,11 +461,354 @@ public class ArrayChecker {
 		return true;
 	}
 
-	public static boolean isOrthonormal(double[] a, double[] b) {
-		if (LA.dotProduct(a, b) != 0 || LA.dotProduct(a, a) != 1 || LA.dotProduct(b, b) != 1) {
+	public static boolean isProductable(double[][] a, double[] b) {
+		int aRowDim = a.length;
+		int aColDim = a[0].length;
+		int bDim = b.length;
+
+		if (aColDim == bDim) {
+			return true;
+		} else {
 			return false;
 		}
+	}
+
+	/**
+	 * @param a
+	 *            M x K matrix
+	 * @param b
+	 *            K x N matrix
+	 * @param c
+	 *            M x N matrix
+	 * @return
+	 */
+	public static boolean isProductable(double[][] a, double[] b, double[] c) {
+		int aRowDim = a.length;
+		int aColDim = a[0].length;
+		int bDim = b.length;
+		int cDim = c.length;
+
+		if (aColDim == bDim && bDim == cDim) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public static boolean isProductable(double[][] a, double[][] b) {
+		int aRowDim = a.length;
+		int aColDim = a[0].length;
+		int bRowDim = b.length;
+		int bColDim = b[0].length;
+
+		if (aColDim == bRowDim) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public static boolean isProductable(double[][] a, double[][] b, double[][] c) {
+		int aRowDim = a.length;
+		int aColDim = a[0].length;
+		int bRowDim = b.length;
+		int bColDim = b[0].length;
+
+		int cRowDim = c.length;
+		int cColDim = c[0].length;
+
+		if (cRowDim == aRowDim && cColDim == bColDim && aColDim == bRowDim) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * 
+	 * [Definition]
+	 * 
+	 * 1 . It is in row echelon form.
+	 * 
+	 * 2. Every leading coefficient is 1 and is the only nonzero entry in its
+	 * column
+	 * 
+	 * http://en.wikipedia.org/wiki/Row_echelon_form
+	 * 
+	 * 
+	 * @param a
+	 * @return
+	 */
+	public static boolean isReducedRowEchelonForm(double[][] a) {
+		if (!isRowEchelonForm(a)) {
+			return false;
+		}
+
+		int rowDim = a.length;
+		int colDim = a[0].length;
+
+		int[] leadingEntries = new int[a.length];
+
+		for (int i = 0; i < leadingEntries.length; i++) {
+			leadingEntries[i] = -1;
+		}
+
+		for (int i = 0; i < rowDim; i++) {
+			for (int j = 0; j < colDim; j++) {
+				if (a[i][j] != 0) {
+					leadingEntries[i] = j;
+					break;
+				}
+			}
+		}
+
+		for (int i = 0; i < rowDim; i++) {
+			int j = leadingEntries[i];
+
+			if (j == -1) {
+				continue;
+			}
+
+			if (a[i][j] != 1) {
+				return false;
+			}
+
+			for (int ii = 0; ii < rowDim; ii++) {
+				if (ii == i) {
+					continue;
+				}
+
+				if (a[ii][j] != 0) {
+					return false;
+				}
+			}
+		}
+
 		return true;
+	}
+
+	/**
+	 * 
+	 * [Definition]
+	 * 
+	 * 1. All nonzero rows (rows with at least one nonzero element) are above
+	 * any rows of all zeroes (all zero rows, if any, belong at the bottom of
+	 * the matrix).
+	 * 
+	 * 2. The leading coefficient (the first nonzero number from the left, also
+	 * called the pivot) of a nonzero row is always strictly to the right of the
+	 * leading coefficient of the row above it (some texts add the condition
+	 * that the leading coefficient must be 1.[1]).
+	 * 
+	 * 3. All entries in a column below a leading entry are zeroes (implied by
+	 * the first two criteria)
+	 * 
+	 * 
+	 * http://en.wikipedia.org/wiki/Row_echelon_form
+	 * 
+	 * 
+	 * @param a
+	 * @return
+	 */
+	public static boolean isRowEchelonForm(double[][] a) {
+		int rowDim = a.length;
+		int colDim = a[0].length;
+
+		int[] leadingEntries = new int[a.length];
+
+		for (int i = 0; i < leadingEntries.length; i++) {
+			leadingEntries[i] = -1;
+		}
+
+		for (int i = 0; i < rowDim; i++) {
+			for (int j = 0; j < colDim; j++) {
+				if (a[i][j] != 0) {
+					leadingEntries[i] = j;
+					break;
+				}
+			}
+		}
+
+		for (int i = 1; i < rowDim; i++) {
+			int prev_j = leadingEntries[i - 1];
+			int j = leadingEntries[i];
+
+			if (prev_j == -1 && j != -1) {
+				return false;
+			}
+
+			if (prev_j != -1 && j != -1 && prev_j >= j) {
+				return false;
+			}
+		}
+
+		for (int i = 0; i < rowDim; i++) {
+			int j = leadingEntries[i];
+
+			for (int ii = i + 1; ii < rowDim; ii++) {
+				if (a[ii][j] != 0) {
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
+	public static boolean isSameColumnDimension(double[][] a, double[] b) {
+		int aRowDim = a.length;
+		int aColDim = a[0].length;
+		int bDim = b.length;
+
+		if (aColDim == bDim) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public static boolean isSameDimension(double[] a, double[] b) {
+		return a.length == b.length ? true : false;
+	}
+
+	public static boolean isSameDimension(double[] a, double[] b, double[] c) {
+		return isSameDimension(a, b) && isSameDimension(b, c) ? true : false;
+	}
+
+	public static boolean isSameDimension(int[] a, double[] b) {
+		return a.length == b.length ? true : false;
+	}
+
+	public static boolean isSameDimension(int[] a, int[] b) {
+		return a.length == b.length ? true : false;
+	}
+
+	public static boolean isSameDimensions(double[][] a, double[][] b) {
+		int aRowDim = a.length;
+		int aColDim = a[0].length;
+		int bRowDim = b.length;
+		int bColDim = b[0].length;
+
+		if (aRowDim == bRowDim && aColDim == bColDim) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public static boolean isSameDimensions(double[][] a, double[][] b, double[][] c) {
+		return isSameDimensions(a, b) && isSameDimensions(b, c) ? true : false;
+	}
+
+	public static boolean isSameRowDimension(double[][] a, double[] b) {
+		int aRowDim = a.length;
+		int aColDim = a[0].length;
+		int bDim = b.length;
+
+		if (aRowDim == bDim) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public static boolean isSameRowDimension(double[][] a, double[][] b) {
+		int aRowDim = a.length;
+		int bRowDim = b.length;
+
+		if (aRowDim == bRowDim) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * A matrix that is not invertible is sometimes called a singular matrix,
+	 * and an invertible matrix is called a nonsingular matrix.
+	 * 
+	 * @param a
+	 * @return
+	 */
+	public static boolean isSingular(double[][] a) {
+		return (!isInvertible(a) ? true : false);
+	}
+
+	// public boolean isDiagonalizable() {
+	// if (isTriangular()) {
+	// Vector eigenValues = eigenValues().diagonalVector();
+	// Set<Double> eigenValueSet = new HashSet<Double>();
+	// for (int i = 0; i < eigenValues.size(); i++) {
+	// eigenValueSet.add(eigenValues.get(i));
+	// }
+	// return (eigenValues.dim() == eigenValueSet.size() ? true : false);
+	// } else {
+	// return isLinearlyIndependent();
+	// }
+	// }
+
+	/**
+	 * In mathematics, and in particular linear algebra, a skew-symmetric (or
+	 * antisymmetric or antimetric[1]) matrix is a square matrix A whose
+	 * transpose is also its negative; that is, it satisfies the condition -A =
+	 * AT. If the entry in the i th row and j th column is aij, i.e. A = (aij)
+	 * then the skew symmetric condition is aij = −aji. For example, the
+	 * following matrix is skew-symmetric:
+	 * 
+	 * 
+	 * http://en.wikipedia.org/wiki/Skew-symmetric_matrix
+	 * 
+	 * @param a
+	 * @return
+	 */
+	public static boolean isSkewSymmetric(double[][] a) {
+		if (!isSquare(a)) {
+			return false;
+		}
+
+		int dim = a.length;
+
+		for (int i = 0; i < dim; i++) {
+			for (int j = i + 1; j < dim; j++) {
+				if (a[i][j] + a[j][i] != 0) {
+					return false;
+				}
+			}
+		}
+
+		return true;
+
+	}
+
+	// public boolean isInNullSpace(Vector B) {
+	// if (colDim() != B.dim()) {
+	// throw new IllegalArgumentException("Invalid Matrix isNullSpace");
+	// }
+	// return product(B).isZeroVector();
+	// }
+
+	// public boolean isLinearlyIndependent() {
+	// if (colDim() > rowDim()) {
+	// return false;
+	// }
+	//
+	// for (int j = 0; j < colDim(); j++) {
+	// if (colVector(j).isZeroVector()) {
+	// return false;
+	// }
+	// }
+	//
+	// Vector B = new SparseVector(rowDim(), 0);
+	// Vector X = solve(B);
+	// return X.isZeroVector();
+	// }
+
+	// public boolean isOneToOneMapping() {
+	// return isLinearlyIndependent();
+	// }
+
+	public static boolean isSquare(double[][] a) {
+		return (a.length == a[0].length ? true : false);
 	}
 
 	/**
@@ -994,6 +848,152 @@ public class ArrayChecker {
 		}
 
 		return true;
+	}
+
+	public static boolean isTransposable(double[][] a, double[][] b) {
+		int aRowDim = a.length;
+		int aColDim = a[0].length;
+		int bRowDim = b.length;
+		int bColDim = b[0].length;
+
+		if (aRowDim == bColDim && aColDim == bRowDim) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public static boolean isTriangular(double[][] a) {
+		return (isUpperTriangular(a) || isLowerTriangular(a) ? true : false);
+	}
+
+	public static boolean isUpperTriangular(double[][] a) {
+		if (isSquare(a)) {
+			int rowDim = a.length;
+			int colDim = a[0].length;
+
+			for (int i = 1; i < rowDim; i++) {
+				for (int j = 0; j < i; j++) {
+					if (a[i][j] != 0) {
+						return false;
+					}
+				}
+			}
+		} else {
+			return false;
+		}
+
+		return true;
+	}
+
+	public static boolean isValidProbabilityMassFunction(double[] a) {
+		boolean ret = true;
+		double sum = 0;
+		for (int i = 0; i < a.length; i++) {
+			if (a[i] >= 0 && a[i] <= 1) {
+
+			} else {
+				return false;
+			}
+		}
+
+		if (sum != 1) {
+			return false;
+		}
+
+		return true;
+	}
+
+	public static boolean isValidRealNumbers(double[] a) {
+		for (int i = 0; i < a.length; i++) {
+			if (Double.isNaN(a[i]) || Double.isInfinite(a[i]) || Double.POSITIVE_INFINITY == a[i] || Double.NEGATIVE_INFINITY == a[i]) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public static boolean isZeroVector(double[] a) {
+		for (int i = 0; i < a.length; i++) {
+			if (a[i] != 0) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public static void main(String[] args) {
+		System.out.println("process begins.");
+
+		{
+			double[][] a = { { 1, 3, 4, 4, 6 }, { 0, 0, 2, 4, 5 }, { 0, 0, 0, 1, 6 } };
+			System.out.println(isRowEchelonForm(a));
+			System.out.println(isReducedRowEchelonForm(a));
+		}
+
+		{
+			double[][] a = { { 1, 0, 3, 0, 5 }, { 0, 1, 0, 0, 4 }, { 0, 0, 0, 1, 6 } };
+			System.out.println(isRowEchelonForm(a));
+			System.out.println(isReducedRowEchelonForm(a));
+		}
+
+		{
+			double[][] a = { { 1, 3 }, { -5, 0 } };
+			double[][] b = { { 1, 0 }, { 0, 1 } };
+
+			System.out.println(ArrayUtils.toString(LA.joinColumns(a, b)));
+		}
+
+		{
+			double[][] a = { { 1, 6, 2, -5, -2, -4 },
+
+			{ 0, 0, 2, -8, -1, 3 }, { 0, 0, 0, 0, 1, 7 } };
+
+			System.out.println(hasSolution(a));
+		}
+
+		{
+			double[][] a = { { 1, 5, 0, 21 }, { 0, 1, 1, 4 } };
+			System.out.println(hasSolution(a));
+		}
+
+		{
+			double[][] a = { { 0, 3, -6, 6, 4, -5 }, { 3, -7, 8, -5, 8, 9 }, { 3, -9, 12, -9, 6, 15 } };
+
+			System.out.println(hasSolution(a));
+		}
+
+		{
+			double[][] a = { { 1, 2, 7 }, { -2, 5, 4 }, { -5, 6, -3 } };
+			System.out.println(hasSolution(a));
+		}
+
+		{
+			double[][] a = { { 1, 5, -3 }, { -2, -13, 8 }, { 3, -3, 1 } };
+			System.out.println(hasSolution(a));
+		}
+
+		System.out.println("process ends.");
+	}
+
+	public boolean isOntoMapping(double[][] a) {
+		int rowDim = a.length;
+		int colDim = a[0].length;
+		double[][] b = new double[rowDim][colDim];
+
+		ArrayUtils.copy(a, b);
+
+		int[] pivotColumns = LA.GaussElimination(b);
+
+		int numPivots = 0;
+
+		for (int i = 0; i < pivotColumns.length; i++) {
+			if (pivotColumns[i] != -1) {
+				numPivots++;
+			}
+		}
+
+		return (numPivots == rowDim ? true : false);
 	}
 
 }

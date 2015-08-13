@@ -50,9 +50,50 @@ public class LuceneTRECIndexer {
 	public static int zipped = 1;
 	public static int doc_types;
 
+	/**
+	 * @param args
+	 *            the command line arguments
+	 */
+	public static void main(String[] args) throws IOException {
+
+		LoggerInitializer.setup();
+
+		if (args.length > 3) {
+
+			String trec_files = args[1];
+
+			LuceneTRECIndexer.doc_types = Integer.parseInt(args[2]);
+			LuceneTRECIndexer.zipped = Integer.parseInt(args[3]);
+			LuceneTRECIndexer indexer = new LuceneTRECIndexer(args[0]);
+			indexer.indexTrec(trec_files);
+
+			indexer.close();
+		} else {
+			logger.info("LuceneTRECIndexer (directory) (indexfile) (1=News, 2=Web) (zipped=1, else 0) \n \n "
+					+ "\t\"directory\" will be where the lucene index is created,\n"
+					+ "\t\"indexfile\" is a file listing the full paths of the trec files to be indexed,\n"
+					+ "\t\"1=News, 2=Web\" determines whether the trec files are in html format or not,\n"
+					+ "\t\"zipped=1, else 0\" for zipped or plain-text."
+					+ "\n\n\n\tNote: This indexer indexes two numeric fields into each document "
+					+ "for document normalisation used during ranking.\n");
+		}
+	}
+
+	private synchronized static void removeComments(Node node) {
+		for (int i = 0; i < node.childNodes().size();) {
+			Node child = node.childNode(i);
+			if (child.nodeName().equals("#comment")) {
+				child.remove();
+			} else {
+				removeComments(child);
+				i++;
+			}
+		}
+	}
 	private final IndexWriter writer;
 
 	private final Analyzer analyzer;
+
 	private int docs = 0;
 
 	public LuceneTRECIndexer(String location) throws IOException {
@@ -64,6 +105,10 @@ public class LuceneTRECIndexer {
 		writer = new IndexWriter(dir, config);
 
 	}
+
+	/*
+	 * Quick function to index TREC News format
+	 */
 
 	/**
 	 * We calculate the TotalTerms and UniqueTerms of a document before spud.indexing and store these stats in the index as stored fields
@@ -122,6 +167,31 @@ public class LuceneTRECIndexer {
 
 	}
 
+	public void close() throws IOException {
+		this.writer.close();
+	}
+
+	/**
+	 * uses jJSOUP
+	 * 
+	 * @param html
+	 * @return
+	 */
+	private synchronized String convert(String html) {
+
+		org.jsoup.nodes.Document doc = Jsoup.parse(html);
+		// Document doc = Jsoup.parse(html);
+		removeComments(doc);
+		doc = new Cleaner(Whitelist.relaxed()).clean(doc);
+
+		String str = doc.text();
+
+		str = str.replaceAll("/", " ");
+		str = str.replaceAll("\n", " ");
+
+		return str;
+	}
+
 	private void indexTrec(String files) throws FileNotFoundException, IOException {
 
 		BufferedReader br = new BufferedReader(new FileReader(files));
@@ -143,10 +213,6 @@ public class LuceneTRECIndexer {
 		}
 
 	}
-
-	/*
-	 * Quick function to index TREC News format
-	 */
 
 	private void parseNewsFile(String filename) throws IOException {
 
@@ -332,72 +398,6 @@ public class LuceneTRECIndexer {
 
 		br.close();
 
-	}
-
-	/**
-	 * uses jJSOUP
-	 * 
-	 * @param html
-	 * @return
-	 */
-	private synchronized String convert(String html) {
-
-		org.jsoup.nodes.Document doc = Jsoup.parse(html);
-		// Document doc = Jsoup.parse(html);
-		removeComments(doc);
-		doc = new Cleaner(Whitelist.relaxed()).clean(doc);
-
-		String str = doc.text();
-
-		str = str.replaceAll("/", " ");
-		str = str.replaceAll("\n", " ");
-
-		return str;
-	}
-
-	private synchronized static void removeComments(Node node) {
-		for (int i = 0; i < node.childNodes().size();) {
-			Node child = node.childNode(i);
-			if (child.nodeName().equals("#comment")) {
-				child.remove();
-			} else {
-				removeComments(child);
-				i++;
-			}
-		}
-	}
-
-	public void close() throws IOException {
-		this.writer.close();
-	}
-
-	/**
-	 * @param args
-	 *            the command line arguments
-	 */
-	public static void main(String[] args) throws IOException {
-
-		LoggerInitializer.setup();
-
-		if (args.length > 3) {
-
-			String trec_files = args[1];
-
-			LuceneTRECIndexer.doc_types = Integer.parseInt(args[2]);
-			LuceneTRECIndexer.zipped = Integer.parseInt(args[3]);
-			LuceneTRECIndexer indexer = new LuceneTRECIndexer(args[0]);
-			indexer.indexTrec(trec_files);
-
-			indexer.close();
-		} else {
-			logger.info("LuceneTRECIndexer (directory) (indexfile) (1=News, 2=Web) (zipped=1, else 0) \n \n "
-					+ "\t\"directory\" will be where the lucene index is created,\n"
-					+ "\t\"indexfile\" is a file listing the full paths of the trec files to be indexed,\n"
-					+ "\t\"1=News, 2=Web\" determines whether the trec files are in html format or not,\n"
-					+ "\t\"zipped=1, else 0\" for zipped or plain-text."
-					+ "\n\n\n\tNote: This indexer indexes two numeric fields into each document "
-					+ "for document normalisation used during ranking.\n");
-		}
 	}
 
 }

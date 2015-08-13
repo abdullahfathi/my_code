@@ -25,6 +25,37 @@ import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParser;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParserFactory;
 
 public class WikiDataHandler {
+	public static void main(String[] args) throws Exception {
+		System.out.println("process begins.");
+
+		WikiDataHandler dh = new WikiDataHandler();
+		dh.makeTextDump();
+		// dh.extractRedirects();
+
+		System.out.println("process ends.");
+	}
+
+	public static String[] parse(String text) throws Exception {
+		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		DocumentBuilder p1 = dbf.newDocumentBuilder();
+
+		Document xmlDoc = p1.parse(new InputSource(new StringReader(text)));
+
+		Element docElem = xmlDoc.getDocumentElement();
+
+		String[] nodeNames = { "title", "text" };
+
+		String[] values = new String[nodeNames.length];
+
+		for (int j = 0; j < nodeNames.length; j++) {
+			NodeList nodes = docElem.getElementsByTagName(nodeNames[j]);
+			if (nodes.getLength() > 0) {
+				values[j] = nodes.item(0).getTextContent().trim();
+			}
+		}
+		return values;
+	}
+
 	public void extractRedirects() throws Exception {
 
 		TextFileReader reader = new TextFileReader(ENTPath.KOREAN_WIKI_TEXT_FILE);
@@ -89,37 +120,6 @@ public class WikiDataHandler {
 
 		System.out.println(c1.toStringSortedByValues(true, true, c1.size()));
 
-	}
-
-	public static void main(String[] args) throws Exception {
-		System.out.println("process begins.");
-
-		WikiDataHandler dh = new WikiDataHandler();
-		dh.makeTextDump();
-		// dh.extractRedirects();
-
-		System.out.println("process ends.");
-	}
-
-	public static String[] parse(String text) throws Exception {
-		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		DocumentBuilder p1 = dbf.newDocumentBuilder();
-
-		Document xmlDoc = p1.parse(new InputSource(new StringReader(text)));
-
-		Element docElem = xmlDoc.getDocumentElement();
-
-		String[] nodeNames = { "title", "text" };
-
-		String[] values = new String[nodeNames.length];
-
-		for (int j = 0; j < nodeNames.length; j++) {
-			NodeList nodes = docElem.getElementsByTagName(nodeNames[j]);
-			if (nodes.getLength() > 0) {
-				values[j] = nodes.item(0).getTextContent().trim();
-			}
-		}
-		return values;
 	}
 
 	public void makeTextDump() throws Exception {

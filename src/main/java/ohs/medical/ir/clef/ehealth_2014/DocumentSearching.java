@@ -53,76 +53,6 @@ import org.apache.lucene.store.FSDirectory;
  */
 public class DocumentSearching {
 
-	public static void main(String[] args) throws Exception {
-		System.out.println("process begins.");
-		// selectBaseline();
-		// doSearching();
-		System.out.println("process ends.");
-	}
-
-	private static void writeResults(File outputFile, CounterMap<String, String> resultData, CounterMap<String, String> relevanceData) {
-		System.out.printf("write to [%s]\n", outputFile.getPath());
-		TextFileWriter writer = new TextFileWriter(outputFile);
-
-		NumberFormat nf = NumberFormat.getInstance();
-		nf.setMinimumFractionDigits(7);
-		nf.setGroupingUsed(false);
-
-		for (String qId : new TreeSet<String>(resultData.keySet())) {
-			Counter<String> docScores = resultData.getCounter(qId);
-			Counter<String> docRelevances = relevanceData.getCounter(qId);
-
-			for (String docId : docScores.getSortedKeys()) {
-				double score = docScores.getCount(docId);
-				double relevance = docRelevances.getCount(docId);
-				String output = String.format("%s\t%s\t%s\t%d", qId, docId, nf.format(score), (int) relevance);
-				writer.write(output + "\n");
-			}
-		}
-		writer.close();
-	}
-
-	private static void writeResults(File outputFile, CounterMap<String, String> resultData) {
-		System.out.printf("write to [%s]\n", outputFile.getPath());
-		TextFileWriter writer = new TextFileWriter(outputFile);
-
-		NumberFormat nf = NumberFormat.getInstance();
-		nf.setMinimumFractionDigits(20);
-		nf.setGroupingUsed(false);
-
-		CounterMap<String, String> temp = new CounterMap<String, String>();
-
-		for (String qId : resultData.keySet()) {
-			Counter<String> docScores = resultData.getCounter(qId);
-
-			if (qId.startsWith("qtest2014.")) {
-				String numStr = qId.substring("qtest2014.".length());
-				qId = new DecimalFormat("000").format(Integer.parseInt(numStr));
-			} else if (qId.startsWith("qtest")) {
-				String numStr = qId.substring("qtest".length());
-				qId = new DecimalFormat("000").format(Integer.parseInt(numStr));
-			}
-
-			for (String docId : docScores.keySet()) {
-				double score = docScores.getCount(docId);
-				temp.setCount(qId, docId, score);
-			}
-		}
-
-		for (String qId : new TreeSet<String>(temp.keySet())) {
-			Counter<String> docScores = temp.getCounter(qId);
-			for (String docId : docScores.getSortedKeys()) {
-				double score = docScores.getCount(docId);
-				int iter = 0;
-				int rank = 0;
-				int runId = 0;
-				String output = String.format("%s\tQ%d\t%s\t%d\t%s\t%d", qId, iter, docId, rank, nf.format(score), runId);
-				writer.write(output + "\n");
-			}
-		}
-		writer.close();
-	}
-
 	public static List<List<String>> analyze(String text, Analyzer analyzer) throws Exception {
 		List<List<String>> ret = new ArrayList<List<String>>();
 
@@ -154,111 +84,6 @@ public class DocumentSearching {
 			ret.add(tq);
 		}
 		return ret;
-	}
-
-	public static void selectBaseline() throws Exception {
-		List<EHealthQuery> clefQueries = EHealthQuery.read(EHPath.QUERY_2013_TEST_FILE, EHPath.DISCHARGE_DIR);
-
-		EHealthQuery.tokenize(clefQueries);
-
-		StrCounterMap relevanceData = RelevanceJudgementReader.read(new File(EHPath.QUERY_2013_TEST_RELEVANCE_FILE));
-
-		List<Similarity> simList = new ArrayList<Similarity>();
-		simList.add(new DefaultSimilarity());
-		simList.add(new BM25Similarity());
-		simList.add(new LMDirichletSimilarity());
-		simList.add(new DFRSimilarity(new BasicModelBE(), new AfterEffectL(), new NormalizationH1()));
-
-		IOUtils.deleteFilesUnder(new File(EHPath.OUTPUT_DIR));
-
-		MedicalEnglishAnalyzer analyzer = new MedicalEnglishAnalyzer();
-
-		List<IndexSearcher> indexSearchers = new ArrayList<IndexSearcher>();
-		indexSearchers.add(DocumentSearcher.getIndexSearcher(EHPath.INDEX_DIR));
-		// indexSearchers.add(new
-		// IndexSearcher(DirectoryReader.open(FSDirectory.open(new
-		// File(WikiPath.INDEX_FULL_DIR)))));
-
-		List<IndexReader> indexReaders = new ArrayList<IndexReader>();
-
-		for (int i = 0; i < indexSearchers.size(); i++) {
-			indexReaders.add(indexSearchers.get(i).getIndexReader());
-		}
-
-		List<Integer> topKs = new ArrayList<Integer>();
-		topKs.add(100);
-
-		PerformanceEvaluator eval = new PerformanceEvaluator();
-
-		for (int i = 0; i < simList.size(); i++) {
-			Similarity sim = simList.get(i);
-			String retModel = sim.getClass().getSimpleName();
-
-			StrCounterMap resultData = new StrCounterMap();
-
-			for (int j = 0; j < clefQueries.size(); j++) {
-				EHealthQuery clefQuery = clefQueries.get(j);
-				String qId = clefQuery.getId();
-
-				// System.out.printf("%dth query: %s\n", j + 1,
-				// clefQuery.getTitle());
-
-				StringBuffer qBuff = new StringBuffer();
-				qBuff.append(clefQuery.getTitle());
-				qBuff.append("\n" + clefQuery.getDescription());
-
-				List<String> queryWords = analyze(qBuff.toString(), analyzer).get(0);
-
-				Counter<String> docScores = new Counter<String>();
-
-				for (int k = 0; k < indexSearchers.size(); k++) {
-					IndexSearcher indexSearcher = indexSearchers.get(k);
-					indexSearcher.setSimilarity(sim);
-					int top_k = topKs.get(k);
-
-					BooleanQuery searchQuery = new BooleanQuery();
-
-					for (TermQuery tq : convert(queryWords)) {
-						searchQuery.add(new BooleanClause(tq, Occur.SHOULD));
-					}
-
-					TopDocs topDocs = indexSearcher.search(searchQuery, top_k);
-
-					Counter<Integer> indexScores = new Counter<Integer>();
-
-					for (int u = 0; u < topDocs.scoreDocs.length; u++) {
-						ScoreDoc scoreDoc = topDocs.scoreDocs[u];
-						int indexId = scoreDoc.doc;
-						double score = scoreDoc.score;
-						Document doc = indexSearcher.getIndexReader().document(indexId);
-
-						String docId = doc.getField(IndexFieldName.DOCUMENT_ID).stringValue();
-						String date = doc.getField(IndexFieldName.DATE).stringValue();
-						String url = doc.getField(IndexFieldName.URL).stringValue();
-						String content = doc.getField(IndexFieldName.CONTENT).stringValue();
-
-						StringBuffer sb = new StringBuffer();
-						sb.append(String.format("docId:\t%s\n", docId));
-						sb.append(String.format("date:\t%s\n", date));
-						sb.append(String.format("url:\t%s\n", url));
-						sb.append(String.format("content:\t%s\n", content));
-
-						// System.out.println(String.format("%d, %s, url:\t%s",
-						// u + 1, docId, url));
-
-						docScores.setCount(docId, score);
-					}
-
-					resultData.setCounter(qId, docScores);
-				}
-
-				resultData.setCounter(qId, docScores);
-			}
-
-			eval.evalute(resultData, relevanceData);
-			System.out.println(sim.getClass().getSimpleName());
-			System.out.println(eval.toString(false) + "\n");
-		}
 	}
 
 	public static void doSearching() throws Exception {
@@ -492,5 +317,180 @@ public class DocumentSearching {
 
 			writeResults(outputFile, newResultData);
 		}
+	}
+
+	public static void main(String[] args) throws Exception {
+		System.out.println("process begins.");
+		// selectBaseline();
+		// doSearching();
+		System.out.println("process ends.");
+	}
+
+	public static void selectBaseline() throws Exception {
+		List<EHealthQuery> clefQueries = EHealthQuery.read(EHPath.QUERY_2013_TEST_FILE, EHPath.DISCHARGE_DIR);
+
+		EHealthQuery.tokenize(clefQueries);
+
+		StrCounterMap relevanceData = RelevanceJudgementReader.read(new File(EHPath.QUERY_2013_TEST_RELEVANCE_FILE));
+
+		List<Similarity> simList = new ArrayList<Similarity>();
+		simList.add(new DefaultSimilarity());
+		simList.add(new BM25Similarity());
+		simList.add(new LMDirichletSimilarity());
+		simList.add(new DFRSimilarity(new BasicModelBE(), new AfterEffectL(), new NormalizationH1()));
+
+		IOUtils.deleteFilesUnder(new File(EHPath.OUTPUT_DIR));
+
+		MedicalEnglishAnalyzer analyzer = new MedicalEnglishAnalyzer();
+
+		List<IndexSearcher> indexSearchers = new ArrayList<IndexSearcher>();
+		indexSearchers.add(DocumentSearcher.getIndexSearcher(EHPath.INDEX_DIR));
+		// indexSearchers.add(new
+		// IndexSearcher(DirectoryReader.open(FSDirectory.open(new
+		// File(WikiPath.INDEX_FULL_DIR)))));
+
+		List<IndexReader> indexReaders = new ArrayList<IndexReader>();
+
+		for (int i = 0; i < indexSearchers.size(); i++) {
+			indexReaders.add(indexSearchers.get(i).getIndexReader());
+		}
+
+		List<Integer> topKs = new ArrayList<Integer>();
+		topKs.add(100);
+
+		PerformanceEvaluator eval = new PerformanceEvaluator();
+
+		for (int i = 0; i < simList.size(); i++) {
+			Similarity sim = simList.get(i);
+			String retModel = sim.getClass().getSimpleName();
+
+			StrCounterMap resultData = new StrCounterMap();
+
+			for (int j = 0; j < clefQueries.size(); j++) {
+				EHealthQuery clefQuery = clefQueries.get(j);
+				String qId = clefQuery.getId();
+
+				// System.out.printf("%dth query: %s\n", j + 1,
+				// clefQuery.getTitle());
+
+				StringBuffer qBuff = new StringBuffer();
+				qBuff.append(clefQuery.getTitle());
+				qBuff.append("\n" + clefQuery.getDescription());
+
+				List<String> queryWords = analyze(qBuff.toString(), analyzer).get(0);
+
+				Counter<String> docScores = new Counter<String>();
+
+				for (int k = 0; k < indexSearchers.size(); k++) {
+					IndexSearcher indexSearcher = indexSearchers.get(k);
+					indexSearcher.setSimilarity(sim);
+					int top_k = topKs.get(k);
+
+					BooleanQuery searchQuery = new BooleanQuery();
+
+					for (TermQuery tq : convert(queryWords)) {
+						searchQuery.add(new BooleanClause(tq, Occur.SHOULD));
+					}
+
+					TopDocs topDocs = indexSearcher.search(searchQuery, top_k);
+
+					Counter<Integer> indexScores = new Counter<Integer>();
+
+					for (int u = 0; u < topDocs.scoreDocs.length; u++) {
+						ScoreDoc scoreDoc = topDocs.scoreDocs[u];
+						int indexId = scoreDoc.doc;
+						double score = scoreDoc.score;
+						Document doc = indexSearcher.getIndexReader().document(indexId);
+
+						String docId = doc.getField(IndexFieldName.DOCUMENT_ID).stringValue();
+						String date = doc.getField(IndexFieldName.DATE).stringValue();
+						String url = doc.getField(IndexFieldName.URL).stringValue();
+						String content = doc.getField(IndexFieldName.CONTENT).stringValue();
+
+						StringBuffer sb = new StringBuffer();
+						sb.append(String.format("docId:\t%s\n", docId));
+						sb.append(String.format("date:\t%s\n", date));
+						sb.append(String.format("url:\t%s\n", url));
+						sb.append(String.format("content:\t%s\n", content));
+
+						// System.out.println(String.format("%d, %s, url:\t%s",
+						// u + 1, docId, url));
+
+						docScores.setCount(docId, score);
+					}
+
+					resultData.setCounter(qId, docScores);
+				}
+
+				resultData.setCounter(qId, docScores);
+			}
+
+			eval.evalute(resultData, relevanceData);
+			System.out.println(sim.getClass().getSimpleName());
+			System.out.println(eval.toString(false) + "\n");
+		}
+	}
+
+	private static void writeResults(File outputFile, CounterMap<String, String> resultData) {
+		System.out.printf("write to [%s]\n", outputFile.getPath());
+		TextFileWriter writer = new TextFileWriter(outputFile);
+
+		NumberFormat nf = NumberFormat.getInstance();
+		nf.setMinimumFractionDigits(20);
+		nf.setGroupingUsed(false);
+
+		CounterMap<String, String> temp = new CounterMap<String, String>();
+
+		for (String qId : resultData.keySet()) {
+			Counter<String> docScores = resultData.getCounter(qId);
+
+			if (qId.startsWith("qtest2014.")) {
+				String numStr = qId.substring("qtest2014.".length());
+				qId = new DecimalFormat("000").format(Integer.parseInt(numStr));
+			} else if (qId.startsWith("qtest")) {
+				String numStr = qId.substring("qtest".length());
+				qId = new DecimalFormat("000").format(Integer.parseInt(numStr));
+			}
+
+			for (String docId : docScores.keySet()) {
+				double score = docScores.getCount(docId);
+				temp.setCount(qId, docId, score);
+			}
+		}
+
+		for (String qId : new TreeSet<String>(temp.keySet())) {
+			Counter<String> docScores = temp.getCounter(qId);
+			for (String docId : docScores.getSortedKeys()) {
+				double score = docScores.getCount(docId);
+				int iter = 0;
+				int rank = 0;
+				int runId = 0;
+				String output = String.format("%s\tQ%d\t%s\t%d\t%s\t%d", qId, iter, docId, rank, nf.format(score), runId);
+				writer.write(output + "\n");
+			}
+		}
+		writer.close();
+	}
+
+	private static void writeResults(File outputFile, CounterMap<String, String> resultData, CounterMap<String, String> relevanceData) {
+		System.out.printf("write to [%s]\n", outputFile.getPath());
+		TextFileWriter writer = new TextFileWriter(outputFile);
+
+		NumberFormat nf = NumberFormat.getInstance();
+		nf.setMinimumFractionDigits(7);
+		nf.setGroupingUsed(false);
+
+		for (String qId : new TreeSet<String>(resultData.keySet())) {
+			Counter<String> docScores = resultData.getCounter(qId);
+			Counter<String> docRelevances = relevanceData.getCounter(qId);
+
+			for (String docId : docScores.getSortedKeys()) {
+				double score = docScores.getCount(docId);
+				double relevance = docRelevances.getCount(docId);
+				String output = String.format("%s\t%s\t%s\t%d", qId, docId, nf.format(score), (int) relevance);
+				writer.write(output + "\n");
+			}
+		}
+		writer.close();
 	}
 }

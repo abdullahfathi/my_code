@@ -512,10 +512,6 @@ public class IOUtils {
 		return ret;
 	}
 
-	public static HashSet<String> readSet(String fileName) throws Exception {
-		return new HashSet<String>(readLines(fileName));
-	}
-
 	public static Map<String, String> readMap(String fileName) throws Exception {
 		Map<String, String> ret = new HashMap<String, String>();
 		for (String line : readLines(fileName)) {
@@ -527,6 +523,10 @@ public class IOUtils {
 		}
 
 		return ret;
+	}
+
+	public static HashSet<String> readSet(String fileName) throws Exception {
+		return new HashSet<String>(readLines(fileName));
 	}
 
 	public static String readText(ObjectInputStream ois) throws Exception {

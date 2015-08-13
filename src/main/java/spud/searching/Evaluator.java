@@ -16,14 +16,14 @@ import java.util.logging.Logger;
  */
 public class Evaluator {
     
-    private final static Logger logger = Logger.getLogger(Evaluator.class.getName());    
-    
     public static class RankedList{
         
         String doc_id;
         Float score;
         
-    }
+    }    
+    
+    private final static Logger logger = Logger.getLogger(Evaluator.class.getName());
     
     
     private final HashMap<String,HashMap<String,String>> qrels;
@@ -122,6 +122,10 @@ public class Evaluator {
     
     
 
+    public Map getQrels(){
+        return this.qrels;
+    }
+    
     /**
      * NDCG for binary judgements as found in 
      * Chris Burges, Tal Shaked, Erin Renshaw, Ari Lazier, Matt Deeds, Nicole Hamilton, 
@@ -172,25 +176,21 @@ public class Evaluator {
         
     }
     
-    public Map getQrels(){
-        return this.qrels;
-    }
     
-    
-    public int numQrels(String qnum){
-        return this.qrels.get(qnum).size();
+    public double NDCG10(String qnum, RankedList[] ranked_list){
+        return NDCG(qnum, ranked_list, 10);
     }    
-    
-    public double RECALL(String[] ranked_list){
-        return 0.0;
-    }
     
     public double NDCG20(String qnum, RankedList[] ranked_list){
         return NDCG(qnum, ranked_list, 20);
     }
+    
+    public int numQrels(String qnum){
+        return this.qrels.get(qnum).size();
+    }
 
-    public double NDCG10(String qnum, RankedList[] ranked_list){
-        return NDCG(qnum, ranked_list, 10);
+    public double RECALL(String[] ranked_list){
+        return 0.0;
     }
     
     

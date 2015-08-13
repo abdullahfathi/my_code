@@ -152,33 +152,25 @@ public class DataHandler {
 		// }
 	}
 
-	public static void test2() throws Exception {
-		TextFileReader reader = new TextFileReader(MIRPath.WIKI_COLLECTION_FILE);
-		reader.setPrintNexts(false);
+	public static String[] parse(String text) throws Exception {
+		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		DocumentBuilder p1 = dbf.newDocumentBuilder();
 
-		StringBuffer sb = new StringBuffer();
-		boolean isPage = false;
-		int num_docs = 0;
+		Document xmlDoc = p1.parse(new InputSource(new StringReader(text)));
 
-		while (reader.hasNext()) {
-			reader.print(10000);
-			String line = reader.next();
-			String[] parts = line.split("\t");
+		Element docElem = xmlDoc.getDocumentElement();
 
-			String title = parts[2];
-			String wikiText = parts[3];
+		String[] nodeNames = { "title", "text" };
 
-			if (title.toLowerCase().equals("cholera")) {
-				System.out.println(title);
-				System.out.println(wikiText.replace("<NL>", "\n"));
-				System.out.println();
+		String[] values = new String[nodeNames.length];
+
+		for (int j = 0; j < nodeNames.length; j++) {
+			NodeList nodes = docElem.getElementsByTagName(nodeNames[j]);
+			if (nodes.getLength() > 0) {
+				values[j] = nodes.item(0).getTextContent().trim();
 			}
-
 		}
-		reader.printLast();
-		reader.close();
-
-		System.out.printf("# of documents:%d\n", num_docs);
+		return values;
 	}
 
 	public static void test() throws Exception {
@@ -239,25 +231,33 @@ public class DataHandler {
 		System.out.printf("# of documents:%d\n", num_docs);
 	}
 
-	public static String[] parse(String text) throws Exception {
-		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		DocumentBuilder p1 = dbf.newDocumentBuilder();
+	public static void test2() throws Exception {
+		TextFileReader reader = new TextFileReader(MIRPath.WIKI_COLLECTION_FILE);
+		reader.setPrintNexts(false);
 
-		Document xmlDoc = p1.parse(new InputSource(new StringReader(text)));
+		StringBuffer sb = new StringBuffer();
+		boolean isPage = false;
+		int num_docs = 0;
 
-		Element docElem = xmlDoc.getDocumentElement();
+		while (reader.hasNext()) {
+			reader.print(10000);
+			String line = reader.next();
+			String[] parts = line.split("\t");
 
-		String[] nodeNames = { "title", "text" };
+			String title = parts[2];
+			String wikiText = parts[3];
 
-		String[] values = new String[nodeNames.length];
-
-		for (int j = 0; j < nodeNames.length; j++) {
-			NodeList nodes = docElem.getElementsByTagName(nodeNames[j]);
-			if (nodes.getLength() > 0) {
-				values[j] = nodes.item(0).getTextContent().trim();
+			if (title.toLowerCase().equals("cholera")) {
+				System.out.println(title);
+				System.out.println(wikiText.replace("<NL>", "\n"));
+				System.out.println();
 			}
+
 		}
-		return values;
+		reader.printLast();
+		reader.close();
+
+		System.out.printf("# of documents:%d\n", num_docs);
 	}
 
 }

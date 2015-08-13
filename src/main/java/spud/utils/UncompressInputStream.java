@@ -88,30 +88,100 @@ public class UncompressInputStream extends FilterInputStream {
   private static final int TBL_CLEAR = 0x100;
   private static final int TBL_FIRST = TBL_CLEAR + 1;
 
+  private static final int EXTRA = 64;
+  private static final int LZW_MAGIC = 0x1f9d;
+  private static final int MAX_BITS = 16;
+  private static final int INIT_BITS = 9;
+
+  private static final int HDR_MAXBITS = 0x1f;
+  private static final int HDR_EXTENDED = 0x20;
+  private static final int HDR_FREE = 0x40;
+  private static final int HDR_BLOCK_MODE = 0x80;
+  private static final boolean debug = false, debugTiming = false;
+  /** test */
+  public static void main(String args[]) throws Exception {
+    if (args.length != 1) {
+      System.err.println("Usage: UncompressInputStream <file>");
+      System.exit(1);
+    }
+
+    InputStream in =
+        new UncompressInputStream(new FileInputStream(args[0]));
+
+    byte[] buf = new byte[100000];
+    int tot = 0;
+    long beg = System.currentTimeMillis();
+
+    while (true) {
+      int got = in.read(buf);
+      if (got < 0) break;
+      System.out.write(buf, 0, got);
+      tot += got;
+    }
+
+    long end = System.currentTimeMillis();
+    System.err.println("Decompressed " + tot + " bytes");
+    System.err.println("Time: " + (end - beg) / 1000. + " seconds");
+  }
+  static public void uncompress( String fileInName, FileOutputStream out) throws IOException {
+    long start = System.currentTimeMillis();
+
+    InputStream in = new UncompressInputStream(  new FileInputStream(fileInName));
+
+    int total = 0;
+    byte[] buffer = new byte[100000];
+    while (true) {
+      int bytesRead = in.read(buffer);
+      if (bytesRead == -1) break;
+      out.write(buffer, 0, bytesRead);
+      total += bytesRead;
+    }
+    in.close();
+    out.close();
+
+    if (debugTiming) {
+      long end = System.currentTimeMillis();
+      System.err.println("Decompressed " + total + " bytes");
+      System.err.println("Time: " + (end - start) / 1000. + " seconds");
+    }
+  }
   private int[] tab_prefix;
   private byte[] tab_suffix;
   private int[] zeros = new int[256];
-  private byte[] stack;
 
+  private byte[] stack;
   // various state
   private boolean block_mode;
   private int n_bits;
   private int maxbits;
+
+
   private int maxmaxcode;
+
+
   private int maxcode;
+
   private int bitmask;
+
   private int oldcode;
+
+
   private byte finchar;
+
+
   private int stackp;
+
+
   private int free_ent;
+
 
   // input buffer
   private byte[] data = new byte[10000];
+
+
   private int bit_pos = 0, end = 0, got = 0;
   private boolean eof = false;
-  private static final int EXTRA = 64;
-
-
+  private byte[] one = new byte[1];
   /**
    * @param is the input stream to decompress
    * @throws IOException if the header is malformed
@@ -120,9 +190,89 @@ public class UncompressInputStream extends FilterInputStream {
     super(is);
     parse_header();
   }
+  @Override
+  public int available() throws IOException {
+    if (eof) return 0;
+
+    // Fred Hansen, 2008
+    // the old code follows. it fails because read() can return bytes even after exhausting in.read()
+    // return in.available();
+
+    int avail = in.available(); 
+    return (avail == 0) ? 1 : avail;
+  }
+  private void fill() throws IOException {
+    got = in.read(data, end, data.length - 1 - end);
+    if (got > 0) end += got;
+  }
+  /**
+   * This stream does not support mark/reset on the stream.
+   *
+   * @return false
+   */
+  @Override
+  public boolean markSupported() {
+    return false;
+  }
+
+  private void parse_header() throws IOException {
+// read in and check magic number
+
+    int t = in.read();
+    if (t < 0) throw new EOFException("Failed to read magic number");
+    int magic = (t & 0xff) << 8;
+    t = in.read();
+    if (t < 0) throw new EOFException("Failed to read magic number");
+    magic += t & 0xff;
+    if (magic != LZW_MAGIC)
+      throw new IOException("Input not in compress format (read " +
+          "magic number 0x" +
+          Integer.toHexString(magic) + ")");
 
 
-  private byte[] one = new byte[1];
+// read in header byte
+
+    int header = in.read();
+    if (header < 0) throw new EOFException("Failed to read header");
+
+    block_mode = (header & HDR_BLOCK_MODE) > 0;
+    maxbits = header & HDR_MAXBITS;
+
+    if (maxbits > MAX_BITS)
+      throw new IOException("Stream compressed with " + maxbits +
+          " bits, but can only handle " + MAX_BITS +
+          " bits");
+
+    if ((header & HDR_EXTENDED) > 0)
+      throw new IOException("Header extension bit set");
+
+    if ((header & HDR_FREE) > 0)
+      throw new IOException("Header bit 6 set");
+
+    if (debug) {
+      System.err.println("block mode: " + block_mode);
+      System.err.println("max bits:   " + maxbits);
+    }
+
+
+// initialize stuff
+
+    maxmaxcode = 1 << maxbits;
+    n_bits = INIT_BITS;
+    maxcode = (1 << n_bits) - 1;
+    bitmask = maxcode;
+    oldcode = -1;
+    finchar = 0;
+    free_ent = block_mode ? TBL_FIRST : 256;
+
+    tab_prefix = new int[1 << maxbits];
+    tab_suffix = new byte[1 << maxbits];
+    stack = new byte[1 << maxbits];
+    stackp = stack.length;
+
+    for (int idx = 255; idx >= 0; idx--)
+      tab_suffix[idx] = (byte) idx;
+  }
 
   @Override
   public int read() throws IOException {
@@ -355,13 +505,6 @@ public class UncompressInputStream extends FilterInputStream {
     return 0;
   }
 
-
-  private void fill() throws IOException {
-    got = in.read(data, end, data.length - 1 - end);
-    if (got > 0) end += got;
-  }
-
-
   @Override
   public long skip(long num) throws IOException {
     byte[] tmp = new byte[(int) num];
@@ -371,148 +514,5 @@ public class UncompressInputStream extends FilterInputStream {
       return (long) got;
     else
       return 0L;
-  }
-
-
-  @Override
-  public int available() throws IOException {
-    if (eof) return 0;
-
-    // Fred Hansen, 2008
-    // the old code follows. it fails because read() can return bytes even after exhausting in.read()
-    // return in.available();
-
-    int avail = in.available(); 
-    return (avail == 0) ? 1 : avail;
-  }
-
-
-  private static final int LZW_MAGIC = 0x1f9d;
-  private static final int MAX_BITS = 16;
-  private static final int INIT_BITS = 9;
-  private static final int HDR_MAXBITS = 0x1f;
-  private static final int HDR_EXTENDED = 0x20;
-  private static final int HDR_FREE = 0x40;
-  private static final int HDR_BLOCK_MODE = 0x80;
-
-  private void parse_header() throws IOException {
-// read in and check magic number
-
-    int t = in.read();
-    if (t < 0) throw new EOFException("Failed to read magic number");
-    int magic = (t & 0xff) << 8;
-    t = in.read();
-    if (t < 0) throw new EOFException("Failed to read magic number");
-    magic += t & 0xff;
-    if (magic != LZW_MAGIC)
-      throw new IOException("Input not in compress format (read " +
-          "magic number 0x" +
-          Integer.toHexString(magic) + ")");
-
-
-// read in header byte
-
-    int header = in.read();
-    if (header < 0) throw new EOFException("Failed to read header");
-
-    block_mode = (header & HDR_BLOCK_MODE) > 0;
-    maxbits = header & HDR_MAXBITS;
-
-    if (maxbits > MAX_BITS)
-      throw new IOException("Stream compressed with " + maxbits +
-          " bits, but can only handle " + MAX_BITS +
-          " bits");
-
-    if ((header & HDR_EXTENDED) > 0)
-      throw new IOException("Header extension bit set");
-
-    if ((header & HDR_FREE) > 0)
-      throw new IOException("Header bit 6 set");
-
-    if (debug) {
-      System.err.println("block mode: " + block_mode);
-      System.err.println("max bits:   " + maxbits);
-    }
-
-
-// initialize stuff
-
-    maxmaxcode = 1 << maxbits;
-    n_bits = INIT_BITS;
-    maxcode = (1 << n_bits) - 1;
-    bitmask = maxcode;
-    oldcode = -1;
-    finchar = 0;
-    free_ent = block_mode ? TBL_FIRST : 256;
-
-    tab_prefix = new int[1 << maxbits];
-    tab_suffix = new byte[1 << maxbits];
-    stack = new byte[1 << maxbits];
-    stackp = stack.length;
-
-    for (int idx = 255; idx >= 0; idx--)
-      tab_suffix[idx] = (byte) idx;
-  }
-
-  /**
-   * This stream does not support mark/reset on the stream.
-   *
-   * @return false
-   */
-  @Override
-  public boolean markSupported() {
-    return false;
-  }
-
-  static public void uncompress( String fileInName, FileOutputStream out) throws IOException {
-    long start = System.currentTimeMillis();
-
-    InputStream in = new UncompressInputStream(  new FileInputStream(fileInName));
-
-    int total = 0;
-    byte[] buffer = new byte[100000];
-    while (true) {
-      int bytesRead = in.read(buffer);
-      if (bytesRead == -1) break;
-      out.write(buffer, 0, bytesRead);
-      total += bytesRead;
-    }
-    in.close();
-    out.close();
-
-    if (debugTiming) {
-      long end = System.currentTimeMillis();
-      System.err.println("Decompressed " + total + " bytes");
-      System.err.println("Time: " + (end - start) / 1000. + " seconds");
-    }
-  }
-
-
-  private static final boolean debug = false, debugTiming = false;
-
-  /** test */
-  public static void main(String args[]) throws Exception {
-    if (args.length != 1) {
-      System.err.println("Usage: UncompressInputStream <file>");
-      System.exit(1);
-    }
-
-    InputStream in =
-        new UncompressInputStream(new FileInputStream(args[0]));
-
-    byte[] buf = new byte[100000];
-    int tot = 0;
-    long beg = System.currentTimeMillis();
-
-    while (true) {
-      int got = in.read(buf);
-      if (got < 0) break;
-      System.out.write(buf, 0, got);
-      tot += got;
-    }
-
-    long end = System.currentTimeMillis();
-    System.err.println("Decompressed " + tot + " bytes");
-    System.err.println("Time: " + (end - beg) / 1000. + " seconds");
   }
 }

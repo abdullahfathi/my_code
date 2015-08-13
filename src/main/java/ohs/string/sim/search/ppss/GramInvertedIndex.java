@@ -42,16 +42,24 @@ public class GramInvertedIndex implements Serializable {
 		return ret;
 	}
 
-	public Set<String> keySet() {
-		return map.keySet();
+	public GramPostings get(String g, boolean createIfNotPresented) {
+		return createIfNotPresented ? ensure(g) : map.get(g);
 	}
 
 	public Map<String, GramPostings> getIndex() {
 		return map;
 	}
 
-	public GramPostings get(String g, boolean createIfNotPresented) {
-		return createIfNotPresented ? ensure(g) : map.get(g);
+	private void insert1(GramInvertedIndex L, String line) {
+
+	}
+
+	private void insert2(GramInvertedIndex L, String line) {
+
+	}
+
+	public Set<String> keySet() {
+		return map.keySet();
 	}
 
 	public void read(BufferedReader reader) throws IOException {
@@ -121,12 +129,29 @@ public class GramInvertedIndex implements Serializable {
 		}
 	}
 
-	private void insert2(GramInvertedIndex L, String line) {
+	public String toString() {
+		StringBuffer ret = new StringBuffer();
+		List<String> keys = new ArrayList<String>(map.keySet());
 
-	}
+		for (int i = 0; i < keys.size(); i++) {
+			String g = keys.get(i);
+			GramPostings p = map.get(g);
+			ret.append(g + " -> ");
+			String[] splits = p.toString(true).split("\n");
 
-	private void insert1(GramInvertedIndex L, String line) {
+			for (int j = 0; j < splits.length; j++) {
+				ret.append(splits[j]);
 
+				if (j != splits.length - 1) {
+					ret.append("\n");
+				}
+			}
+
+			if (i != keys.size() - 1) {
+				ret.append("\n");
+			}
+		}
+		return ret.toString().trim();
 	}
 
 	public void write(BufferedWriter writer) throws IOException {
@@ -165,31 +190,6 @@ public class GramInvertedIndex implements Serializable {
 			writer.write(sb.toString());
 			writer.flush();
 		}
-	}
-
-	public String toString() {
-		StringBuffer ret = new StringBuffer();
-		List<String> keys = new ArrayList<String>(map.keySet());
-
-		for (int i = 0; i < keys.size(); i++) {
-			String g = keys.get(i);
-			GramPostings p = map.get(g);
-			ret.append(g + " -> ");
-			String[] splits = p.toString(true).split("\n");
-
-			for (int j = 0; j < splits.length; j++) {
-				ret.append(splits[j]);
-
-				if (j != splits.length - 1) {
-					ret.append("\n");
-				}
-			}
-
-			if (i != keys.size() - 1) {
-				ret.append("\n");
-			}
-		}
-		return ret.toString().trim();
 	}
 
 }

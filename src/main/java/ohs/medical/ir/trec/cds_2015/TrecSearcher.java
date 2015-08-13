@@ -498,70 +498,6 @@ public class TrecSearcher {
 		}
 	}
 
-	public void searchByKLDProximityFB() throws Exception {
-		System.out.println("search by KLD Proximity FB.");
-
-		IndexSearcher wikiIndexSearcher = DocumentSearcher.getIndexSearcher(MIRPath.WIKI_INDEX_DIR);
-
-		String resultFileName = MIRPath.TREC_CDS_OUTPUT_RESULT_2015_DIR + "kld_fb_proximity.txt";
-
-		TextFileWriter writer = new TextFileWriter(resultFileName);
-
-		for (int i = 0; i < bqs.size(); i++) {
-			BaseQuery bq = bqs.get(i);
-
-			Indexer<String> wordIndexer = new Indexer<String>();
-			StringBuffer qBuf = new StringBuffer(bq.getSearchText());
-			Counter<String> qWordCounts = AnalyzerUtils.getWordCounts(qBuf.toString(), analyzer);
-
-			SparseVector queryModel = VectorUtils.toSparseVector(qWordCounts, wordIndexer, true);
-			queryModel.normalize();
-
-			SparseVector expQueryModel = queryModel.copy();
-			SparseVector docScores = null;
-
-			BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(expQueryModel, wordIndexer));
-			docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
-
-			// SparseVector wikiScores = DocumentSearcher.search(lbq, wikiIndexSearcher, 50);
-
-			// WordCountBox wcb1 = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, IndexFieldName.TITLE);
-			// WordCountBox wcb2 = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, IndexFieldName.ABSTRACT);
-			WordCountBox wcb3 = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, IndexFieldName.CONTENT);
-
-			ProximityRelevanceModelBuilder rmb = new ProximityRelevanceModelBuilder(wordIndexer, 10, 15, 2000, 3, false);
-			rmb.computeWordProximities(wcb3, expQueryModel);
-			SparseVector rm = rmb.getRelevanceModel(wcb3, docScores);
-
-			// SparseVector rm4 = rmb.getRelevanceModel(wcb4, wikiScores);
-
-			double mixture = 0.5;
-			expQueryModel = VectorMath.addAfterScale(queryModel, rm, 1 - mixture, mixture);
-
-			lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(expQueryModel, wordIndexer));
-			docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
-
-			WordCountBox wcb = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, IndexFieldName.CONTENT);
-
-			KLDivergenceScorer kldScorer = new KLDivergenceScorer();
-			docScores = kldScorer.scoreDocuments(wcb, expQueryModel);
-
-			System.out.println(bq);
-			System.out.printf("QM1:\t%s\n", VectorUtils.toCounter(queryModel, wordIndexer));
-			System.out.printf("QM2:\t%s\n", VectorUtils.toCounter(expQueryModel, wordIndexer));
-			// System.out.println(rmb.getLogBuffer().toString());
-			// System.out.printf("RM1:\t%s\n", VectorUtils.toCounter(rm1, wordIndexer));
-			// System.out.printf("RM2:\t%s\n", VectorUtils.toCounter(rm2, wordIndexer));
-			// System.out.printf("RM3:\t%s\n", VectorUtils.toCounter(rm3, wordIndexer));
-			// System.out.printf("RM4:\t%s\n", VectorUtils.toCounter(rm4, wordIndexer));
-			// System.out.printf("RM:\t%s\n", VectorUtils.toCounter(rm, wordIndexer));
-			// System.out.println();
-
-			ResultWriter.write(writer, bq.getId(), docScores);
-		}
-		writer.close();
-	}
-
 	public void searchByKLDMultiFieldsProximityFB() throws Exception {
 		System.out.println("search by KLD Multi-Fields Proximity FB.");
 
@@ -636,6 +572,70 @@ public class TrecSearcher {
 			System.out.println(bq);
 			System.out.printf("QM1:\t%s\n", VectorUtils.toCounter(queryModel, wordIndexer));
 			System.out.printf("QM2:\t%s\n", VectorUtils.toCounter(expQueryModel, wordIndexer));
+			// System.out.printf("RM1:\t%s\n", VectorUtils.toCounter(rm1, wordIndexer));
+			// System.out.printf("RM2:\t%s\n", VectorUtils.toCounter(rm2, wordIndexer));
+			// System.out.printf("RM3:\t%s\n", VectorUtils.toCounter(rm3, wordIndexer));
+			// System.out.printf("RM4:\t%s\n", VectorUtils.toCounter(rm4, wordIndexer));
+			// System.out.printf("RM:\t%s\n", VectorUtils.toCounter(rm, wordIndexer));
+			// System.out.println();
+
+			ResultWriter.write(writer, bq.getId(), docScores);
+		}
+		writer.close();
+	}
+
+	public void searchByKLDProximityFB() throws Exception {
+		System.out.println("search by KLD Proximity FB.");
+
+		IndexSearcher wikiIndexSearcher = DocumentSearcher.getIndexSearcher(MIRPath.WIKI_INDEX_DIR);
+
+		String resultFileName = MIRPath.TREC_CDS_OUTPUT_RESULT_2015_DIR + "kld_fb_proximity.txt";
+
+		TextFileWriter writer = new TextFileWriter(resultFileName);
+
+		for (int i = 0; i < bqs.size(); i++) {
+			BaseQuery bq = bqs.get(i);
+
+			Indexer<String> wordIndexer = new Indexer<String>();
+			StringBuffer qBuf = new StringBuffer(bq.getSearchText());
+			Counter<String> qWordCounts = AnalyzerUtils.getWordCounts(qBuf.toString(), analyzer);
+
+			SparseVector queryModel = VectorUtils.toSparseVector(qWordCounts, wordIndexer, true);
+			queryModel.normalize();
+
+			SparseVector expQueryModel = queryModel.copy();
+			SparseVector docScores = null;
+
+			BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(expQueryModel, wordIndexer));
+			docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
+
+			// SparseVector wikiScores = DocumentSearcher.search(lbq, wikiIndexSearcher, 50);
+
+			// WordCountBox wcb1 = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, IndexFieldName.TITLE);
+			// WordCountBox wcb2 = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, IndexFieldName.ABSTRACT);
+			WordCountBox wcb3 = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, IndexFieldName.CONTENT);
+
+			ProximityRelevanceModelBuilder rmb = new ProximityRelevanceModelBuilder(wordIndexer, 10, 15, 2000, 3, false);
+			rmb.computeWordProximities(wcb3, expQueryModel);
+			SparseVector rm = rmb.getRelevanceModel(wcb3, docScores);
+
+			// SparseVector rm4 = rmb.getRelevanceModel(wcb4, wikiScores);
+
+			double mixture = 0.5;
+			expQueryModel = VectorMath.addAfterScale(queryModel, rm, 1 - mixture, mixture);
+
+			lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(expQueryModel, wordIndexer));
+			docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
+
+			WordCountBox wcb = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, IndexFieldName.CONTENT);
+
+			KLDivergenceScorer kldScorer = new KLDivergenceScorer();
+			docScores = kldScorer.scoreDocuments(wcb, expQueryModel);
+
+			System.out.println(bq);
+			System.out.printf("QM1:\t%s\n", VectorUtils.toCounter(queryModel, wordIndexer));
+			System.out.printf("QM2:\t%s\n", VectorUtils.toCounter(expQueryModel, wordIndexer));
+			// System.out.println(rmb.getLogBuffer().toString());
 			// System.out.printf("RM1:\t%s\n", VectorUtils.toCounter(rm1, wordIndexer));
 			// System.out.printf("RM2:\t%s\n", VectorUtils.toCounter(rm2, wordIndexer));
 			// System.out.printf("RM3:\t%s\n", VectorUtils.toCounter(rm3, wordIndexer));

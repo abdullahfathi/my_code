@@ -56,16 +56,6 @@ public class ESA {
 		return conceptIndexer;
 	}
 
-	public SparseVector getConceptVector(String s) {
-		Counter<String> c = new Counter<String>();
-		try {
-			c = AnalyzerUtils.getWordCounts(s, analyzer);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return getConceptVector(c);
-	}
-
 	public SparseVector getConceptVector(Counter<String> c) {
 		Counter<String> ret = new Counter<String>();
 
@@ -85,6 +75,16 @@ public class ESA {
 		}
 
 		return VectorUtils.toSparseVector(cc);
+	}
+
+	public SparseVector getConceptVector(String s) {
+		Counter<String> c = new Counter<String>();
+		try {
+			c = AnalyzerUtils.getWordCounts(s, analyzer);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return getConceptVector(c);
 	}
 
 	public Counter<String> getConceptVectorAsCounter(String s) {
