@@ -64,11 +64,19 @@ public class GramGenerator implements Serializable {
 	public Gram[] generate(String s) {
 		int len = s.length();
 		int size = len - q + 1;
-		Gram[] ret = new Gram[size];
-		for (int i = 0; i < len - q + 1; i++) {
-			String substr = s.substring(i, i + q);
-			ret[i] = new Gram(s.substring(i, i + q), i, Type.NONE);
+
+		Gram[] ret = null;
+
+		if (len < q) {
+			ret = new Gram[0];
+		} else {
+			ret = new Gram[size];
+			for (int i = 0; i < len - q + 1; i++) {
+				String substr = s.substring(i, i + q);
+				ret[i] = new Gram(s.substring(i, i + q), i, Type.NONE);
+			}
 		}
+
 		return ret;
 	}
 }

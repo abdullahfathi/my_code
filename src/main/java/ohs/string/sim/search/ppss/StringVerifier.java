@@ -3,6 +3,7 @@ package ohs.string.sim.search.ppss;
 import java.io.Serializable;
 
 import ohs.math.ArrayMath;
+import ohs.math.ArrayUtils;
 import ohs.string.sim.search.ppss.Gram.Type;
 
 /**
@@ -12,24 +13,9 @@ import ohs.string.sim.search.ppss.Gram.Type;
  */
 public class StringVerifier implements Serializable {
 
-	private int q;
-
-	private int tau;
-
-	private double[][] M;
-
-	private double num_errors;
-
-	private double ed;
-
-	public StringVerifier(int q, int tau) {
-		this.q = q;
-		this.tau = tau;
-	}
-
-	public double computeEditDistance(String s, String t) {
-		int n = s.length();
-		int m = t.length();
+	public static double computeSubstringEditDistance(String g, String sub_r) {
+		int n = g.length();
+		int m = sub_r.length();
 		int ed[][]; // matrix
 		int i; // iterates through s
 		int j; // iterates through t
@@ -37,55 +23,68 @@ public class StringVerifier implements Serializable {
 		char t_j; // jth character of t
 		int cost; // cost
 
-		int min_i = 1;
-		int min_j = 1;
-		int min = Integer.MAX_VALUE;
-
-		if (n == 0)
-			return 1.0;
-		if (m == 0)
-			return 1.0;
-
 		ed = new int[n + 1][m + 1];
 
-		for (i = 0; i <= n; i++)
+		for (i = 0; i <= n; i++) {
 			ed[i][0] = i;
+		}
 
-		for (j = 0; j <= m; j++)
-			ed[0][j] = j;
+		// for (j = 0; j <= m; j++) {
+		// ed[0][j] = j;
+		// }
 
 		for (i = 1; i <= n; i++) {
-			s_i = s.charAt(i - 1);
-
+			s_i = g.charAt(i - 1);
 			for (j = 1; j <= m; j++) {
-				t_j = t.charAt(j - 1);
+				t_j = sub_r.charAt(j - 1);
 				cost = (s_i == t_j) ? 0 : 1;
 				ed[i][j] = ArrayMath.min(new int[] { ed[i - 1][j] + 1, ed[i][j - 1] + 1, ed[i - 1][j - 1] + cost });
-
-				if (ed[i][j] < min) {
-					min_i = i;
-					min_j = j;
-					min = ed[i][j];
-				}
 			}
 		}
 
-		int ret = ed[n][m];
+		int min = Integer.MAX_VALUE;
 
-		// System.out.println(show(s, t, ed) + "\n\n");
+		for (i = 1; i <= n; i++) {
+			if (ed[i][m] < min) {
+				min = ed[i][m];
+			}
+		}
+
+		int ret = min;
+
+		// System.out.println(show(g, sub_r, ed));
+		// System.out.printf("min:\t%d\n\n", min);
 
 		return ret;
 	}
 
-	public double getEditDistance() {
-		return ed;
+	public static void main(String[] args) {
+		{
+			String g = "om";
+			String sub_r = "beca";
+
+			System.out.println(computeSubstringEditDistance(g, sub_r));
+			System.out.println();
+
+			// System.out.println(computeSubstringEditDistance(sub_r, g));
+			// System.out.println();
+		}
+
+		{
+			String g = "ot";
+			String sub_r = "yoytu";
+			System.out.println(computeSubstringEditDistance(g, sub_r));
+			System.out.println();
+		}
+
+		// {
+		// String g = "yotubecom";
+		// String sub_r = "yoytubeca";
+		// System.out.println(computeSubstringEditDistance(g, sub_r));
+		// }
 	}
 
-	public double getNumErrors() {
-		return num_errors;
-	}
-
-	public String show(String s, String t, int[][] d) {
+	public static String show(String s, String t, int[][] d) {
 		StringBuffer sb = new StringBuffer();
 		sb.append("@");
 
@@ -113,9 +112,78 @@ public class StringVerifier implements Serializable {
 		return sb.toString();
 	}
 
+	private int q;
+
+	private int tau;
+
+	private double[][] M;
+
+	private double num_errors;
+
+	private double ed;
+
+	public StringVerifier(int q, int tau) {
+		this.q = q;
+		this.tau = tau;
+	}
+
+	public double computeEditDistance(String s, String r) {
+		int n = s.length();
+		int m = r.length();
+		int ed[][]; // matrix
+		int i; // iterates through s
+		int j; // iterates through t
+		char s_i; // ith character of s
+		char t_j; // jth character of t
+		int cost; // cost
+
+		int min_i = 1;
+		int min_j = 1;
+
+		if (n == 0)
+			return 1.0;
+		if (m == 0)
+			return 1.0;
+
+		ed = new int[n + 1][m + 1];
+
+		for (i = 0; i <= n; i++)
+			ed[i][0] = i;
+
+		for (j = 0; j <= m; j++)
+			ed[0][j] = j;
+
+		for (i = 1; i <= n; i++) {
+			s_i = s.charAt(i - 1);
+			for (j = 1; j <= m; j++) {
+				t_j = r.charAt(j - 1);
+				cost = (s_i == t_j) ? 0 : 1;
+				ed[i][j] = ArrayMath.min(new int[] { ed[i - 1][j] + 1, ed[i][j - 1] + 1, ed[i - 1][j - 1] + cost });
+			}
+		}
+
+		int ret = ed[n][m];
+
+		// System.out.println(show(s, t, ed) + "\n\n");
+
+		return ret;
+	}
+
+	public double getEditDistance() {
+		return ed;
+	}
+
+	public double getNumErrors() {
+		return num_errors;
+	}
+
 	public boolean verify(String s, Gram[] grams, String r) {
-		num_errors = 0;
-		ed = 0;
+		double num_errors = 0;
+		double ed = 0;
+
+		// System.out.println("--------------------------------");
+
+		boolean[] visited = new boolean[r.length()];
 
 		for (int i = 0; i < grams.length; i++) {
 			Gram gram = grams[i];
@@ -126,10 +194,11 @@ public class StringVerifier implements Serializable {
 			String g = gram.getString();
 
 			int start = gram.getStart() - tau;
-			int end = gram.getStart() + q - 1 + tau;
+			// int end = gram.getStart() + q - 1 + tau;
+			int end = gram.getStart() + q + tau;
 
 			if (start < 0) {
-				start = gram.getStart();
+				start = 0;
 			}
 
 			if (end > r.length()) {
@@ -140,8 +209,26 @@ public class StringVerifier implements Serializable {
 				continue;
 			}
 
+			boolean isVisited = false;
+
+			for (int j = start; j < end; j++) {
+				if (visited[j]) {
+					isVisited = true;
+					break;
+				}
+			}
+
+			if (isVisited) {
+				continue;
+			}
+
+			for (int j = start; j < end; j++) {
+				visited[j] = true;
+			}
+
 			String sub_r = r.substring(start, end);
-			num_errors += computeEditDistance(g, sub_r);
+			double sed = computeSubstringEditDistance(g, sub_r);
+			num_errors += sed;
 
 			if (num_errors > tau) {
 				return false;

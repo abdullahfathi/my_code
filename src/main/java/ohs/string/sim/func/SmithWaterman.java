@@ -33,20 +33,20 @@ public class SmithWaterman {
 			double wj = 1;
 
 			if (chWeights != null) {
-				wi += chWeights.getCount(si);
-				wj += chWeights.getCount(tj);
+				wi = chWeights.getCount(si);
+				wj = chWeights.getCount(tj);
+
+				wi = Math.exp(wi);
+				wj = Math.exp(wj);
 			}
 
 			double cost = 0;
 
 			if (si == tj) {
-				if (ignoreWhitespaces && si == ' ') {
-
-				} else {
-					cost = wi + match_cost;
-				}
+				cost = wi * match_cost;
 			} else {
-				cost = unmatch_cost - ((wi + wj) / 2);
+				double avg_w = (wi + wj) / 2;
+				cost = avg_w * unmatch_cost;
 			}
 
 			double substitute_score = get(i - 1, j - 1) + cost;
@@ -100,9 +100,9 @@ public class SmithWaterman {
 		// doMain(new SmithWatermanAligner(), argv);
 
 		// String[] strs = { "William W. ‘Don’t call me Dubya’ Cohen", "William W. Cohen" };
-		// String[] strs = { "MCCOHN", "COHEN" };
-		// String[] strs = { "MCCOHN", "COHEN" };
-		String[] strs = { "부산대학교 고분자공학과", "부산대학교 병원" };
+		String[] strs = { "MCCOHN", "COHEN" };
+		// String[] strs = { "ABCDE", "FABCGG" };
+		strs = new String[] { "부산대학교 고분자공학과", "부산대학교 병원" };
 		String s = strs[0];
 		String t = strs[1];
 
@@ -110,6 +110,8 @@ public class SmithWaterman {
 
 		SmithWaterman sw = new SmithWaterman();
 		sw.setChWeight(chWeights);
+
+		System.out.println(sw.getNormalizedScore(s, t));
 
 		MemoMatrix m = sw.compute(s, t);
 
@@ -135,18 +137,15 @@ public class SmithWaterman {
 
 	private double gap_cost;
 
-	private boolean ignoreWhitespaces;
-
 	public SmithWaterman() {
-		this(2, -1, -1, false);
+		this(2, -1, -1);
 		// this(3, 2, 1, false);
 	}
 
-	public SmithWaterman(double match_cost, double unmatch_cost, double gap_cost, boolean ignoreWhitespaces) {
+	public SmithWaterman(double match_cost, double unmatch_cost, double gap_cost) {
 		this.match_cost = match_cost;
 		this.unmatch_cost = unmatch_cost;
 		this.gap_cost = gap_cost;
-		this.ignoreWhitespaces = ignoreWhitespaces;
 	}
 
 	public MemoMatrix compute(String s, String t) {
@@ -170,8 +169,8 @@ public class SmithWaterman {
 
 			double weight_sum = 0;
 			for (int i = 0; i < temp.length(); i++) {
-				double w = 1 + chWeights.getCount(temp.charAt(i));
-				weight_sum += w;
+				double w = chWeights.getCount(temp.charAt(i));
+				weight_sum += Math.exp(w);
 			}
 			ret = score / weight_sum;
 		}

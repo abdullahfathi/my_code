@@ -21,18 +21,23 @@ public class DataReader {
 	public static void main(String[] args) {
 		System.out.println("process begins.");
 
-		List<Organization> orgs = readOrganizations(ENTPath.BASE_ORG_NAME_FILE);
-		// List<Organization> orgs2 = readOrganizationHistories(ENTPath.BASE_ORG_HISTORY_FILE);
+		// List<Organization> orgs = readOrganizations(ENTPath.BASE_ORG_NAME_FILE);
+		List<Organization> orgs2 = readOrganizationHistories(ENTPath.BASE_ORG_HISTORY_FILE);
 
 		System.out.println("process ends.");
 	}
 
-	public static Organization parse(List<String[]> lines) {
-
+	public static Organization parse(List<String> lines) {
 		Map<String, Organization> map = new HashMap<String, Organization>();
 
 		for (int i = 0; i < lines.size(); i++) {
-			String[] parts = lines.get(i);
+			String line = lines.get(i);
+
+			if (line.startsWith("ID\t")) {
+				continue;
+			}
+
+			String[] parts = split(line);
 
 			// try {
 			int id = -1;
@@ -182,34 +187,18 @@ public class DataReader {
 
 		// List<Organization> lines = new ArrayList<Organization>();
 
-		List<String[]> lines = new ArrayList<String[]>();
-
 		Counter<String> c = new Counter<String>();
 
 		TextFileReader reader = new TextFileReader(fileName, IOUtils.EUC_KR);
 		while (reader.hasNext()) {
-			String line = reader.next();
+			List<String> lines = reader.getNextLines();
 
 			if (reader.getNumLines() == 1) {
 				continue;
 			}
 
-			String[] parts = split(line);
+			parse(lines);
 
-			// try {
-			if (parts[3].length() == 0) {
-				Organization org = parse(lines);
-
-				for (int i = 0; i < lines.size(); i++) {
-
-					c.incrementCount(lines.get(i)[3], 1);
-				}
-
-				lines = new ArrayList<String[]>();
-
-			} else {
-				lines.add(parts);
-			}
 			// } catch (Exception e) {
 			// System.out.println(StrUtils.join("\t", parts));
 			// }

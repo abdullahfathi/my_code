@@ -6,6 +6,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +27,7 @@ import ohs.types.Counter;
 import ohs.types.DeepMap;
 import ohs.types.ListMap;
 import ohs.types.Pair;
+import ohs.types.common.StrCounter;
 import ohs.utils.StrUtils;
 
 /**
@@ -278,7 +280,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 
 	private GramOrderer gramOrderer;
 
-	private BidMap<StringRecord, Integer> idMap;
+	private Map<Integer, StringRecord> idMap;
 
 	public PivotalPrefixStringSearcher() {
 		this(2, 2, false);
@@ -407,7 +409,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 		return q;
 	}
 
-	public BidMap<StringRecord, Integer> getStringRecordIdMap() {
+	public Map<Integer, StringRecord> getStringRecordIdMap() {
 		return idMap;
 	}
 
@@ -436,7 +438,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 
 		ss = new ArrayList<StringRecord>();
 		allGrams = new ArrayList<Gram[]>();
-		idMap = new BidMap<StringRecord, Integer>();
+		idMap = new HashMap<Integer, StringRecord>();
 
 		for (int i = 0; i < srs.size(); i++) {
 			StringRecord sr = srs.get(i);
@@ -449,7 +451,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 
 			allGrams.add(grams);
 			ss.add(sr);
-			idMap.put(sr, sr.getId());
+			idMap.put(sr.getId(), sr);
 		}
 
 		if (gramOrderer.getGramWeights() == null) {
@@ -499,6 +501,35 @@ public class PivotalPrefixStringSearcher implements Serializable {
 					}
 				}
 			}
+		}
+
+		computeCharacterWeights();
+	}
+
+	private Counter<Character> chWeights;
+
+	private void computeCharacterWeights() {
+		chWeights = new Counter<Character>();
+
+		for (int i = 0; i < ss.size(); i++) {
+			String s = ss.get(i).getString();
+
+			Set<Character> chs = new HashSet<Character>();
+
+			for (int j = 0; j < s.length(); j++) {
+				chs.add(s.charAt(j));
+			}
+
+			for (char ch : chs) {
+				chWeights.incrementCount(ch, 1);
+			}
+		}
+
+		for (char ch : chWeights.keySet()) {
+			double df = chWeights.getCount(ch);
+			double num_docs = ss.size();
+			double idf = Math.log((num_docs + 1) / df);
+			chWeights.setCount(ch, idf);
 		}
 	}
 
@@ -677,6 +708,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 		Counter<StringRecord> A = new Counter<StringRecord>();
 
 		SmithWaterman sw = new SmithWaterman();
+		sw.setChWeight(chWeights);
 
 		for (int loc : C) {
 			String r = ss.get(loc).getString();

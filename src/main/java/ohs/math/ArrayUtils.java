@@ -216,14 +216,14 @@ public class ArrayUtils {
 	/**
 	 * @param a
 	 *            input
-	 * @param aIndex
+	 * @param col_a
 	 *            column index of matrix a
 	 * @param b
 	 *            output
-	 * @param bIndex
+	 * @param col_b
 	 *            column index of matrix b
 	 */
-	public static void copyColumn(double[][] a, int aIndex, double[][] b, int bIndex) {
+	public static void copyColumn(double[][] a, int col_a, double[][] b, int col_b) {
 		if (!ArrayChecker.isSameDimensions(a, b)) {
 			throw new IllegalArgumentException();
 		}
@@ -231,7 +231,7 @@ public class ArrayUtils {
 		int rowDim = a.length;
 		int colDim = a[0].length;
 		for (int i = 0; i < rowDim; i++) {
-			b[i][bIndex] = a[i][aIndex];
+			b[i][col_b] = a[i][col_a];
 		}
 	}
 

@@ -38,17 +38,17 @@ public class EditDistance {
 
 		// String[] strs = { "William W. ‘Don’t call me Dubya’ Cohen", "William W. Cohen" };
 		// String[] strs = { "COHEN", "MCCOHN" };
-		String[] strs = { "국민대학교 금속재료공학부", "국민은행" };
-		String s = strs[1];
-		String t = strs[0];
-
-		// s = "CA";
-		// t = "ABC";
+		String[] sr1 = { "om", "beca" };
+		String[] sr2 = { "ot", "yoytu" };
+		// String[] sr2 = { "kitten", "sitting" };
 
 		EditDistance sw = new EditDistance();
-		MemoMatrix m = sw.compute(s, t);
-
+		MemoMatrix m = sw.compute(sr1[0], sr1[1]);
 		System.out.println(m.toString());
+
+		m = sw.compute(sr2[0], sr2[1]);
+		System.out.println(m.toString());
+
 		// System.out.println(m.getBestScore());
 
 		// AlignResult ar = new Aligner().align(m);
