@@ -41,13 +41,13 @@ public class RelevanceCollector {
 	public void collect() throws Exception {
 		String[] queryFileNames = MIRPath.QueryFileNames;
 
-		String[] indexDirNames = { MIRPath.TREC_CDS_INDEX_DIR, MIRPath.CLEF_EHEALTH_INDEX_DIR, MIRPath.OHSUMED_INDEX_DIR };
+		String[] indexDirNames = MIRPath.IndexDirNames;
 
 		String[] relDataFileNames = MIRPath.RelevanceDataFileNames;
 
 		String[] docMapFileNames = MIRPath.DocIdMapFileNames;
 
-		String[] queryDocFileNames = { MIRPath.TREC_CDS_QUERY_DOC_FILE, MIRPath.CLEF_EHEALTH_QUERY_DOC_FILE, MIRPath.OHSUMED_QUERY_DOC_FILE };
+		String[] queryDocFileNames = MIRPath.QueryDocFileNames;
 
 		IndexSearcher[] indexSearchers = DocumentSearcher.getIndexSearchers(indexDirNames);
 
@@ -55,7 +55,7 @@ public class RelevanceCollector {
 
 		for (int i = 0; i < queryFileNames.length; i++) {
 			List<BaseQuery> bqs = new ArrayList<BaseQuery>();
-			CounterMap<String, String>  queryRels = new CounterMap<String, String> ();
+			CounterMap<String, String> queryRels = new CounterMap<String, String>();
 
 			File queryFile = new File(queryFileNames[i]);
 			File relvFile = new File(relDataFileNames[i]);
@@ -69,6 +69,9 @@ public class RelevanceCollector {
 			} else if (i == 2) {
 				bqs = QueryReader.readOhsumedQueries(queryFileNames[i]);
 				queryRels = RelevanceReader.readOhsumedRelevances(relDataFileNames[i]);
+			} else if (i == 3) {
+				bqs = QueryReader.readTrecGenomicsQueries(queryFileNames[i]);
+				queryRels = RelevanceReader.readTrecGenomicsRelevances(relDataFileNames[i]);
 			}
 
 			List<Counter<String>> qs = new ArrayList<Counter<String>>();
