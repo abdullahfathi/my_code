@@ -20,7 +20,7 @@ import ohs.types.Indexer;
 import ohs.types.ListMap;
 import ohs.types.common.StrCounter;
 
-public class ProximityRelevanceModelBuilder {
+public class PassageRelevanceModelBuilder {
 
 	public static double hal(int i, int j, int window_size) {
 		return window_size - (j - i) + 1;
@@ -48,11 +48,11 @@ public class ProximityRelevanceModelBuilder {
 
 	private SparseMatrix fbWordToWordProxes;
 
-	public ProximityRelevanceModelBuilder(Indexer<String> wordIndexer) {
+	public PassageRelevanceModelBuilder(Indexer<String> wordIndexer) {
 		this(wordIndexer, 5, 20, 2000, 2, false);
 	}
 
-	public ProximityRelevanceModelBuilder(Indexer<String> wordIndexer, int num_fb_docs, int num_fb_words, int dirichlet_prior,
+	public PassageRelevanceModelBuilder(Indexer<String> wordIndexer, int num_fb_docs, int num_fb_words, int dirichlet_prior,
 			int window_size, boolean makeLog) {
 		this.wordIndexer = wordIndexer;
 		this.num_fb_docs = num_fb_docs;
@@ -80,6 +80,8 @@ public class ProximityRelevanceModelBuilder {
 			SparseVector wordCounts = docWordCounts.vectorAtRowLoc(i);
 			List<Integer> words = wcb.getDocWords().get(docId);
 			ListMap<Integer, Integer> wordLocs = docWordLocs.get(docId, false);
+			
+			
 
 			// for (int j = 0; j < words.size(); j++) {
 			// int w = words.get(j);

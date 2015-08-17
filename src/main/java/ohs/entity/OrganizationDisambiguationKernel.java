@@ -2,6 +2,7 @@ package ohs.entity;
 
 import java.io.BufferedWriter;
 import java.io.Serializable;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -69,6 +70,64 @@ public class OrganizationDisambiguationKernel implements Serializable {
 
 		TextFileWriter writer = new TextFileWriter(ENTPath.ODK_TEST_DATA);
 
+		int num_docs = 0;
+
+		NumberFormat nf = NumberFormat.getInstance();
+		nf.setMinimumFractionDigits(4);
+
+		{
+			System.out.println(ENTPath.ODK_OUTPUT_PAPER_FILE);
+			Counter<BilingualText> orgNames = DataReader.readBilingualTextCounter(extOrgFileName);
+			int num_orgs = 0;
+			StopWatch stopWatch = new StopWatch();
+			stopWatch.start();
+
+			for (BilingualText orgName : orgNames.getSortedKeys()) {
+				double cnt = orgNames.getCount(orgName);
+
+				if (cnt < 50) {
+					break;
+				}
+
+				if (++num_orgs % 100 == 0) {
+					System.out.printf("\r[%d, %s]", num_orgs, stopWatch.stop());
+				}
+
+				Counter<Organization> ret = odk.disambiguate(orgName);
+
+				List<Organization> keys = ret.getSortedKeys();
+				int num_candidates = 10;
+				StringBuffer sb = new StringBuffer();
+				sb.append(++num_docs);
+				sb.append("\nPAPER");
+				sb.append("\nINPUT:");
+				sb.append(String.format("\nKorean\t%s", orgName.getKorean()));
+				sb.append(String.format("\nEnglish\t%s", orgName.getEnglish()));
+				sb.append("\nOUTPUT:");
+				sb.append("\nNo\tID\tKorean\tEnglish\tScore\tSystem\tHuman");
+
+				boolean hasMatch = false;
+
+				for (int i = 0; i < keys.size() && i < num_candidates; i++) {
+					Organization org = keys.get(i);
+					boolean matched = false;
+
+					if (orgName.getKorean().equals(org.getName().getKorean())) {
+						matched = true;
+						hasMatch = true;
+					}
+
+					double score = ret.getCount(org);
+					String output = String.format("\n%d\t%d\t%s\t%s\t%s\t%s\t", i + 1, org.getId(), org.getName().getKorean(), org
+							.getName().getEnglish(), nf.format(score), matched ? "1" : "");
+					sb.append(output);
+				}
+
+				writer.write(sb.toString() + "\n\n");
+			}
+			System.out.printf("\r[%d, %s]\n", num_orgs, stopWatch.stop());
+		}
+
 		{
 			System.out.println(ENTPath.PATENT_ORG_FILE_2);
 			TextFileReader reader = new TextFileReader(ENTPath.PATENT_ORG_FILE_2);
@@ -95,7 +154,7 @@ public class OrganizationDisambiguationKernel implements Serializable {
 					}
 				}
 
-				if (engNameCounts.totalCount() < 200000) {
+				if (engNameCounts.totalCount() < 20) {
 					break;
 				}
 
@@ -106,16 +165,27 @@ public class OrganizationDisambiguationKernel implements Serializable {
 				List<Organization> keys = ret.getSortedKeys();
 				int num_candidates = 10;
 				StringBuffer sb = new StringBuffer();
-				sb.append("#PATENT");
+				sb.append(++num_docs);
+				sb.append("\nPATENT");
 				sb.append("\nINPUT:");
-				sb.append("\n" + orgName.toString());
-				sb.append("\nOUTPUT:");
-				for (int i = 0; i < keys.size() && i < num_candidates; i++) {
-					Organization sr = keys.get(i);
-					double score = ret.getCount(sr);
-					String output = String.format("\n%d\t%s\t%s\t%f",
+				sb.append(String.format("\nKorean\t%s", orgName.getKorean()));
+				sb.append(String.format("\nEnglish\t%s", orgName.getEnglish()));
+				sb.append("\nNo\tID\tKorean\tEnglish\tScore\tSystem\tHuman");
 
-					i + 1, sr.getName().getKorean(), sr.getName().getEnglish(), score);
+				boolean hasMatch = false;
+
+				for (int i = 0; i < keys.size() && i < num_candidates; i++) {
+					Organization org = keys.get(i);
+					double score = ret.getCount(org);
+					boolean matched = false;
+
+					if (orgName.getKorean().equals(org.getName().getKorean())) {
+						matched = true;
+						hasMatch = true;
+					}
+
+					String output = String.format("\n%d\t%d\t%s\t%s\t%s\t%s\t", i + 1, org.getId(), org.getName().getKorean(), org
+							.getName().getEnglish(), nf.format(score), matched ? "1" : "");
 					sb.append(output);
 				}
 
@@ -124,47 +194,7 @@ public class OrganizationDisambiguationKernel implements Serializable {
 			reader.printLast();
 		}
 
-		{
-			System.out.println(ENTPath.ODK_OUTPUT_PAPER_FILE);
-			Counter<BilingualText> orgNames = DataReader.readBilingualTextCounter(extOrgFileName);
-			int num_orgs = 0;
-			StopWatch stopWatch = new StopWatch();
-			stopWatch.start();
-
-			for (BilingualText orgName : orgNames.getSortedKeys()) {
-				double cnt = orgNames.getCount(orgName);
-
-				if (cnt < 50) {
-					break;
-				}
-
-				if (++num_orgs % 100 == 0) {
-					System.out.printf("\r[%d, %s]", num_orgs, stopWatch.stop());
-				}
-
-				Counter<Organization> ret = odk.disambiguate(orgName);
-
-				List<Organization> keys = ret.getSortedKeys();
-				int num_candidates = 10;
-				StringBuffer sb = new StringBuffer();
-				sb.append("#PAPER");
-				sb.append("\nINPUT:");
-				sb.append("\n" + orgName.toString());
-				sb.append("\nOUTPUT:");
-				for (int i = 0; i < keys.size() && i < num_candidates; i++) {
-					Organization sr = keys.get(i);
-					double score = ret.getCount(sr);
-					String output = String.format("\n%d\t%s\t%s\t%f",
-
-					i + 1, sr.getName().getKorean(), sr.getName().getEnglish(), score);
-					sb.append(output);
-				}
-
-				writer.write(sb.toString() + "\n\n");
-			}
-			writer.close();
-			System.out.printf("\r[%d, %s]\n", num_orgs, stopWatch.stop());
-		}
+		writer.close();
 	}
 
 	public static void test() {
@@ -351,7 +381,7 @@ public class OrganizationDisambiguationKernel implements Serializable {
 			recordToOrgMaps[i] = recordToOrgMap;
 
 			int q = 2;
-			int tau = 2;
+			int tau = 3;
 
 			if (i == 1) {
 				q = 4;

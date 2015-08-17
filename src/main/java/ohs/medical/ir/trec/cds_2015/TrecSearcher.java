@@ -210,8 +210,9 @@ public class TrecSearcher {
 		TrecSearcher tc = new TrecSearcher();
 		// tc.searchByQLD();
 		// tc.searchByKLD();
+		tc.searchByKLDPassage();
 		// tc.searchByKLDFB();
-		tc.searchByKLDProximityFB();
+		// tc.searchByKLDProximityFB();
 		// tc.searchByKLDMultiFieldFB();
 		// tc.searchByKLDMultiFieldsProximityFB();
 		// tc.searchByCBEEM();
@@ -412,6 +413,37 @@ public class TrecSearcher {
 		writer.close();
 	}
 
+	public void searchByKLDPassage() throws Exception {
+		System.out.println("search by KLD.");
+
+		String resultFileName = MIRPath.TREC_CDS_OUTPUT_RESULT_2015_DIR + "kld_passage.txt";
+
+		TextFileWriter writer = new TextFileWriter(resultFileName);
+
+		for (int i = 0; i < bqs.size(); i++) {
+			BaseQuery bq = bqs.get(i);
+			System.out.println(bq);
+
+			Counter<String> wordCounts = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
+
+			BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
+
+			SparseVector docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
+			docScores.normalizeAfterSummation();
+
+			Indexer<String> wordIndexer = new Indexer<String>();
+			SparseVector queryModel = VectorUtils.toSparseVector(wordCounts, wordIndexer, true);
+			queryModel.normalize();
+
+			WordCountBox wcb = WordCountBox.getWordCountBox(indexSearcher.getIndexReader(), docScores, wordIndexer);
+
+			KLDivergenceScorer scorer = new KLDivergenceScorer();
+			docScores = scorer.scoreDocuments2(wcb, queryModel);
+			ResultWriter.write(writer, bq.getId(), docScores);
+		}
+		writer.close();
+	}
+
 	public void searchByKLDFB() throws Exception {
 		System.out.println("search by KLD FB.");
 
@@ -537,13 +569,13 @@ public class TrecSearcher {
 				// docScores = kldScorer.scoreDocuments(wcb3, expQueryModel);
 
 				ProximityRelevanceModelBuilder rmb = new ProximityRelevanceModelBuilder(wordIndexer, 10, 15, 2000, 3, false);
-				rmb.computeWordProximities(wcb1, expQueryModel);
+				rmb.computeWordProximities(expQueryModel, docScores, wcb1);
 				SparseVector rm1 = rmb.getRelevanceModel(wcb1, docScores);
 
-				rmb.computeWordProximities(wcb2, expQueryModel);
+				rmb.computeWordProximities(expQueryModel, docScores, wcb2);
 				SparseVector rm2 = rmb.getRelevanceModel(wcb2, docScores);
 
-				rmb.computeWordProximities(wcb3, expQueryModel);
+				rmb.computeWordProximities(expQueryModel, docScores, wcb3);
 				SparseVector rm3 = rmb.getRelevanceModel(wcb3, docScores);
 
 				// SparseVector rm4 = rmb.getRelevanceModel(wcb4, wikiScores);
@@ -615,8 +647,8 @@ public class TrecSearcher {
 			// WordCountBox wcb2 = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, IndexFieldName.ABSTRACT);
 			WordCountBox wcb3 = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, IndexFieldName.CONTENT);
 
-			ProximityRelevanceModelBuilder rmb = new ProximityRelevanceModelBuilder(wordIndexer, 10, 15, 2000, 3, false);
-			rmb.computeWordProximities(wcb3, expQueryModel);
+			ProximityRelevanceModelBuilder rmb = new ProximityRelevanceModelBuilder(wordIndexer, 10, 15, 2000, 1, false);
+			rmb.computeWordProximities(expQueryModel, docScores, wcb3);
 			SparseVector rm = rmb.getRelevanceModel(wcb3, docScores);
 
 			// SparseVector rm4 = rmb.getRelevanceModel(wcb4, wikiScores);
