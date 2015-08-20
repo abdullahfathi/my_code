@@ -47,7 +47,7 @@ public class ConceptRelevanceCollector {
 
 		String[] indexDirNames = { MIRPath.TREC_CDS_INDEX_DIR, MIRPath.CLEF_EHEALTH_INDEX_DIR, MIRPath.OHSUMED_INDEX_DIR };
 
-		String[] relDataFileNames = MIRPath.RelevanceDataFileNames;
+		String[] relDataFileNames = MIRPath.RelevanceFileNames;
 
 		String[] docMapFileNames = MIRPath.DocIdMapFileNames;
 

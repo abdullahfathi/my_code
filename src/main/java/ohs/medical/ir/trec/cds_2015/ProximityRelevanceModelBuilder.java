@@ -178,7 +178,7 @@ public class ProximityRelevanceModelBuilder {
 			// cm.normalize();
 			cm = cm.invert();
 
-			// System.out.println(VectorUtils.toCounterMap(cm, wordIndexer, wordIndexer));
+			System.out.println(VectorUtils.toCounterMap(cm, wordIndexer, wordIndexer));
 
 			// cm1.normalize();
 
@@ -218,7 +218,7 @@ public class ProximityRelevanceModelBuilder {
 		for (int j = 0; j < wcb.getCollWordCounts().size(); j++) {
 			int w = wcb.getCollWordCounts().indexAtLoc(j);
 			double cnt_w_in_coll = wcb.getCollWordCounts().valueAlways(w);
-			double prob_w_in_coll = cnt_w_in_coll / wcb.getCountSumInCollection();
+			double prob_w_in_coll = cnt_w_in_coll / wcb.getCollectionCountSum();
 
 			for (int k = 0; k < docScores.size() && k < num_fb_docs; k++) {
 				int docId = docScores.indexAtLoc(k);

@@ -1,4 +1,4 @@
-package ohs.medical.ir.trec.cds_2015;
+package ohs.medical.ir;
 
 import java.io.IOException;
 import java.text.NumberFormat;
@@ -34,7 +34,7 @@ import org.apache.lucene.search.Query;
  * @author Heung-Seon Oh
  * 
  */
-public class TrecCbeemDocumentSearcher {
+public class CbeemDocumentSearcher {
 
 	private TextFileWriter logWriter;
 
@@ -60,9 +60,7 @@ public class TrecCbeemDocumentSearcher {
 
 	private boolean makeLog = false;
 
-	private AbbrQueryExpander abbrQueryExpander;
-
-	public TrecCbeemDocumentSearcher(IndexSearcher[] indexSearchers, DenseVector[] docPriorData, HyperParameter hyperParameter,
+	public CbeemDocumentSearcher(IndexSearcher[] indexSearchers, DenseVector[] docPriorData, HyperParameter hyperParameter,
 			Analyzer analyzer, boolean makeLog) throws Exception {
 		super();
 		this.indexSearchers = indexSearchers;
@@ -73,7 +71,6 @@ public class TrecCbeemDocumentSearcher {
 
 		num_colls = indexSearchers.length;
 
-		abbrQueryExpander = new AbbrQueryExpander(analyzer, MIRPath.ABBREVIATION_FILTERED_FILE);
 	}
 
 	private SparseVector[] computeRelevanceModels() throws IOException {
@@ -194,7 +191,7 @@ public class TrecCbeemDocumentSearcher {
 				// prob_w_in_coll) / (cnt_sum_in_doc + dirichlet_prior);
 
 				prob_w_in_doc = (1 - mixture_for_coll) * prob_w_in_doc + mixture_for_coll * prob_w_in_coll;
-				prob_w_in_doc = (1 - mixture_for_all_colls) * prob_w_in_doc + mixture_for_all_colls * prob_w_in_all_colls;
+				// prob_w_in_doc = (1 - mixture_for_all_colls) * prob_w_in_doc + mixture_for_all_colls * prob_w_in_all_colls;
 
 				if (prob_w_in_doc > 0) {
 					double div = prob_w_in_query * Math.log(prob_w_in_query / prob_w_in_doc);
@@ -221,8 +218,8 @@ public class TrecCbeemDocumentSearcher {
 		this.bq = bq;
 
 		List<String> qWords = AnalyzerUtils.getWords(bq.getSearchText(), analyzer);
-
 		Counter<String> qWordCounts = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
+
 		bq.setLuceneQuery(AnalyzerUtils.getQuery(qWords));
 
 		SparseVector qLM = VectorUtils.toSparseVector(qWordCounts, wordIndexer, true);
@@ -233,10 +230,12 @@ public class TrecCbeemDocumentSearcher {
 
 		for (int i = 0; i < num_colls; i++) {
 			Query searchQuery = bq.getLuceneQuery();
-			// if (i == colId) {
-			// searchQuery = expSearchQuery;
-			// }
-			collDocScores[i] = DocumentSearcher.search(searchQuery, indexSearchers[i], hyperParam.getTopK());
+			int top_k = 100;
+
+			if (colId == i) {
+				top_k = hyperParam.getTopK();
+			}
+			collDocScores[i] = DocumentSearcher.search(searchQuery, indexSearchers[i], top_k);
 		}
 
 		setWordCountBoxes();
@@ -296,13 +295,13 @@ public class TrecCbeemDocumentSearcher {
 			SparseVector docScores = collDocScores[i];
 			docScores.sortByValue();
 
-			double num_docs = 0;
+			double num_docs_for_coll_prior = 0;
 			for (int j = 0; j < docScores.size() && j < hyperParam.getNumFBDocs(); j++) {
 				coll_prior += docScores.valueAtLoc(j);
-				num_docs++;
+				num_docs_for_coll_prior++;
 			}
 
-			coll_prior /= num_docs;
+			coll_prior /= num_docs_for_coll_prior;
 
 			docScores.sortByIndex();
 
@@ -333,11 +332,11 @@ public class TrecCbeemDocumentSearcher {
 
 		SparseVector expQLM = VectorMath.addAfterScale(new Vector[] { qLM, cbeem }, mixture_for_each_qm);
 
-		// SparseVector ret = scoreDocuments(colId, expQueryModel);
+		SparseVector ret = score(colId, expQLM);
 
-		BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(expQLM, wordIndexer));
-		SparseVector ret = DocumentSearcher.search(lbq, indexSearchers[colId], hyperParam.getTopK());
-		ret.normalize();
+		// BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(expQLM, wordIndexer));
+		// SparseVector ret = DocumentSearcher.search(lbq, indexSearchers[colId], hyperParam.getTopK());
+		// ret.normalize();
 
 		if (makeLog) {
 			logBuf.append(bq.toString() + "\n");

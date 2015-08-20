@@ -1,5 +1,6 @@
 package ohs.medical.ir.query;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import ohs.io.TextFileReader;
@@ -11,20 +12,20 @@ import ohs.types.common.StrCounterMap;
 
 public class RelevanceReader {
 
-	public static CounterMap<String, String> filter(CounterMap<String, String> relevanceData, StrBidMap docIdMap) {
+	public static CounterMap<String, String> filter(CounterMap<String, String> relData, StrBidMap docIdMap) {
 		CounterMap<String, String> ret = new CounterMap<String, String>();
 
 		int num_pairs = 0;
 		int num_result_pairs = 0;
 
-		for (String queryId : relevanceData.keySet()) {
-			Counter<String> docRelevances = relevanceData.getCounter(queryId);
+		for (String queryId : relData.keySet()) {
+			Counter<String> docRels = relData.getCounter(queryId);
 			Counter<String> counter = new Counter<String>();
 
-			num_pairs += docRelevances.size();
+			num_pairs += docRels.size();
 
-			for (String docId : docRelevances.keySet()) {
-				double score = docRelevances.getCount(docId);
+			for (String docId : docRels.keySet()) {
+				double score = docRels.getCount(docId);
 				String indexId = docIdMap.getKey(docId);
 				if (indexId == null || score == 0) {
 					continue;
@@ -39,7 +40,7 @@ public class RelevanceReader {
 
 			ret.setCounter(queryId, counter);
 		}
-		System.out.printf("[%d] queries -> [%d] queries\n", relevanceData.keySet().size(), ret.keySet().size());
+		System.out.printf("[%d] queries -> [%d] queries\n", relData.keySet().size(), ret.keySet().size());
 		System.out.printf("[%d] pairs -> [%d] pairs\n", num_pairs, num_result_pairs);
 		return ret;
 	}
@@ -126,6 +127,20 @@ public class RelevanceReader {
 			}
 		}
 		reader.close();
+		return ret;
+	}
+
+	public static CounterMap<String, String> readRelevances(String fileName) throws Exception {
+		CounterMap<String, String> ret = new CounterMap<String, String>();
+		if (fileName.contains("trec_cds")) {
+			ret = readTrecCdsRelevances(fileName);
+		} else if (fileName.contains("clef_ehealth")) {
+			ret = readClefEHealthRelevances(fileName);
+		} else if (fileName.contains("ohsumed")) {
+			ret = readOhsumedRelevances(fileName);
+		} else if (fileName.contains("trec_genomics")) {
+			ret = readTrecGenomicsRelevances(fileName);
+		}
 		return ret;
 	}
 

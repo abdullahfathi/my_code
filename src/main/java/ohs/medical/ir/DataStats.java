@@ -30,7 +30,7 @@ public class DataStats {
 		String[] queryFileNames = MIRPath.QueryFileNames;
 		String[] indexDirNames = MIRPath.IndexDirNames;
 
-		String[] relFileNames = MIRPath.RelevanceDataFileNames;
+		String[] relFileNames = MIRPath.RelevanceFileNames;
 
 		QueryParser queryParser = DocumentSearcher.getQueryParser();
 
@@ -135,7 +135,7 @@ public class DataStats {
 		String[] queryFileNames = MIRPath.QueryFileNames;
 		String[] indexDirNames = MIRPath.IndexDirNames;
 
-		String[] relFileNames = MIRPath.RelevanceDataFileNames;
+		String[] relFileNames = MIRPath.RelevanceFileNames;
 
 		QueryParser queryParser = DocumentSearcher.getQueryParser();
 

@@ -1,4 +1,4 @@
-package ohs.medical.ir.trec.cds_2015;
+package ohs.medical.ir;
 
 import ohs.io.TextFileWriter;
 import ohs.matrix.SparseVector;

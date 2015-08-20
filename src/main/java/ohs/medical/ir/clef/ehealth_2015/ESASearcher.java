@@ -16,7 +16,7 @@ import ohs.math.VectorMath;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseMatrix;
 import ohs.matrix.SparseVector;
-import ohs.medical.ir.CBEEMDocumentSearcher;
+import ohs.medical.ir.JBICBEEMDocumentSearcher;
 import ohs.medical.ir.DocumentSearcher;
 import ohs.medical.ir.MIRPath;
 import ohs.medical.ir.query.BaseQuery;

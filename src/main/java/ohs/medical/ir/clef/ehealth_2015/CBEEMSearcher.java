@@ -88,7 +88,7 @@ public class CBEEMSearcher {
 
 		String[] docPriorFileNames = MIRPath.DocPriorFileNames;
 
-		// String[] relevanceDataFileNames = MIRPath.RelevanceDataFileNames;
+		// String[] relevanceDataFileNames = MIRPath.RelevanceFileNames;
 
 		String[] docMapFileNames = MIRPath.DocIdMapFileNames;
 
@@ -471,7 +471,7 @@ public class CBEEMSearcher {
 	private double[] getCollWordCountSums() {
 		double[] ret = new double[docWordCountBoxes.length];
 		for (int i = 0; i < docWordCountBoxes.length; i++) {
-			ret[i] = docWordCountBoxes[i].getCountSumInCollection();
+			ret[i] = docWordCountBoxes[i].getCollectionCountSum();
 		}
 		return ret;
 	}

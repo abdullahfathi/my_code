@@ -285,7 +285,7 @@ public class SearchLogAnalyzer {
 
 		String[] docPriorFileNames = MIRPath.DocPriorFileNames;
 
-		String[] relevanceDataFileNames = MIRPath.RelevanceDataFileNames;
+		String[] relevanceDataFileNames = MIRPath.RelevanceFileNames;
 
 		String[] docMapFileNames = MIRPath.DocIdMapFileNames;
 

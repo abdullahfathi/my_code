@@ -1,6 +1,7 @@
 package ohs.medical.ir;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,9 +34,58 @@ public class RelevanceCollector {
 		System.out.println("process begins.");
 
 		RelevanceCollector c = new RelevanceCollector();
-		c.collect2();
+		c.collect3();
 
 		System.out.println("process ends.");
+	}
+
+	public void collect3() throws Exception {
+		String[] queryFileNames = MIRPath.QueryFileNames;
+
+		String[] indexDirNames = MIRPath.IndexDirNames;
+
+		String[] relDataFileNames = MIRPath.RelevanceFileNames;
+
+		String[] docMapFileNames = MIRPath.DocIdMapFileNames;
+
+		String[] queryDocFileNames = MIRPath.QueryDocFileNames;
+
+		IndexSearcher[] indexSearchers = DocumentSearcher.getIndexSearchers(indexDirNames);
+
+		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
+
+		for (int i = 0; i < queryFileNames.length; i++) {
+			List<BaseQuery> bqs = new ArrayList<BaseQuery>();
+			CounterMap<String, String> queryRels = new CounterMap<String, String>();
+
+			File queryFile = new File(queryFileNames[i]);
+			File relvFile = new File(relDataFileNames[i]);
+
+			if (i == 0) {
+				bqs = QueryReader.readTrecCdsQueries(queryFileNames[i]);
+				queryRels = RelevanceReader.readTrecCdsRelevances(relDataFileNames[i]);
+			} else if (i == 1) {
+				bqs = QueryReader.readClefEHealthQueries(queryFileNames[i]);
+				queryRels = RelevanceReader.readClefEHealthRelevances(relDataFileNames[i]);
+			} else if (i == 2) {
+				bqs = QueryReader.readOhsumedQueries(queryFileNames[i]);
+				queryRels = RelevanceReader.readOhsumedRelevances(relDataFileNames[i]);
+			} else if (i == 3) {
+				bqs = QueryReader.readTrecGenomicsQueries(queryFileNames[i]);
+				queryRels = RelevanceReader.readTrecGenomicsRelevances(relDataFileNames[i]);
+			}
+
+			Counter<String> qWordCounts = new Counter<String>();
+
+			for (int j = 0; j < bqs.size(); j++) {
+				BaseQuery bq = bqs.get(j);
+				qWordCounts.incrementAll(AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer));
+			}
+
+			System.out.println(qWordCounts);
+
+		}
+
 	}
 
 	public void collect2() throws Exception {
@@ -43,7 +93,7 @@ public class RelevanceCollector {
 
 		String[] indexDirNames = MIRPath.IndexDirNames;
 
-		String[] relDataFileNames = MIRPath.RelevanceDataFileNames;
+		String[] relDataFileNames = MIRPath.RelevanceFileNames;
 
 		String[] docMapFileNames = MIRPath.DocIdMapFileNames;
 
@@ -149,7 +199,10 @@ public class RelevanceCollector {
 						if (q.location(w) > -1) {
 							found = true;
 						}
-						sb.append(String.format("%d\t%s\t%s\n", l + 1, wordIndexer.getObject(w), found ? 1 + "" : ""));
+
+						if (found) {
+							sb.append(String.format("%d\t%s\t%s\n", l + 1, wordIndexer.getObject(w), found ? 1 + "" : ""));
+						}
 					}
 
 					String content = doc.get(IndexFieldName.CONTENT);
@@ -174,7 +227,7 @@ public class RelevanceCollector {
 
 		String[] indexDirNames = MIRPath.IndexDirNames;
 
-		String[] relDataFileNames = MIRPath.RelevanceDataFileNames;
+		String[] relDataFileNames = MIRPath.RelevanceFileNames;
 
 		String[] docMapFileNames = MIRPath.DocIdMapFileNames;
 

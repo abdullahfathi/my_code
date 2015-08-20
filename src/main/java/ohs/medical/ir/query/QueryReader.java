@@ -217,6 +217,20 @@ public class QueryReader {
 		return ret;
 	}
 
+	public static List<BaseQuery> readQueries(String fileName) throws Exception {
+		List<BaseQuery> ret = new ArrayList<BaseQuery>();
+		if (fileName.contains("trec_cds")) {
+			ret = readTrecCdsQueries(fileName);
+		} else if (fileName.contains("clef_ehealth")) {
+			ret = readClefEHealthQueries(fileName);
+		} else if (fileName.contains("ohsumed")) {
+			ret = readOhsumedQueries(fileName);
+		} else if (fileName.contains("trec_genomics")) {
+			ret = readTrecGenomicsQueries(fileName);
+		}
+		return ret;
+	}
+
 	public static List<BaseQuery> readTrecCdsQueries(String fileName) throws Exception {
 		List<BaseQuery> ret = new ArrayList<BaseQuery>();
 

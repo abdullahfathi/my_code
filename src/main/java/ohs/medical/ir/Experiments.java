@@ -1,8 +1,6 @@
-package ohs.medical.ir.trec.cds_2015;
+package ohs.medical.ir;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import ohs.io.IOUtils;
@@ -20,24 +18,17 @@ import ohs.math.VectorUtils;
 import ohs.matrix.DenseVector;
 import ohs.matrix.SparseVector;
 import ohs.matrix.Vector;
-import ohs.medical.ir.DocumentIdMapper;
-import ohs.medical.ir.DocumentSearcher;
-import ohs.medical.ir.HyperParameter;
-import ohs.medical.ir.KLDivergenceScorer;
-import ohs.medical.ir.MIRPath;
-import ohs.medical.ir.RelevanceModelBuilder;
-import ohs.medical.ir.ResultWriter;
-import ohs.medical.ir.WordCountBox;
 import ohs.medical.ir.query.BaseQuery;
 import ohs.medical.ir.query.QueryReader;
 import ohs.medical.ir.query.RelevanceReader;
+import ohs.medical.ir.trec.cds_2015.ProximityRelevanceModelBuilder;
+import ohs.medical.ir.trec.cds_2015.TrecCbeemDocumentSearcher;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.types.common.StrBidMap;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 
@@ -46,21 +37,103 @@ import org.apache.lucene.search.IndexSearcher;
  * @author Heung-Seon Oh
  * 
  */
-public class TrecSearcher {
+public class Experiments {
 
-	public static void analyze() {
-		TextFileReader reader = new TextFileReader(MIRPath.TREC_CDS_OUTPUT_RESULT_2015_PERFORMANCE_FILE);
-		TextFileWriter writer = new TextFileWriter(MIRPath.TREC_CDS_OUTPUT_RESULT_2015_PERFORMANCE_COMPACT_FILE);
+	public static void main(String[] args) throws Exception {
+		System.out.println("process begins.");
+		Experiments exp = new Experiments();
+		// exp.searchByQLD();
+		// exp.searchByKLD();
+		// exp.searchByKLDFB();
+		exp.searchByCBEEM();
+		// exp.searchByKLDPLM();
+		// exp.searchByKLDPassage();
+		// exp.searchByKLDProximityFB();
+		// exp.searchByKLDMultiFieldFB();
+		// exp.searchByKLDMultiFieldsProximityFB();
+		// exp.searchByCBEEM();
+		exp.evalute();
+		exp.summarize();
+		// format();
 
-		writer.write("ModelName\tFbIters\tFbMix\tTitleMix\tAbsMix\tContentMix\tFbDocs\tFbWords\tP\tMap\tNDCG\n");
+		System.out.println("process ends.");
+	}
+
+	private Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
+
+	private String[] QueryFileNames = MIRPath.QueryFileNames;
+
+	private String[] IndexDirNames = MIRPath.IndexDirNames;
+
+	private String[] RelevanceFileNames = MIRPath.RelevanceFileNames;
+
+	private String[] OutputDirNames = MIRPath.OutputDirNames;
+
+	private String[] DocIdMapFileNames = MIRPath.DocIdMapFileNames;
+
+	public Experiments() throws Exception {
+	}
+
+	public void evalute() throws Exception {
+
+		StringBuffer sb = new StringBuffer();
+
+		for (int i = 0; i < OutputDirNames.length; i++) {
+			String outoputDirName = OutputDirNames[i];
+			String docIdMapFileName = DocIdMapFileNames[i];
+			String relFileName = RelevanceFileNames[i];
+			StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(docIdMapFileName);
+			CounterMap<String, String> relData = RelevanceReader.readRelevances(relFileName);
+
+			List<File> files = IOUtils.getFilesUnder(outoputDirName + "/temp-res");
+
+			for (int j = 0; j < files.size(); j++) {
+				File file = files.get(j);
+
+				if (file.getName().contains("_log")) {
+					continue;
+				}
+
+				CounterMap<String, String> resultData = PerformanceEvaluator.readSearchResults(file.getPath());
+				resultData = DocumentIdMapper.mapIndexIdsToDocIds(resultData, docIdMap);
+
+				PerformanceEvaluator eval = new PerformanceEvaluator();
+				eval.setTopNs(new int[] { 10 });
+				List<Performance> perfs = eval.evalute(resultData, relData);
+
+				System.out.println(file.getPath());
+				sb.append(file.getPath());
+				for (int k = 0; k < perfs.size(); k++) {
+					sb.append("\n" + perfs.get(k).toString());
+				}
+				sb.append("\n\n");
+			}
+		}
+
+		IOUtils.write(MIRPath.PERFORMANCE_FILE, sb.toString().trim());
+
+	}
+
+	public void summarize() {
+		TextFileReader reader = new TextFileReader(MIRPath.PERFORMANCE_FILE);
+		TextFileWriter writer = new TextFileWriter(MIRPath.PERFORMANCE_SUMMARY_FILE);
+
+		writer.write("FileName\tCollection\tModelName\tRelevant\tRetrieved\tRelInRet\tRelevantAt\tP\tMap\tNDCG\n");
 
 		while (reader.hasNext()) {
 			List<String> lines = reader.getNextLines();
 
 			File file = new File(lines.get(0));
+
+			File parent = file.getParentFile().getParentFile().getParentFile();
+			File parent2 = parent.getParentFile();
+
+			String collName = parent.getPath();
+			int idx = collName.indexOf(parent2.getPath());
+			collName = collName.substring(idx + parent2.getPath().length() + 1);
+
 			String fileName = file.getName();
 			fileName = IOUtils.removeExtension(fileName);
-			fileName = fileName.replace("kld_fb", "kld-fb");
 
 			int num_fb_iters = 0;
 			double mixture_for_fb_model = 0;
@@ -70,7 +143,7 @@ public class TrecSearcher {
 
 			String modelName = fileName;
 
-			if (fileName.equals("qld") || fileName.equals("kld") || fileName.equals("cbeem")) {
+			if (fileName.equals("qld") || fileName.equals("kld") || fileName.equals("cbeem") || fileName.equals("kld-fb")) {
 
 			} else {
 				String[] toks = fileName.split("_");
@@ -84,161 +157,23 @@ public class TrecSearcher {
 				num_fb_words = Integer.parseInt(toks[7]);
 			}
 
-			int num_relevant_all = Integer.parseInt(lines.get(3).split("\t")[1]);
-			int num_retrieved_all = Integer.parseInt(lines.get(4).split("\t")[1]);
-			int num_relevant_all_in_retrieved_all = Integer.parseInt(lines.get(5).split("\t")[1]);
+			int num_relevant = Integer.parseInt(lines.get(3).split("\t")[1]);
+			int num_retrieved = Integer.parseInt(lines.get(4).split("\t")[1]);
+			int num_relevant_in_retrieved = Integer.parseInt(lines.get(5).split("\t")[1]);
 			int num_relevant_at = Integer.parseInt(lines.get(6).split("\t")[1]);
 			double p = Double.parseDouble(lines.get(7).split("\t")[1]);
 			double map = Double.parseDouble(lines.get(8).split("\t")[1]);
 			double ndcg = Double.parseDouble(lines.get(9).split("\t")[1]);
 
-			String output = String.format("%s\t%d\t%f\t%f\t%f\t%f\t%d\t%d\t%f\t%f\t%f",
+			String output = String.format("%s\t%s\t%s\t%d\t%d\t%d\t%d\t%f\t%f\t%f",
 
-			modelName, num_fb_iters, mixture_for_fb_model, mixtures_for_field_rms[0], mixtures_for_field_rms[1], mixtures_for_field_rms[2],
-
-			num_fb_docs, num_fb_words,
-
-			p, map, ndcg);
+			file.getPath(), collName, modelName, num_relevant, num_retrieved, num_relevant_in_retrieved, num_relevant_at, p, map, ndcg);
 
 			writer.write(output + "\n");
 
 		}
 		reader.close();
 		writer.close();
-	}
-
-	public static void evalute() throws Exception {
-		StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(MIRPath.TREC_CDS_DOCUMENT_ID_MAP_FILE);
-		CounterMap<String, String> relevanceData = RelevanceReader.readTrecCdsRelevances(MIRPath.TREC_CDS_RELEVANCE_JUDGE_2014_FILE);
-
-		List<File> files = IOUtils.getFilesUnder(MIRPath.TREC_CDS_OUTPUT_RESULT_2015_DIR);
-
-		StringBuffer sb = new StringBuffer();
-
-		for (int i = 0; i < files.size(); i++) {
-			File file = files.get(i);
-
-			if (file.getName().contains("_log")) {
-				continue;
-			}
-
-			CounterMap<String, String> res = PerformanceEvaluator.readSearchResults(file.getPath());
-			CounterMap<String, String> resultData = DocumentIdMapper.mapIndexIdsToDocIds(res, docIdMap);
-
-			PerformanceEvaluator eval = new PerformanceEvaluator();
-			eval.setTopNs(new int[] { 10 });
-			List<Performance> perfs = eval.evalute(resultData, relevanceData);
-
-			System.out.println(file.getPath());
-			sb.append(file.getPath());
-			for (int j = 0; j < perfs.size(); j++) {
-				sb.append("\n" + perfs.get(j).toString());
-			}
-			sb.append("\n\n");
-		}
-
-		IOUtils.write(MIRPath.TREC_CDS_OUTPUT_RESULT_2015_PERFORMANCE_FILE, sb.toString().trim());
-	}
-
-	public static void format() throws Exception {
-		List<File> files = IOUtils.getFilesUnder(MIRPath.TREC_CDS_OUTPUT_RESULT_2015_DIR);
-		StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(MIRPath.TREC_CDS_DOCUMENT_ID_MAP_FILE);
-
-		for (File file : files) {
-			String fileName = file.getName();
-			fileName = IOUtils.removeExtension(fileName);
-
-			if (fileName.equals("qld") || fileName.equals("cbeem") || fileName.equals("kld_fb_1_0.5_50_30_20_15_10")) {
-				if (fileName.startsWith("kld_fb")) {
-					fileName = "kld_fb";
-				} else {
-
-				}
-			} else {
-				continue;
-			}
-
-			String runId = "";
-
-			if (fileName.equals("qld")) {
-				runId = "KISTI001B";
-			} else if (fileName.equals("cbeem")) {
-				runId = "KISTI002B";
-			} else if (fileName.equals("kld_fb")) {
-				runId = "KISTI003B";
-			}
-
-			CounterMap<String, String> cm = PerformanceEvaluator.readSearchResults(file.getPath());
-
-			cm = DocumentIdMapper.mapIndexIdsToDocIds(cm, docIdMap);
-
-			List<Integer> qIds = new ArrayList<Integer>();
-
-			for (String qId : cm.keySet()) {
-				qIds.add(Integer.parseInt(qId));
-			}
-
-			Collections.sort(qIds);
-
-			StringBuffer sb = new StringBuffer();
-
-			for (int i = 0; i < qIds.size(); i++) {
-				String qId = qIds.get(i) + "";
-
-				Counter<String> docScores = cm.getCounter(qId);
-				List<String> docIds = docScores.getSortedKeys();
-
-				for (int j = 0; j < docIds.size(); j++) {
-					String docId = docIds.get(j);
-					double score = docScores.getCount(docId);
-					int rank = j + 1;
-
-					sb.append(String.format("%s\t%s\t%s\t%d\t%s\t%s\n", qId, "Q0", docId, rank, score, runId));
-				}
-
-			}
-
-			String outputFileName = String.format("%s.txt", runId);
-			File outputFile = new File(MIRPath.TREC_CDS_OUTPUT_DIR + "/result-2015-submit", outputFileName);
-			IOUtils.write(outputFile.getPath(), sb.toString().trim());
-
-		}
-
-	}
-
-	public static void main(String[] args) throws Exception {
-		System.out.println("process begins.");
-		TrecSearcher tc = new TrecSearcher();
-		// tc.searchByQLD();
-		// tc.searchByKLD();
-		tc.searchByKLDFB();
-		// tc.searchByKLDPLM();
-		// tc.searchByKLDPassage();
-		// tc.searchByKLDProximityFB();
-		// tc.searchByKLDMultiFieldFB();
-		// tc.searchByKLDMultiFieldsProximityFB();
-		// tc.searchByCBEEM();
-		evalute();
-		// analyze();
-		// format();
-
-		System.out.println("process ends.");
-	}
-
-	private List<BaseQuery> bqs;
-
-	private IndexSearcher indexSearcher;
-
-	private IndexReader indexReader;
-
-	private Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
-
-	public TrecSearcher() throws Exception {
-		bqs = QueryReader.readTrecCdsQueries(MIRPath.TREC_CDS_QUERY_2014_FILE);
-
-		indexSearcher = DocumentSearcher.getIndexSearcher(MIRPath.TREC_CDS_INDEX_DIR);
-
-		indexReader = indexSearcher.getIndexReader();
 	}
 
 	public void run(int num_fb_iters, double mixture_for_fb_model, double[] mixtures_for_field_rms, int num_fb_docs, int num_fb_words)
@@ -340,30 +275,14 @@ public class TrecSearcher {
 		String[] indexDirNames = { MIRPath.TREC_CDS_INDEX_DIR, MIRPath.CLEF_EHEALTH_INDEX_DIR, MIRPath.OHSUMED_INDEX_DIR,
 				MIRPath.TREC_GENOMICS_INDEX_DIR };
 
-		String[] docPriorFileNames = MIRPath.DocPriorFileNames;
-
-		String[] docMapFileNames = MIRPath.DocIdMapFileNames;
-
 		IndexSearcher[] indexSearchers = DocumentSearcher.getIndexSearchers(indexDirNames);
 
 		DenseVector[] docPriorData = new DenseVector[indexSearchers.length];
 
 		for (int i = 0; i < indexDirNames.length; i++) {
-			File inputFile = new File(docPriorFileNames[i]);
-			DenseVector docPriors = null;
-			if (inputFile.exists()) {
-				docPriors = DenseVector.read(inputFile.getPath());
-				double uniform_prior = 1f / docPriors.size();
-				for (int j = 0; j < docPriors.size(); j++) {
-					if (docPriors.value(j) == 0) {
-						docPriors.set(j, uniform_prior);
-					}
-				}
-			} else {
-				docPriors = new DenseVector(indexSearchers[i].getIndexReader().maxDoc());
-				double uniform_prior = 1f / docPriors.size();
-				docPriors.setAll(uniform_prior);
-			}
+			DenseVector docPriors = new DenseVector(indexSearchers[i].getIndexReader().maxDoc());
+			double uniform_prior = 1f / docPriors.size();
+			docPriors.setAll(uniform_prior);
 			docPriorData[i] = docPriors;
 		}
 
@@ -373,99 +292,107 @@ public class TrecSearcher {
 		// hyperParameter.setNumFBDocs(10);
 		// hyperParameter.setNumFBWords(10);
 
-		String resultFileName = MIRPath.TREC_CDS_OUTPUT_RESULT_2015_DIR + String.format("cbeem.txt");
 		// String logFileName = logDirName
 		// + String.format("cbeem_%s.txt", hyperParameter.toString(true));
 
-		System.out.printf("process for [%s].\n", resultFileName);
+		for (int i = 0; i < QueryFileNames.length; i++) {
+			List<BaseQuery> bqs = QueryReader.readQueries(QueryFileNames[i]);
+			IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(IndexDirNames[i]);
 
-		TrecCbeemDocumentSearcher ds = new TrecCbeemDocumentSearcher(indexSearchers, docPriorData, hyperParameter, analyzer, false);
-		ds.search(0, bqs, null, resultFileName, null);
+			String resDirName = OutputDirNames[i];
+			String resFileName = resDirName + "temp-res/cbeem.txt";
+
+			CbeemDocumentSearcher ds = new CbeemDocumentSearcher(indexSearchers, docPriorData, hyperParameter, analyzer, false);
+			ds.search(i, bqs, null, resFileName, null);
+		}
 
 	}
 
 	public void searchByKLD() throws Exception {
 		System.out.println("search by KLD.");
 
-		String resultFileName = MIRPath.TREC_CDS_OUTPUT_RESULT_2015_DIR + "kld.txt";
+		for (int i = 0; i < QueryFileNames.length; i++) {
+			List<BaseQuery> bqs = QueryReader.readQueries(QueryFileNames[i]);
+			IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(IndexDirNames[i]);
 
-		TextFileWriter writer = new TextFileWriter(resultFileName);
+			String resDirName = OutputDirNames[i];
 
-		for (int i = 0; i < bqs.size(); i++) {
-			BaseQuery bq = bqs.get(i);
-			System.out.println(bq);
+			resDirName = resDirName + "temp-res/kld.txt";
 
-			Counter<String> qWordCounts = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
+			TextFileWriter writer = new TextFileWriter(resDirName);
 
-			BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
+			for (int j = 0; j < bqs.size(); j++) {
+				BaseQuery bq = bqs.get(j);
+				Counter<String> qWordCounts = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
 
-			SparseVector docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
-			docScores.normalizeAfterSummation();
+				BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
 
-			Indexer<String> wordIndexer = new Indexer<String>();
-			SparseVector qLM = VectorUtils.toSparseVector(qWordCounts, wordIndexer, true);
-			qLM.normalize();
+				SparseVector docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
+				docScores.normalizeAfterSummation();
 
-			WordCountBox wcb = WordCountBox.getWordCountBox(indexSearcher.getIndexReader(), docScores, wordIndexer);
+				Indexer<String> wordIndexer = new Indexer<String>();
+				SparseVector qLM = VectorUtils.toSparseVector(qWordCounts, wordIndexer, true);
+				qLM.normalize();
 
-			KLDivergenceScorer scorer = new KLDivergenceScorer();
-			docScores = scorer.score(wcb, qLM);
+				WordCountBox wcb = WordCountBox.getWordCountBox(indexSearcher.getIndexReader(), docScores, wordIndexer);
 
-			ResultWriter.write(writer, bq.getId(), docScores);
+				KLDivergenceScorer scorer = new KLDivergenceScorer();
+				docScores = scorer.score(wcb, qLM);
+
+				ResultWriter.write(writer, bq.getId(), docScores);
+			}
+
+			writer.close();
 		}
-		writer.close();
 	}
 
 	public void searchByKLDFB() throws Exception {
 		System.out.println("search by KLD FB.");
 
-		IndexSearcher wikiIndexSearcher = DocumentSearcher.getIndexSearcher(MIRPath.WIKI_INDEX_DIR);
+		double mixture_for_rm = 0.5;
 
-		String resultFileName = MIRPath.TREC_CDS_OUTPUT_RESULT_2015_DIR + "kld_fb.txt";
+		for (int i = 0; i < QueryFileNames.length; i++) {
+			List<BaseQuery> bqs = QueryReader.readQueries(QueryFileNames[i]);
+			IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(IndexDirNames[i]);
 
-		TextFileWriter writer = new TextFileWriter(resultFileName);
+			String resDirName = OutputDirNames[i];
 
-		for (int i = 0; i < bqs.size(); i++) {
-			BaseQuery bq = bqs.get(i);
+			resDirName = resDirName + "temp-res/kld-fb.txt";
 
-			Indexer<String> wordIndexer = new Indexer<String>();
-			StringBuffer qBuf = new StringBuffer(bq.getSearchText());
-			Counter<String> qWordCounts = AnalyzerUtils.getWordCounts(qBuf.toString(), analyzer);
+			TextFileWriter writer = new TextFileWriter(resDirName);
 
-			SparseVector qLM = VectorUtils.toSparseVector(qWordCounts, wordIndexer, true);
-			qLM.normalize();
+			for (int j = 0; j < bqs.size(); j++) {
+				BaseQuery bq = bqs.get(j);
+				Counter<String> qWordCounts = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
 
-			SparseVector expQLM = qLM.copy();
-			SparseVector docScores = null;
+				BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
 
-			BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(expQLM, wordIndexer));
-			docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
+				SparseVector docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
+				docScores.normalizeAfterSummation();
 
-			WordCountBox wcb3 = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, IndexFieldName.CONTENT);
+				Indexer<String> wordIndexer = new Indexer<String>();
+				SparseVector qLM = VectorUtils.toSparseVector(qWordCounts, wordIndexer, true);
+				qLM.normalize();
 
-			RelevanceModelBuilder rmb = new RelevanceModelBuilder(10, 15, 20);
-			SparseVector rm = rmb.getRelevanceModel(wcb3, docScores);
-			// SparseVector prm = rmb.getPositionalRelevanceModel(qLM, wcb3, docScores);
+				WordCountBox wcb = WordCountBox.getWordCountBox(indexSearcher.getIndexReader(), docScores, wordIndexer);
 
-			double mixture = 0.5;
+				RelevanceModelBuilder rmb = new RelevanceModelBuilder(10, 15, 20);
+				SparseVector rm = rmb.getRelevanceModel(wcb, docScores);
 
-			expQLM = VectorMath.addAfterScale(qLM, rm, 1 - mixture, mixture);
+				SparseVector expQLM = VectorMath.addAfterScale(qLM, rm, 1 - mixture_for_rm, mixture_for_rm);
 
-			lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(expQLM, wordIndexer));
-			docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
+				KLDivergenceScorer kldScorer = new KLDivergenceScorer();
+				docScores = kldScorer.score(wcb, expQLM);
 
-			WordCountBox wcb = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, IndexFieldName.CONTENT);
+				// System.out.println(bq);
+				// System.out.printf("QM1:\t%s\n", VectorUtils.toCounter(qLM, wordIndexer));
+				// System.out.printf("QM2:\t%s\n", VectorUtils.toCounter(expQLM, wordIndexer));
 
-			KLDivergenceScorer kldScorer = new KLDivergenceScorer();
-			docScores = kldScorer.score(wcb, expQLM);
+				ResultWriter.write(writer, bq.getId(), docScores);
+			}
 
-			System.out.println(bq);
-			System.out.printf("QM1:\t%s\n", VectorUtils.toCounter(qLM, wordIndexer));
-			System.out.printf("QM2:\t%s\n", VectorUtils.toCounter(expQLM, wordIndexer));
-
-			ResultWriter.write(writer, bq.getId(), docScores);
+			writer.close();
 		}
-		writer.close();
 	}
 
 	public void searchByKLDMultiFieldFB() throws Exception {
@@ -712,15 +639,25 @@ public class TrecSearcher {
 	public void searchByQLD() throws Exception {
 		System.out.println("search by QLD.");
 
-		TextFileWriter writer = new TextFileWriter(MIRPath.TREC_CDS_OUTPUT_RESULT_2015_DIR + "qld.txt");
+		for (int i = 0; i < QueryFileNames.length; i++) {
+			List<BaseQuery> bqs = QueryReader.readQueries(QueryFileNames[i]);
+			IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(IndexDirNames[i]);
 
-		for (int i = 0; i < bqs.size(); i++) {
-			BaseQuery bq = bqs.get(i);
-			BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
-			SparseVector docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
-			ResultWriter.write(writer, bq.getId(), docScores);
+			String resDirName = OutputDirNames[i];
+
+			resDirName = resDirName + "temp-res/qld.txt";
+
+			TextFileWriter writer = new TextFileWriter(resDirName);
+
+			for (int j = 0; j < bqs.size(); j++) {
+				BaseQuery bq = bqs.get(j);
+				BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
+				SparseVector docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
+				ResultWriter.write(writer, bq.getId(), docScores);
+			}
+
+			writer.close();
 		}
-		writer.close();
-	}
 
+	}
 }

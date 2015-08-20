@@ -57,7 +57,7 @@ import org.apache.lucene.util.BytesRef;
  * @author Heung-Seon Oh
  * 
  */
-public class CBEEMDocumentSearcher {
+public class JBICBEEMDocumentSearcher {
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
@@ -72,7 +72,7 @@ public class CBEEMDocumentSearcher {
 
 		String[] docPriorFileNames = MIRPath.DocPriorFileNames;
 
-		String[] relevanceDataFileNames = MIRPath.RelevanceDataFileNames;
+		String[] relevanceDataFileNames = MIRPath.RelevanceFileNames;
 
 		String[] docMapFileNames = MIRPath.DocIdMapFileNames;
 
@@ -299,7 +299,7 @@ public class CBEEMDocumentSearcher {
 
 															System.out.printf("process for [%s].\n", resultFileName);
 
-															CBEEMDocumentSearcher ds = new CBEEMDocumentSearcher(indexSearchers,
+															JBICBEEMDocumentSearcher ds = new JBICBEEMDocumentSearcher(indexSearchers,
 																	docPriorData, hyperParameter, analyzer);
 															ds.search(q, baseQueries, queryDocRelevances, resultFileName, logFileName);
 														}
@@ -356,7 +356,7 @@ public class CBEEMDocumentSearcher {
 
 	private Analyzer analyzer;
 
-	public CBEEMDocumentSearcher(IndexSearcher[] indexSearchers, DenseVector[] docPriorData, HyperParameter hyperParameter,
+	public JBICBEEMDocumentSearcher(IndexSearcher[] indexSearchers, DenseVector[] docPriorData, HyperParameter hyperParameter,
 			Analyzer analyzer) {
 		super();
 		this.indexSearchers = indexSearchers;
@@ -469,7 +469,7 @@ public class CBEEMDocumentSearcher {
 	private double[] getCollWordCountSums() {
 		double[] ret = new double[docWordCountBoxes.length];
 		for (int i = 0; i < docWordCountBoxes.length; i++) {
-			ret[i] = docWordCountBoxes[i].getCountSumInCollection();
+			ret[i] = docWordCountBoxes[i].getCollectionCountSum();
 		}
 		return ret;
 	}

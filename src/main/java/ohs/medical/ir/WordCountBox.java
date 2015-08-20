@@ -16,7 +16,6 @@ import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.types.ListMap;
-import ohs.types.common.IntCounter;
 import ohs.types.common.IntCounterMap;
 
 import org.apache.lucene.document.Document;
@@ -26,6 +25,8 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.util.BytesRef;
+
+import edu.stanford.nlp.trees.WordNetConnection;
 
 public class WordCountBox {
 
@@ -128,6 +129,7 @@ public class WordCountBox {
 		double cnt_sum_in_coll = indexReader.getSumTotalTermFreq(IndexFieldName.CONTENT);
 
 		WordCountBox ret = new WordCountBox(docWordCounts, collWordCounts, cnt_sum_in_coll, docFreqs, indexReader.maxDoc(), docWords);
+		ret.setWordIndexer(wordIndexer);
 		return ret;
 	}
 
@@ -154,6 +156,8 @@ public class WordCountBox {
 	private SparseMatrix wordToWordCounts;
 
 	private SparseVector collDocFreqs;
+
+	private Indexer<String> wordIndexer;
 
 	public WordCountBox(SparseMatrix docWordCounts, SparseVector collWordCounts, double cnt_sum_in_coll, SparseVector docFreqs,
 			double num_docs_in_coll, ListMap<Integer, Integer> docWords) {
@@ -188,12 +192,12 @@ public class WordCountBox {
 		return collDocFreqs;
 	}
 
-	public SparseVector getCollWordCounts() {
-		return collWordCounts;
+	public double getCollectionCountSum() {
+		return cnt_sum_in_coll;
 	}
 
-	public double getCountSumInCollection() {
-		return cnt_sum_in_coll;
+	public SparseVector getCollWordCounts() {
+		return collWordCounts;
 	}
 
 	public SparseMatrix getDocWordCounts() {
@@ -208,6 +212,10 @@ public class WordCountBox {
 		return num_docs_in_coll;
 	}
 
+	public Indexer<String> getWordIndexer() {
+		return wordIndexer;
+	}
+
 	public void setBgWordCounts(SparseVector collWordCounts) {
 		this.collWordCounts = collWordCounts;
 	}
@@ -218,6 +226,10 @@ public class WordCountBox {
 
 	public void setDocWordCounts(SparseMatrix docWordCounts) {
 		this.docWordCounts = docWordCounts;
+	}
+
+	public void setWordIndexer(Indexer<String> wordIndexer) {
+		this.wordIndexer = wordIndexer;
 	}
 
 	public String toString() {

@@ -79,7 +79,7 @@ public class WikiQueryExpander {
 	// writer.close();
 	// logWriter.close();
 	//
-	// TrecSearcher.evalute();
+	// Experiments.evalute();
 	//
 	// System.out.println("process ends.");
 	// }

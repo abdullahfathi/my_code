@@ -850,6 +850,26 @@ public class ArrayMath {
 			System.out.println(min_cost_for_paper);
 		}
 
+		{
+			double[] a = { 1, 2, 3, 4, 5, 6 };
+			double[] b = { 1, 2, 3, 4, 5, 6 };
+//			b = new double[] { 6, 2, 3, 4, 5, 6 };
+
+			normalize(a);
+			normalize(b);
+
+			double div_sum = 0;
+
+			for (int i = 0; i < a.length; i++) {
+				double v = a[i] * Math.log(a[i] / b[i]);
+				div_sum += v;
+			}
+
+			double approx_prob = Math.exp(-div_sum);
+
+			System.out.println(approx_prob);
+		}
+
 		System.out.println("process ends.");
 	}
 

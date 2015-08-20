@@ -10,11 +10,15 @@ public class MIRPath {
 
 	public static final String STOPWORD_INQUERY_FILE = DATA_DIR + "stopword_inquery.txt";
 
+	public static final String STOPWORD_MEDICAL_FILE = DATA_DIR + "stopword_medical.txt";
+
 	public static final String EEM_LOG_FILE = DATA_DIR + "eem_log.txt";
 
 	public static final String NEW_EEM_LOG_FILE = DATA_DIR + "new_eem_log.txt";
 
 	public static final String PERFORMANCE_FILE = DATA_DIR + "performance.txt";
+
+	public static final String PERFORMANCE_SUMMARY_FILE = DATA_DIR + "performance_summary.txt";
 
 	public static final String PERFORMANCE_DETAIL_FILE = DATA_DIR + "performance_detail.txt";
 
@@ -221,13 +225,23 @@ public class MIRPath {
 
 	public static final String TREC_GENOMICS_VOCABULARY_FILE = TREC_GENOMICS_DIR + "vocabulary.txt";
 
-	public static final String TREC_GENOMICS_QUERY_2007_FILE = TREC_GENOMICS_QUERY_DIR + "2007topics.txt";
-
-	public static final String TREC_GENOMICS_QUERY_DOC_FILE = TREC_GENOMICS_QUERY_DIR + "query_doc.txt";
+	public static final String TREC_GENOMICS_QUERY_2007_FILE = TREC_GENOMICS_QUERY_2007_DIR + "2007topics.txt";
 
 	public static final String TREC_GENOMICS_RELEVANCE_JUDGE_2007_FILE = TREC_GENOMICS_QUERY_2007_DIR + "trecgen2007.all.judgments.tsv.txt";
 
 	public static final String TREC_GENOMICS_DOCUMENT_ID_MAP_FILE = TREC_GENOMICS_DIR + "document_id_map.txt";
+
+	public static final String TREC_GENOMICS_OUTPUT_DIR = TREC_GENOMICS_DIR + "output/";
+
+	public static final String TREC_GENOMICS_OUTPUT_RESULT_DIR = TREC_GENOMICS_OUTPUT_DIR + "result/";
+
+	public static final String TREC_GENOMICS_OUTPUT_LOG_DIR = TREC_GENOMICS_OUTPUT_DIR + "log/";
+
+	public static final String TREC_GENOMICS_DOCUMENT_PRIOR_FILE = TREC_GENOMICS_DIR + "document_prior.ser";
+
+	public static final String TREC_GENOMICS_ABBREVIATION_FILE = TREC_GENOMICS_DIR + "abbrs.txt";
+
+	public static final String TREC_GENOMICS_QUERY_DOC_FILE = TREC_GENOMICS_DIR + "query_doc.txt";
 
 	/*
 	 * OHSUMED
@@ -279,7 +293,8 @@ public class MIRPath {
 	 * Common File Name Sets
 	 */
 
-	public static String[] QueryFileNames = { TREC_CDS_QUERY_2014_FILE, CLEF_EHEALTH_QUERY_2014_FILE, OHSUMED_QUERY_FILE };
+	public static String[] QueryFileNames = { TREC_CDS_QUERY_2014_FILE, CLEF_EHEALTH_QUERY_2014_FILE, OHSUMED_QUERY_FILE,
+			TREC_GENOMICS_QUERY_2007_FILE };
 
 	// public static String[] IndexDirNames = { MIRPath.TREC_CDS_INDEX_DIR,
 	// MIRPath.CLEF_EHEALTH_INDEX_DIR, MIRPath.OHSUMED_INDEX_DIR};
@@ -287,14 +302,18 @@ public class MIRPath {
 	public static final String[] IndexDirNames = { TREC_CDS_INDEX_DIR, CLEF_EHEALTH_INDEX_DIR, OHSUMED_INDEX_DIR, TREC_GENOMICS_INDEX_DIR,
 			WIKI_INDEX_DIR };
 
-	public static final String[] ResultDirNames = { TREC_CDS_OUTPUT_RESULT_DIR, CLEF_EHEALTH_OUTPUT_RESULT_DIR, OHSUMED_OUTPUT_RESULT_DIR };
+	public static final String[] ResultDirNames = { TREC_CDS_OUTPUT_RESULT_DIR, CLEF_EHEALTH_OUTPUT_RESULT_DIR, OHSUMED_OUTPUT_RESULT_DIR,
+			TREC_GENOMICS_OUTPUT_RESULT_DIR };
+
+	public static final String[] OutputDirNames = { TREC_CDS_OUTPUT_DIR, CLEF_EHEALTH_OUTPUT_DIR, OHSUMED_OUTPUT_DIR,
+			TREC_GENOMICS_OUTPUT_DIR };
 
 	public static final String[] LogDirNames = { TREC_CDS_OUTPUT_LOG_DIR, CLEF_EHEALTH_OUTPUT_LOG_DIR, OHSUMED_OUTPUT_LOG_DIR };
 
 	public static final String[] DocPriorFileNames = { TREC_CDS_DOCUMENT_PRIOR_FILE, CLEF_EHEALTH_DOCUMENT_PRIOR_FILE,
 			OHSUMED_DOCUMENT_PRIOR_FILE, WIKI_DOCUMENT_PRIOR_FILE };
 
-	public static final String[] RelevanceDataFileNames = { TREC_CDS_RELEVANCE_JUDGE_2014_FILE, CLEF_EHEALTH_RELEVANCE_JUDGE_2014_FILE,
+	public static final String[] RelevanceFileNames = { TREC_CDS_RELEVANCE_JUDGE_2014_FILE, CLEF_EHEALTH_RELEVANCE_JUDGE_2014_FILE,
 			OHSUMED_RELEVANCE_JUDGE_FILE, TREC_GENOMICS_RELEVANCE_JUDGE_2007_FILE };
 
 	public static final String[] DocIdMapFileNames = { TREC_CDS_DOCUMENT_ID_MAP_FILE, CLEF_EHEALTH_DOCUMENT_ID_MAP_FIE,
@@ -307,7 +326,7 @@ public class MIRPath {
 	public static final String[] VocFileNames = { TREC_CDS_VOCABULARY_FILE, CLEF_EHEALTH_VOCABULARY_FILE, OHSUMED_VOCABULARY_FILE,
 			TREC_GENOMICS_VOCABULARY_FILE, WIKI_VOCABULARY_FILE };
 
-	public static final String[] QueryDocFileNames = { MIRPath.TREC_CDS_QUERY_DOC_FILE, MIRPath.CLEF_EHEALTH_QUERY_DOC_FILE,
-			MIRPath.OHSUMED_QUERY_DOC_FILE, MIRPath.TREC_GENOMICS_QUERY_DOC_FILE };
+	public static final String[] QueryDocFileNames = { TREC_CDS_QUERY_DOC_FILE, CLEF_EHEALTH_QUERY_DOC_FILE, OHSUMED_QUERY_DOC_FILE,
+			TREC_GENOMICS_QUERY_DOC_FILE };
 
 }

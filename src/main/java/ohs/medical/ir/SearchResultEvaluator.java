@@ -154,7 +154,7 @@ public class SearchResultEvaluator {
 
 	public void evaluate() throws Exception {
 		String[] resultDirNames = MIRPath.ResultDirNames;
-		String[] relevanceDataFileNames = MIRPath.RelevanceDataFileNames;
+		String[] relevanceDataFileNames = MIRPath.RelevanceFileNames;
 		String[] docMapFileNames = MIRPath.DocIdMapFileNames;
 
 		String[] collNames = { "TREC CDS", "CLEF eHealth", "OHSUMED" };

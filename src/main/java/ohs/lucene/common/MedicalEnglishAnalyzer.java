@@ -58,6 +58,8 @@ public final class MedicalEnglishAnalyzer extends StopwordAnalyzerBase {
 
 	public static MedicalEnglishAnalyzer getAnalyzer(String stopwordFileName) throws Exception {
 		Set<String> stopwords = IOUtils.readSet(stopwordFileName);
+
+
 		System.out.printf("read [%d] stopwords from [%s].\n", stopwords.size(), stopwordFileName);
 		return new MedicalEnglishAnalyzer(new CharArraySet(stopwords, true));
 	}

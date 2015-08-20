@@ -90,11 +90,11 @@ public class Performance {
 
 		Set<String> queryIds = new TreeSet<String>(metric_query_value.getCounter(MetricType.RETRIEVED).keySet());
 
-		ret.append(String.format("[Average Performance for Top-%d]\n", top_n));
+		ret.append(String.format("[Performance for Top-%d]\n", top_n));
 		ret.append(String.format("Queries:\t%d\n", queryIds.size()));
-		ret.append(String.format("Relevant All:\t%d\n", total_relevant));
-		ret.append(String.format("Retrieved All:\t%d\n", total_retrieved));
-		ret.append(String.format("Relevant All in Retrieved:\t%d\n", total_relevant_in_ret));
+		ret.append(String.format("Relevant:\t%d\n", total_relevant));
+		ret.append(String.format("Retrieved:\t%d\n", total_retrieved));
+		ret.append(String.format("Relevant in Retrieved:\t%d\n", total_relevant_in_ret));
 		ret.append(String.format("Relevant@%d:\t%d\n", top_n, total_relevant_at_n));
 		ret.append(String.format("P@%d:\t%s\n", top_n, nf.format(precision)));
 		ret.append(String.format("MAP@%d:\t%s\n", top_n, nf.format(map)));
