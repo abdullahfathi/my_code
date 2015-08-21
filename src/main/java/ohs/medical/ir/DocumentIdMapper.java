@@ -1,24 +1,19 @@
 package ohs.medical.ir;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import ohs.io.TextFileReader;
-import ohs.math.VectorUtils;
 import ohs.matrix.SparseVector;
 import ohs.medical.ir.query.BaseQuery;
-import ohs.types.BidMap;
 import ohs.types.Counter;
-import ohs.types.CounterMap;
 import ohs.types.common.IntCounter;
 import ohs.types.common.StrBidMap;
 import ohs.types.common.StrCounterMap;
 
 public class DocumentIdMapper {
 
-	public static List<SparseVector> mapDocIdsToIndexIds(List<BaseQuery> baseQueries, CounterMap<String, String> relevanceData,
-			StrBidMap docIdMap) {
+	public static List<SparseVector> mapDocIdsToIndexIds(List<BaseQuery> baseQueries, StrCounterMap relevanceData, StrBidMap docIdMap) {
 		List<SparseVector> ret = new ArrayList<SparseVector>();
 		for (BaseQuery bq : baseQueries) {
 			String queryId = bq.getId();
@@ -42,8 +37,8 @@ public class DocumentIdMapper {
 		return ret;
 	}
 
-	public static CounterMap<String, String> mapIndexIdsToDocIds(CounterMap<String, String> resultData, StrBidMap docIdMap) {
-		CounterMap<String, String> ret = new CounterMap<String, String>();
+	public static StrCounterMap mapIndexIdsToDocIds(StrCounterMap resultData, StrBidMap docIdMap) {
+		StrCounterMap ret = new StrCounterMap();
 		for (String queryId : resultData.keySet()) {
 			Counter<String> indexScores = resultData.getCounter(queryId);
 			for (String indexId : indexScores.keySet()) {

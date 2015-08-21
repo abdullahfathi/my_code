@@ -46,7 +46,7 @@ public class EHPath {
 
 	public static final String QUERY_2013_TEST_FILE = QUERY_2013_DIR + "queries.clef2013ehealth.1-50.test.xml";
 
-	public static final String QUERY_2013_TEST_RELEVANCE_FILE = QUERY_2013_DIR + "qrels.clef2013ehealth.1-50-test.graded.final.txt";
+	public static final String QUERY_2013_TEST_RELEVANCE_FILE = QUERY_2013_DIR + "qrels.clef2013ehealth.1-50-SmithWatermanScorer.graded.final.txt";
 
 	public static final String OUTPUT_DIR = TASK_THREE_DIR + "output/";
 

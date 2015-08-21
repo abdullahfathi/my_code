@@ -1,6 +1,7 @@
 package ohs.medical.ir;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import ohs.io.IOUtils;
@@ -18,17 +19,20 @@ import ohs.math.VectorUtils;
 import ohs.matrix.DenseVector;
 import ohs.matrix.SparseVector;
 import ohs.matrix.Vector;
+import ohs.medical.ir.SmithWatermanScorer.ScoreMatrix;
 import ohs.medical.ir.query.BaseQuery;
 import ohs.medical.ir.query.QueryReader;
 import ohs.medical.ir.query.RelevanceReader;
 import ohs.medical.ir.trec.cds_2015.ProximityRelevanceModelBuilder;
-import ohs.medical.ir.trec.cds_2015.TrecCbeemDocumentSearcher;
 import ohs.types.Counter;
-import ohs.types.CounterMap;
 import ohs.types.Indexer;
+import ohs.types.common.IntPair;
 import ohs.types.common.StrBidMap;
+import ohs.types.common.StrCounterMap;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 
@@ -45,14 +49,16 @@ public class Experiments {
 		// exp.searchByQLD();
 		// exp.searchByKLD();
 		// exp.searchByKLDFB();
-		exp.searchByCBEEM();
+		// exp.searchByCBEEM();
+		// exp.searchBySW();
+		exp.searchByKLDSWPassage();
 		// exp.searchByKLDPLM();
 		// exp.searchByKLDPassage();
 		// exp.searchByKLDProximityFB();
 		// exp.searchByKLDMultiFieldFB();
 		// exp.searchByKLDMultiFieldsProximityFB();
 		// exp.searchByCBEEM();
-		exp.evalute();
+		exp.evaluate();
 		exp.summarize();
 		// format();
 
@@ -74,7 +80,7 @@ public class Experiments {
 	public Experiments() throws Exception {
 	}
 
-	public void evalute() throws Exception {
+	public void evaluate() throws Exception {
 
 		StringBuffer sb = new StringBuffer();
 
@@ -83,7 +89,7 @@ public class Experiments {
 			String docIdMapFileName = DocIdMapFileNames[i];
 			String relFileName = RelevanceFileNames[i];
 			StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(docIdMapFileName);
-			CounterMap<String, String> relData = RelevanceReader.readRelevances(relFileName);
+			StrCounterMap relData = RelevanceReader.readRelevances(relFileName);
 
 			List<File> files = IOUtils.getFilesUnder(outoputDirName + "/temp-res");
 
@@ -94,7 +100,7 @@ public class Experiments {
 					continue;
 				}
 
-				CounterMap<String, String> resultData = PerformanceEvaluator.readSearchResults(file.getPath());
+				StrCounterMap resultData = PerformanceEvaluator.readSearchResults(file.getPath());
 				resultData = DocumentIdMapper.mapIndexIdsToDocIds(resultData, docIdMap);
 
 				PerformanceEvaluator eval = new PerformanceEvaluator();
@@ -143,19 +149,19 @@ public class Experiments {
 
 			String modelName = fileName;
 
-			if (fileName.equals("qld") || fileName.equals("kld") || fileName.equals("cbeem") || fileName.equals("kld-fb")) {
-
-			} else {
-				String[] toks = fileName.split("_");
-				modelName = toks[0];
-				num_fb_iters = Integer.parseInt(toks[1]);
-				mixture_for_fb_model = Double.parseDouble(toks[2]);
-				mixtures_for_field_rms[0] = Double.parseDouble(toks[3]);
-				mixtures_for_field_rms[1] = Double.parseDouble(toks[4]);
-				mixtures_for_field_rms[2] = Double.parseDouble(toks[5]);
-				num_fb_docs = Integer.parseInt(toks[6]);
-				num_fb_words = Integer.parseInt(toks[7]);
-			}
+			// if (fileName.equals("qld") || fileName.equals("kld") || fileName.equals("cbeem") || fileName.equals("kld-fb")) {
+			//
+			// } else {
+			// String[] toks = fileName.split("_");
+			// modelName = toks[0];
+			// num_fb_iters = Integer.parseInt(toks[1]);
+			// mixture_for_fb_model = Double.parseDouble(toks[2]);
+			// mixtures_for_field_rms[0] = Double.parseDouble(toks[3]);
+			// mixtures_for_field_rms[1] = Double.parseDouble(toks[4]);
+			// mixtures_for_field_rms[2] = Double.parseDouble(toks[5]);
+			// num_fb_docs = Integer.parseInt(toks[6]);
+			// num_fb_words = Integer.parseInt(toks[7]);
+			// }
 
 			int num_relevant = Integer.parseInt(lines.get(3).split("\t")[1]);
 			int num_retrieved = Integer.parseInt(lines.get(4).split("\t")[1]);
@@ -270,8 +276,6 @@ public class Experiments {
 	public void searchByCBEEM() throws Exception {
 		System.out.println("search by CBEEM.");
 
-		// String[] indexDirNames = { MIRPath.TREC_CDS_INDEX_DIR, MIRPath.CLEF_EHEALTH_INDEX_DIR, MIRPath.OHSUMED_INDEX_DIR };
-
 		String[] indexDirNames = { MIRPath.TREC_CDS_INDEX_DIR, MIRPath.CLEF_EHEALTH_INDEX_DIR, MIRPath.OHSUMED_INDEX_DIR,
 				MIRPath.TREC_GENOMICS_INDEX_DIR };
 
@@ -279,7 +283,7 @@ public class Experiments {
 
 		DenseVector[] docPriorData = new DenseVector[indexSearchers.length];
 
-		for (int i = 0; i < indexDirNames.length; i++) {
+		for (int i = 0; i < indexSearchers.length; i++) {
 			DenseVector docPriors = new DenseVector(indexSearchers[i].getIndexReader().maxDoc());
 			double uniform_prior = 1f / docPriors.size();
 			docPriors.setAll(uniform_prior);
@@ -289,23 +293,235 @@ public class Experiments {
 		HyperParameter hyperParameter = new HyperParameter();
 		hyperParameter.setTopK(1000);
 		hyperParameter.setMixtureForAllCollections(0.5);
-		// hyperParameter.setNumFBDocs(10);
-		// hyperParameter.setNumFBWords(10);
+		hyperParameter.setNumFBDocs(10);
+		hyperParameter.setNumFBWords(15);
 
 		// String logFileName = logDirName
 		// + String.format("cbeem_%s.txt", hyperParameter.toString(true));
 
 		for (int i = 0; i < QueryFileNames.length; i++) {
 			List<BaseQuery> bqs = QueryReader.readQueries(QueryFileNames[i]);
+
+			String outputDirName = OutputDirNames[i];
+			String resFileName = outputDirName + "temp-res/cbeem.txt";
+
+			CbeemDocumentSearcher cbeemSearcher = new CbeemDocumentSearcher(indexSearchers, docPriorData, hyperParameter, analyzer, false);
+			cbeemSearcher.search(i, bqs, null, resFileName, null);
+		}
+	}
+
+	public void searchByKLDSWPassage() throws Exception {
+		System.out.println("search by Smith Waterman.");
+
+		SmithWatermanScorer swScorer = new SmithWatermanScorer();
+		SmithWatermanAligner swAligner = new SmithWatermanAligner();
+
+		PassageGenerator psgGenerator = new PassageGenerator();
+
+		for (int i = 0; i < QueryFileNames.length; i++) {
+			List<BaseQuery> bqs = QueryReader.readQueries(QueryFileNames[i]);
 			IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(IndexDirNames[i]);
+			IndexReader indexReader = indexSearcher.getIndexReader();
 
 			String resDirName = OutputDirNames[i];
-			String resFileName = resDirName + "temp-res/cbeem.txt";
 
-			CbeemDocumentSearcher ds = new CbeemDocumentSearcher(indexSearchers, docPriorData, hyperParameter, analyzer, false);
-			ds.search(i, bqs, null, resFileName, null);
+			resDirName = resDirName + "temp-res/kld-sw-psg.txt";
+
+			TextFileWriter writer = new TextFileWriter(resDirName);
+
+			for (int j = 0; j < bqs.size(); j++) {
+				BaseQuery bq = bqs.get(j);
+				List<String> qWords = AnalyzerUtils.getWords(bq.getSearchText(), analyzer);
+				Counter<String> qWordCounts = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
+
+				BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
+
+				SparseVector docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
+				docScores.normalize();
+
+				Indexer<String> wordIndexer = new Indexer<String>();
+				SparseVector qLM = VectorUtils.toSparseVector(qWordCounts, wordIndexer, true);
+				qLM.normalize();
+
+				List<Integer> qws = AnalyzerUtils.getWordIndexes(qWords, wordIndexer);
+
+				WordCountBox wcb = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer);
+
+				KLDivergenceScorer kldScorer = new KLDivergenceScorer();
+				docScores = kldScorer.scoreBySWPassages(wcb, qLM, qws);
+
+				ResultWriter.write(writer, bq.getId(), docScores);
+			}
+
+			writer.close();
 		}
+	}
 
+	public void searchBySW() throws Exception {
+		System.out.println("search by Smith Waterman.");
+
+		SmithWatermanScorer swScorer = new SmithWatermanScorer();
+		SmithWatermanAligner swAligner = new SmithWatermanAligner();
+
+		TextFileWriter logWriter = new TextFileWriter(MIRPath.DATA_DIR + "sw_log.txt");
+
+		for (int i = 0; i < QueryFileNames.length; i++) {
+			List<BaseQuery> bqs = QueryReader.readQueries(QueryFileNames[i]);
+			IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(IndexDirNames[i]);
+			IndexReader indexReader = indexSearcher.getIndexReader();
+
+			String resDirName = OutputDirNames[i];
+
+			resDirName = resDirName + "temp-res/sw.txt";
+
+			TextFileWriter writer = new TextFileWriter(resDirName);
+
+			for (int j = 0; j < bqs.size(); j++) {
+				BaseQuery bq = bqs.get(j);
+				List<String> qWords = AnalyzerUtils.getWords(bq.getSearchText(), analyzer);
+				Counter<String> qWordCounts = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
+
+				BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
+
+				SparseVector docScores = DocumentSearcher.search(lbq, indexSearcher, 10);
+				docScores.normalize();
+
+				Indexer<String> wordIndexer = new Indexer<String>();
+				SparseVector qLM = VectorUtils.toSparseVector(qWordCounts, wordIndexer, true);
+				qLM.normalize();
+
+				List<Integer> qws = AnalyzerUtils.getWordIndexes(qWords, wordIndexer);
+
+				WordCountBox wcb = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer);
+
+				// Counter<String> wordDocFreqs = wcb.getDocFreqs(indexReader, IndexFieldName.CONTENT, wordIndexer.getObjects());
+				// Counter<Integer> wordIDFs = new Counter<Integer>();
+				//
+				// for (String word : wordDocFreqs.keySet()) {
+				// double doc_freq = wordDocFreqs.getCount(word);
+				// int w = wordIndexer.indexOf(word);
+				// double num_docs = indexReader.maxDoc();
+				//
+				// double idf = Math.log((num_docs + 1) / doc_freq);
+				// wordIDFs.setCount(w, idf);
+				// }
+				//
+				// sw.setWeights(wordIDFs);
+
+				SparseVector swScores = new SparseVector(docScores.size());
+
+				for (int k = 0; k < docScores.size(); k++) {
+					int docId = docScores.indexAtLoc(k);
+
+					List<Integer> dws = wcb.getDocWords().get(docId);
+
+					ScoreMatrix sm = swScorer.compute(dws, qws);
+
+					double best_score = sm.getBestScore();
+
+					double sw_score = swScorer.getNormalizedScore(sm);
+					swScores.incrementAtLoc(k, docId, sw_score);
+
+					// logWriter.write(sm.toString(wordIndexer) + "\n\n");
+
+					double[] sw_score_sum_for_each_word = new double[dws.size()];
+
+					{
+						double[] temp = ArrayMath.sumRows(sm.getValues());
+						for (int m = 1; m < temp.length; m++) {
+							sw_score_sum_for_each_word[m - 1] = temp[m];
+						}
+					}
+
+					StringBuffer sb = new StringBuffer();
+
+					Counter<IntPair> psgScores = new Counter<IntPair>();
+
+					for (int m = 0, p_start = 0, p_offset = 0; m < sw_score_sum_for_each_word.length; m++) {
+						int w = dws.get(m);
+						String word = wordIndexer.getObject(w);
+						double sw_score_sum_for_word = sw_score_sum_for_each_word[m];
+
+						// System.out.printf("%d\t%s\t%f\n", m, word, sw_score_sum_for_word);
+
+						if (sw_score_sum_for_word == 0) {
+							if (p_offset > 0) {
+								IntPair psgLoc = new IntPair(p_start, p_offset);
+								double psg_score = 0;
+
+								for (int n = p_start; n < p_start + p_offset; n++) {
+									int w_in_psg = dws.get(n);
+									String word_in_psg = wordIndexer.getObject(w_in_psg);
+									double sw_score_sum_for_psg_word = sw_score_sum_for_each_word[n];
+									psg_score += sw_score_sum_for_psg_word;
+									// System.out.printf("-> %d\t%s\t%f\n", n, word_in_psg, sw_score_sum_for_psg_word);
+								}
+
+								psgScores.setCount(psgLoc, psg_score);
+
+								p_offset = 0;
+							}
+							p_start = m + 1;
+							continue;
+						}
+
+						p_offset++;
+
+						sb.append(String.format("%d\t%s\t%f", m, wordIndexer.getObject(w), sw_score_sum_for_word));
+						if (m != sw_score_sum_for_each_word.length) {
+							sb.append("\n");
+						}
+					}
+
+					List<IntPair> psgLocs = psgScores.getSortedKeys();
+
+					// Document doc = indexReader.document(docId);
+					// System.out.println(doc.get(IndexFieldName.CONTENT));
+					// System.out.println();
+
+					StringBuffer psgBuff = new StringBuffer();
+
+					for (int m = 0; m < psgLocs.size(); m++) {
+						IntPair psgLoc = psgLocs.get(m);
+						int p_start = psgLoc.getFirst();
+						int p_offset = psgLoc.getSecond();
+						int p_end = p_start + p_offset;
+						double psg_score = psgScores.getCount(psgLoc);
+						psgBuff.append(String.format("%d\t%d\t", p_start, p_offset));
+						for (int n = p_start; n < p_end; n++) {
+							int w = dws.get(n);
+							String word = wordIndexer.getObject(w);
+							psgBuff.append(word);
+							if (n != p_end - 1) {
+								psgBuff.append(" ");
+							}
+						}
+
+						psgBuff.append(String.format("\t%f", psg_score));
+
+						if (m != psgLocs.size() - 1) {
+							psgBuff.append("\n");
+						}
+
+					}
+
+					logWriter.write(bq.toString() + "\n");
+					logWriter.write(qWords + "\n");
+					logWriter.write(psgBuff.toString() + "\n\n");
+
+					// logWriter.write(sb.toString() + "\n\n");
+
+				}
+
+				ArrayMath.multiply(docScores.values(), swScores.values(), docScores.values());
+
+				docScores.normalizeAfterSummation();
+
+				ResultWriter.write(writer, bq.getId(), docScores);
+			}
+
+			writer.close();
+		}
 	}
 
 	public void searchByKLD() throws Exception {
@@ -328,7 +544,7 @@ public class Experiments {
 				BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
 
 				SparseVector docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
-				docScores.normalizeAfterSummation();
+				docScores.normalize();
 
 				Indexer<String> wordIndexer = new Indexer<String>();
 				SparseVector qLM = VectorUtils.toSparseVector(qWordCounts, wordIndexer, true);
@@ -354,6 +570,7 @@ public class Experiments {
 		for (int i = 0; i < QueryFileNames.length; i++) {
 			List<BaseQuery> bqs = QueryReader.readQueries(QueryFileNames[i]);
 			IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(IndexDirNames[i]);
+			IndexReader indexReader = indexSearcher.getIndexReader();
 
 			String resDirName = OutputDirNames[i];
 
@@ -368,21 +585,30 @@ public class Experiments {
 				BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
 
 				SparseVector docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
-				docScores.normalizeAfterSummation();
+				docScores.normalize();
 
 				Indexer<String> wordIndexer = new Indexer<String>();
 				SparseVector qLM = VectorUtils.toSparseVector(qWordCounts, wordIndexer, true);
 				qLM.normalize();
 
-				WordCountBox wcb = WordCountBox.getWordCountBox(indexSearcher.getIndexReader(), docScores, wordIndexer);
+				// {
+				// WordCountBox wcb = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer);
+				//
+				// KLDivergenceScorer kldScorer = new KLDivergenceScorer();
+				// docScores = kldScorer.score(wcb, qLM);
+				// }
 
-				RelevanceModelBuilder rmb = new RelevanceModelBuilder(10, 15, 20);
-				SparseVector rm = rmb.getRelevanceModel(wcb, docScores);
+				{
+					WordCountBox wcb = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer);
 
-				SparseVector expQLM = VectorMath.addAfterScale(qLM, rm, 1 - mixture_for_rm, mixture_for_rm);
+					RelevanceModelBuilder rmb = new RelevanceModelBuilder(10, 15, 2000);
+					SparseVector rm = rmb.getRelevanceModel(wcb, docScores);
 
-				KLDivergenceScorer kldScorer = new KLDivergenceScorer();
-				docScores = kldScorer.score(wcb, expQLM);
+					SparseVector expQLM = VectorMath.addAfterScale(qLM, rm, 1 - mixture_for_rm, mixture_for_rm);
+
+					KLDivergenceScorer kldScorer = new KLDivergenceScorer();
+					docScores = kldScorer.score(wcb, expQLM);
+				}
 
 				// System.out.println(bq);
 				// System.out.printf("QM1:\t%s\n", VectorUtils.toCounter(qLM, wordIndexer));

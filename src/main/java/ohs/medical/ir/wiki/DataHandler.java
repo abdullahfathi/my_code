@@ -72,7 +72,7 @@ public class DataHandler {
 		System.out.println("process begins.");
 		makeTextDump();
 		// extractRedirects();
-		// test();
+		// SmithWatermanScorer();
 		// test2();
 		System.out.println("process ends.");
 	}

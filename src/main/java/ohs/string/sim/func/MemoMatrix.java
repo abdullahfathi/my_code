@@ -8,7 +8,7 @@ import ohs.types.common.IntPair;
 
 /**
  * 
- * A modified version of MemoMatrix in SecondString
+ * A modified version of ScoreMatrix in SecondString
  * 
  * 
  * @author ohs
@@ -27,7 +27,7 @@ public abstract class MemoMatrix {
 
 	protected double best;
 
-	MemoMatrix(String s, String t) {
+	protected MemoMatrix(String s, String t) {
 		this.s = s;
 		this.t = t;
 		values = new double[s.length() + 1][t.length() + 1];
@@ -36,7 +36,7 @@ public abstract class MemoMatrix {
 		best = Double.NEGATIVE_INFINITY;
 	}
 
-	abstract double compute(int i, int j);
+	abstract protected double compute(int i, int j);
 
 	public double get(int i, int j) {
 		if (!computed[i][j]) {
@@ -54,11 +54,11 @@ public abstract class MemoMatrix {
 		return indexAtBest;
 	}
 
-	String getSource() {
+	public String getSource() {
 		return s;
 	}
 
-	String getTarget() {
+	public String getTarget() {
 		return t;
 	}
 

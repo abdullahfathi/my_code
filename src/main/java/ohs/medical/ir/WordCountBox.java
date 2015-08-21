@@ -1,6 +1,7 @@
 package ohs.medical.ir;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,13 +27,11 @@ import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.util.BytesRef;
 
-import edu.stanford.nlp.trees.WordNetConnection;
-
 public class WordCountBox {
 
-	public static Counter<String> getDocFreqs(IndexReader indexReader, String field, Counter<String> c) throws Exception {
+	public static Counter<String> getDocFreqs(IndexReader indexReader, String field, Collection<String> c) throws Exception {
 		Counter<String> ret = new Counter<String>();
-		for (String word : c.keySet()) {
+		for (String word : c) {
 			Term term = new Term(field, word);
 			double df = indexReader.docFreq(term);
 			ret.setCount(word, df);

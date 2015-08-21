@@ -98,7 +98,7 @@ public class UncompressInputStream extends FilterInputStream {
   private static final int HDR_FREE = 0x40;
   private static final int HDR_BLOCK_MODE = 0x80;
   private static final boolean debug = false, debugTiming = false;
-  /** test */
+  /** SmithWatermanScorer */
   public static void main(String args[]) throws Exception {
     if (args.length != 1) {
       System.err.println("Usage: UncompressInputStream <file>");

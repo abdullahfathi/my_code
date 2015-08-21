@@ -65,7 +65,7 @@ public class KLDivergenceScorer {
 		return ret;
 	}
 
-	public SparseVector scoreByPassages(WordCountBox wcb, SparseVector queryModel) {
+	public SparseVector scoreByPassages(WordCountBox wcb, SparseVector qLM) {
 		SparseVector ret = new SparseVector(wcb.getDocWordCounts().rowSize());
 
 		int num_passages = 1;
@@ -99,9 +99,81 @@ public class KLDivergenceScorer {
 
 				double div_sum = 0;
 
-				for (int k = 0; k < queryModel.size(); k++) {
-					int w = queryModel.indexAtLoc(k);
-					double prob_w_in_query = queryModel.valueAtLoc(k);
+				for (int k = 0; k < qLM.size(); k++) {
+					int w = qLM.indexAtLoc(k);
+					double prob_w_in_query = qLM.valueAtLoc(k);
+					double cnt_w_in_coll = wcb.getCollWordCounts().valueAlways(w);
+					double prob_w_in_coll = cnt_w_in_coll / wcb.getCollectionCountSum();
+
+					double cnt_w_in_psg = psgWordCounts.valueAlways(w);
+					double cnt_sum_in_psg = psgWordCounts.sum();
+					double mixture_for_coll = dirichlet_prior / (cnt_sum_in_psg + dirichlet_prior);
+					double prob_w_in_doc = cnt_w_in_psg / cnt_sum_in_psg;
+
+					prob_w_in_doc = (1 - mixture_for_coll) * prob_w_in_doc + mixture_for_coll * prob_w_in_coll;
+
+					if (prob_w_in_doc > 0) {
+						div_sum += prob_w_in_query * Math.log(prob_w_in_query / prob_w_in_doc);
+					}
+				}
+
+				double approx_prob = Math.exp(-div_sum);
+				psgScores.incrementAtLoc(j, j, approx_prob);
+			}
+
+			double max_score = psgScores.max();
+			ret.incrementAtLoc(i, docId, max_score);
+		}
+
+		return ret;
+	}
+
+	public SparseVector scoreBySWPassages(WordCountBox wcb, SparseVector qLM, List<Integer> qWords) {
+		SparseVector ret = new SparseVector(wcb.getDocWordCounts().rowSize());
+
+		PassageGenerator psgGenerator = new PassageGenerator();
+
+		for (int i = 0; i < wcb.getDocWordCounts().rowSize(); i++) {
+			int docId = wcb.getDocWordCounts().indexAtRowLoc(i);
+			// SparseVector wordCounts = wcb.getDocWordCounts().rowAtLoc(i);
+
+			List<Integer> dWords = wcb.getDocWords().get(docId);
+
+			Counter<IntPair> psgLocScores = psgGenerator.generate(qWords, dWords);
+
+			List<IntPair> psgLocs = psgLocScores.getSortedKeys();
+
+			int num_psgs = Math.min(psgLocs.size(), 5);
+
+			SparseVector[] psgWordCountData = new SparseVector[num_psgs];
+
+			for (int j = 0; j < num_psgs; j++) {
+				Counter<Integer> c = new Counter<Integer>();
+
+				IntPair psgLoc = psgLocs.get(j);
+
+				int start = psgLoc.getFirst();
+				int offset = psgLoc.getSecond();
+				int end = start + offset;
+
+				for (int k = start; k < end; k++) {
+					int w = dWords.get(k);
+					c.incrementCount(w, 1);
+				}
+
+				psgWordCountData[j] = VectorUtils.toSparseVector(c);
+			}
+
+			SparseVector psgScores = new SparseVector(num_psgs);
+
+			for (int j = 0; j < num_psgs; j++) {
+				SparseVector psgWordCounts = psgWordCountData[j];
+
+				double div_sum = 0;
+
+				for (int k = 0; k < qLM.size(); k++) {
+					int w = qLM.indexAtLoc(k);
+					double prob_w_in_query = qLM.valueAtLoc(k);
 					double cnt_w_in_coll = wcb.getCollWordCounts().valueAlways(w);
 					double prob_w_in_coll = cnt_w_in_coll / wcb.getCollectionCountSum();
 

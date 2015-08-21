@@ -102,14 +102,14 @@ public class SmithWaterman {
 		// String[] strs = { "William W. ‘Don’t call me Dubya’ Cohen", "William W. Cohen" };
 		String[] strs = { "MCCOHN", "COHEN" };
 		// String[] strs = { "ABCDE", "FABCGG" };
-		strs = new String[] { "부산대학교 고분자공학과", "부산대학교 병원" };
+		// strs = new String[] { "부산대학교 고분자공학과", "부산대학교 병원" };
 		String s = strs[0];
 		String t = strs[1];
 
-		Counter<Character> chWeights = getWeights();
+		// Counter<Character> chWeights = getWeights();
 
 		SmithWaterman sw = new SmithWaterman();
-		sw.setChWeight(chWeights);
+		// sw.setChWeight(chWeights);
 
 		System.out.println(sw.getNormalizedScore(s, t));
 
@@ -123,7 +123,7 @@ public class SmithWaterman {
 		System.out.println();
 		System.out.println(ar);
 
-		// AlignResult ar = new Aligner().align(m);
+		// AlignResult ar = new SmithWatermanAligner().align(m);
 
 		// System.out.println(ar.toString());
 

@@ -32,9 +32,9 @@ import ohs.medical.ir.query.BaseQuery;
 import ohs.medical.ir.query.QueryReader;
 import ohs.medical.ir.query.RelevanceReader;
 import ohs.types.Counter;
-import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.types.common.StrBidMap;
+import ohs.types.common.StrCounterMap;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.IndexReader;
@@ -109,7 +109,7 @@ public class TrecSearcher {
 
 	public static void evalute() throws Exception {
 		StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(MIRPath.TREC_CDS_DOCUMENT_ID_MAP_FILE);
-		CounterMap<String, String> relevanceData = RelevanceReader.readTrecCdsRelevances(MIRPath.TREC_CDS_RELEVANCE_JUDGE_2014_FILE);
+		StrCounterMap relevanceData = RelevanceReader.readTrecCdsRelevances(MIRPath.TREC_CDS_RELEVANCE_JUDGE_2014_FILE);
 
 		List<File> files = IOUtils.getFilesUnder(MIRPath.TREC_CDS_OUTPUT_RESULT_2015_DIR);
 
@@ -122,8 +122,8 @@ public class TrecSearcher {
 				continue;
 			}
 
-			CounterMap<String, String> res = PerformanceEvaluator.readSearchResults(file.getPath());
-			CounterMap<String, String> resultData = DocumentIdMapper.mapIndexIdsToDocIds(res, docIdMap);
+			StrCounterMap res = PerformanceEvaluator.readSearchResults(file.getPath());
+			StrCounterMap resultData = DocumentIdMapper.mapIndexIdsToDocIds(res, docIdMap);
 
 			PerformanceEvaluator eval = new PerformanceEvaluator();
 			eval.setTopNs(new int[] { 10 });
@@ -168,7 +168,7 @@ public class TrecSearcher {
 				runId = "KISTI003B";
 			}
 
-			CounterMap<String, String> cm = PerformanceEvaluator.readSearchResults(file.getPath());
+			StrCounterMap cm = PerformanceEvaluator.readSearchResults(file.getPath());
 
 			cm = DocumentIdMapper.mapIndexIdsToDocIds(cm, docIdMap);
 

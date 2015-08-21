@@ -91,7 +91,7 @@ public class MIRPath {
 	public static final String CLEF_EHEALTH_QUERY_2013_FILE = CLEF_EHEALTH_QUERY_DIR + "2013/queries.clef2013ehealth.1-50.test.xml";
 
 	public static final String CLEF_EHEALTH_RELEVANCE_JUDGE_2013_FILE = CLEF_EHEALTH_QUERY_DIR
-			+ "2013/qrels.clef2013ehealth.1-50-test.graded.final.txt";
+			+ "2013/qrels.clef2013ehealth.1-50-SmithWatermanScorer.graded.final.txt";
 
 	public static final String CLEF_EHEALTH_QUERY_2014_FILE = CLEF_EHEALTH_QUERY_DIR + "2014/queries.clef2014ehealth.1-50.test.en.xml";
 

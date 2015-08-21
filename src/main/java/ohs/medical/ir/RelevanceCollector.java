@@ -1,7 +1,6 @@
 package ohs.medical.ir;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,17 +15,14 @@ import ohs.medical.ir.query.BaseQuery;
 import ohs.medical.ir.query.QueryReader;
 import ohs.medical.ir.query.RelevanceReader;
 import ohs.types.Counter;
-import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.types.common.StrBidMap;
-import ohs.utils.StrUtils;
+import ohs.types.common.StrCounterMap;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.IndexSearcher;
-
-import edu.stanford.nlp.trees.WordNetConnection;
 
 public class RelevanceCollector {
 
@@ -56,7 +52,7 @@ public class RelevanceCollector {
 
 		for (int i = 0; i < queryFileNames.length; i++) {
 			List<BaseQuery> bqs = new ArrayList<BaseQuery>();
-			CounterMap<String, String> queryRels = new CounterMap<String, String>();
+			StrCounterMap queryRels = new StrCounterMap();
 
 			File queryFile = new File(queryFileNames[i]);
 			File relvFile = new File(relDataFileNames[i]);
@@ -105,7 +101,7 @@ public class RelevanceCollector {
 
 		for (int i = 0; i < queryFileNames.length; i++) {
 			List<BaseQuery> bqs = new ArrayList<BaseQuery>();
-			CounterMap<String, String> queryRels = new CounterMap<String, String>();
+			StrCounterMap queryRels = new StrCounterMap();
 
 			File queryFile = new File(queryFileNames[i]);
 			File relvFile = new File(relDataFileNames[i]);
@@ -159,7 +155,7 @@ public class RelevanceCollector {
 
 				{
 					SparseVector docFreqs = VectorUtils.toSparseVector(
-							WordCountBox.getDocFreqs(indexReader, IndexFieldName.CONTENT, qs.get(j)), wordIndexer, true);
+							WordCountBox.getDocFreqs(indexReader, IndexFieldName.CONTENT, qs.get(j).keySet()), wordIndexer, true);
 					computeTFIDFs(q, docFreqs, indexReader.maxDoc());
 
 				}
@@ -239,7 +235,7 @@ public class RelevanceCollector {
 
 		for (int i = 0; i < queryFileNames.length; i++) {
 			List<BaseQuery> bqs = new ArrayList<BaseQuery>();
-			CounterMap<String, String> queryRels = new CounterMap<String, String>();
+			StrCounterMap queryRels = new StrCounterMap();
 
 			File queryFile = new File(queryFileNames[i]);
 			File relvFile = new File(relDataFileNames[i]);
@@ -293,7 +289,7 @@ public class RelevanceCollector {
 
 				{
 					SparseVector docFreqs = VectorUtils.toSparseVector(
-							WordCountBox.getDocFreqs(indexReader, IndexFieldName.CONTENT, qs.get(j)), wordIndexer, true);
+							WordCountBox.getDocFreqs(indexReader, IndexFieldName.CONTENT, qs.get(j).keySet()), wordIndexer, true);
 					computeTFIDFs(q, docFreqs, indexReader.maxDoc());
 
 				}

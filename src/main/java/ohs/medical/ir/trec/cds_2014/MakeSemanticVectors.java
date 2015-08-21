@@ -50,7 +50,7 @@ public class MakeSemanticVectors {
 
 	private Set<String> stopSectionTitleSet;
 
-	private String[] targetSectionWords = { "symptom", "treatment", "diagnosis", "test" };
+	private String[] targetSectionWords = { "symptom", "treatment", "diagnosis", "SmithWatermanScorer" };
 
 	private IndexReader indexReader;
 

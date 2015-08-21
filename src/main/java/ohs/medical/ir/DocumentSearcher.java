@@ -32,6 +32,7 @@ import org.apache.lucene.store.FSDirectory;
 public class DocumentSearcher {
 
 	public static IndexSearcher getIndexSearcher(String indexDirName) throws Exception {
+		System.out.printf("open an index at [%s]\n", indexDirName);
 		IndexSearcher ret = new IndexSearcher(DirectoryReader.open(FSDirectory.open(Paths.get(indexDirName))));
 		ret.setSimilarity(new LMDirichletSimilarity());
 		// indexSearcher.setSimilarity(new BM25Similarity());

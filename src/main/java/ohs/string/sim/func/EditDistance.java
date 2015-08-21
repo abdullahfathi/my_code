@@ -51,7 +51,7 @@ public class EditDistance {
 
 		// System.out.println(m.getBestScore());
 
-		// AlignResult ar = new Aligner().align(m);
+		// AlignResult ar = new SmithWatermanAligner().align(m);
 
 		// System.out.println(ar.toString());
 

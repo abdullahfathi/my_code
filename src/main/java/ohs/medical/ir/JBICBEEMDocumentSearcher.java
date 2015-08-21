@@ -123,7 +123,7 @@ public class JBICBEEMDocumentSearcher {
 
 		for (int i = 0; i < queryFileNames.length; i++) {
 			List<BaseQuery> baseQueries = new ArrayList<BaseQuery>();
-			CounterMap<String, String>  queryRelevances = new CounterMap<String, String> ();
+			StrCounterMap queryRelevances = new StrCounterMap();
 
 			if (i == 0) {
 				baseQueries = QueryReader.readTrecCdsQueries(queryFileNames[i]);

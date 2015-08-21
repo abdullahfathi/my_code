@@ -853,7 +853,7 @@ public class ArrayMath {
 		{
 			double[] a = { 1, 2, 3, 4, 5, 6 };
 			double[] b = { 1, 2, 3, 4, 5, 6 };
-//			b = new double[] { 6, 2, 3, 4, 5, 6 };
+			// b = new double[] { 6, 2, 3, 4, 5, 6 };
 
 			normalize(a);
 			normalize(b);
@@ -1462,7 +1462,7 @@ public class ArrayMath {
 	 *            output
 	 */
 	public static void sumRows(double[][] a, double[] b) {
-		if (!ArrayChecker.isSameColumnDimension(a, b)) {
+		if (a.length != b.length) {
 			throw new IllegalArgumentException();
 		}
 

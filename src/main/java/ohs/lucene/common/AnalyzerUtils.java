@@ -4,16 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ohs.types.Counter;
-import ohs.types.common.StrCounter;
+import ohs.types.Indexer;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.BooleanClause.Occur;
 
 public class AnalyzerUtils {
 
@@ -81,6 +80,17 @@ public class AnalyzerUtils {
 		}
 		ts.end();
 		ts.close();
+		return ret;
+	}
+
+	public static List<Integer> getWordIndexes(List<String> words, Indexer<String> wordIndexer) {
+		List<Integer> ret = new ArrayList<Integer>();
+
+		for (String word : words) {
+			int w = wordIndexer.indexOf(word);
+			ret.add(w);
+		}
+
 		return ret;
 	}
 

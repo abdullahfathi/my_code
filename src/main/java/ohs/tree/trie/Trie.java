@@ -124,7 +124,7 @@ public class Trie<K> {
 		return ret;
 	}
 
-	// public void test(){
+	// public void SmithWatermanScorer(){
 	// Trie<Integer> trie = new Trie<Integer>();
 	// for (int topicId : topicIds) {
 	// int[] path = info.path(topicId);

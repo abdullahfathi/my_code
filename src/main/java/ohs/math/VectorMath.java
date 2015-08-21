@@ -639,7 +639,6 @@ public class VectorMath {
 				}
 			}
 		}
-
 	}
 
 	public static void product(Matrix a, DenseVector b, DenseVector c) {

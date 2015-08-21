@@ -93,6 +93,7 @@ public class CbeemDocumentSearcher {
 			DenseVector docPriors = collDocPriors[i];
 
 			SparseVector rm = new SparseVector(collWordCounts.size());
+			SparseVector rm2 = new SparseVector(collWordCounts.size());
 
 			for (int j = 0; j < collWordCounts.size(); j++) {
 				int w = collWordCounts.indexAtLoc(j);
@@ -132,10 +133,29 @@ public class CbeemDocumentSearcher {
 					if (prob_w_in_fb_model > 0) {
 						rm.incrementAtLoc(j, w, prob_w_in_fb_model);
 					}
+
+//					double log1 = Math.log(doc_weight);
+//					double log2 = Math.log(prob_w_in_doc);
+//					double log3 = Math.log(doc_prior);
+//					double log_sum = log1 + log2 + log3;
+//
+//					rm2.incrementAtLoc(j, w, log_sum);
 				}
 			}
 			docScores.sortByIndex();
 			rm.normalize();
+
+//			double[] log_probs = rm2.values();
+//			double log_prob_sum = ArrayMath.sumLogProb(log_probs);
+//
+//			ArrayMath.add(log_probs, -log_prob_sum, log_probs);
+//			ArrayMath.exponentiate(log_probs, false, log_probs);
+//
+//			rm2.summation();
+//
+//			System.out.println(VectorUtils.toCounter(rm, wordIndexer));
+//			System.out.println(VectorUtils.toCounter(rm2, wordIndexer));
+//			System.out.println();
 
 			ret[i] = rm;
 		}
@@ -236,6 +256,7 @@ public class CbeemDocumentSearcher {
 				top_k = hyperParam.getTopK();
 			}
 			collDocScores[i] = DocumentSearcher.search(searchQuery, indexSearchers[i], top_k);
+			collDocScores[i].normalize();
 		}
 
 		setWordCountBoxes();

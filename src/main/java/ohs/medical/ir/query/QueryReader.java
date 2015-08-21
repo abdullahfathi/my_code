@@ -288,7 +288,7 @@ public class QueryReader {
 			TrecGenomicsQuery q = new TrecGenomicsQuery(id, desc);
 			ret.add(q);
 		}
-
+		System.out.printf("read [%d] queries from [%s]\n", ret.size(), queryFileName);
 		return ret;
 	}
 }

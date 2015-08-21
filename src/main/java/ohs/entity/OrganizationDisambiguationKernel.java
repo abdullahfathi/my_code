@@ -51,7 +51,7 @@ public class OrganizationDisambiguationKernel implements Serializable {
 	 */
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
-		// test();
+		// SmithWatermanScorer();
 		prepareTestData();
 		System.out.println("process ends.");
 	}

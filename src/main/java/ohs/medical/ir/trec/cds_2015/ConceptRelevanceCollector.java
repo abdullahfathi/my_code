@@ -62,7 +62,7 @@ public class ConceptRelevanceCollector {
 
 		for (int i = 0; i < queryFileNames.length; i++) {
 			List<BaseQuery> bqs = new ArrayList<BaseQuery>();
-			CounterMap<String, String> queryRels = new CounterMap<String, String>();
+			StrCounterMap queryRels = new StrCounterMap();
 
 			// if (!queryFileNames[i].contains("ohsumed")) {
 			// continue;

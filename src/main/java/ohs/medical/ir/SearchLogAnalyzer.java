@@ -40,9 +40,9 @@ public class SearchLogAnalyzer {
 
 		String targetRunName = "cbeem_100_10_5_25_2000.0_0.5_false_false_false_0.5_false_false.txt";
 
-		CounterMap<String, String> map1 = new CounterMap<String, String>();
-		CounterMap<String, String> map2 = new CounterMap<String, String>();
-		CounterMap<String, String> map3 = new CounterMap<String, String>();
+		StrCounterMap map1 = new StrCounterMap();
+		StrCounterMap map2 = new StrCounterMap();
+		StrCounterMap map3 = new StrCounterMap();
 
 		for (int i = 0; i < logDirNames.length; i++) {
 			String logDir = logDirNames[i];
@@ -132,9 +132,9 @@ public class SearchLogAnalyzer {
 		String[] logDirNames = MIRPath.LogDirNames;
 		String[] collNames = MIRPath.CollNames;
 
-		CounterMap<String, String> map1 = new CounterMap<String, String>();
-		CounterMap<String, String> map2 = new CounterMap<String, String>();
-		CounterMap<String, String> map3 = new CounterMap<String, String>();
+		StrCounterMap map1 = new StrCounterMap();
+		StrCounterMap map2 = new StrCounterMap();
+		StrCounterMap map3 = new StrCounterMap();
 
 		for (int i = 0; i < logDirNames.length; i++) {
 			String logDir = logDirNames[i];
@@ -301,7 +301,7 @@ public class SearchLogAnalyzer {
 
 		for (int i = 0; i < queryFileNames.length; i++) {
 			List<BaseQuery> baseQueries = new ArrayList<BaseQuery>();
-			CounterMap<String, String>  queryRelevances = new CounterMap<String, String> ();
+			StrCounterMap queryRelevances = new StrCounterMap();
 
 			File queryFile = new File(queryFileNames[i]);
 			File relvFile = new File(relevanceDataFileNames[i]);

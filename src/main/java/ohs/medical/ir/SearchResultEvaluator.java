@@ -200,7 +200,7 @@ public class SearchResultEvaluator {
 
 			StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(docMapFileName);
 
-			CounterMap<String, String> relevanceData = new CounterMap<String, String>();
+			StrCounterMap relevanceData = new StrCounterMap();
 			if (i == 0) {
 				relevanceData = RelevanceReader.readTrecCdsRelevances(relevFileName);
 			} else if (i == 1) {
@@ -237,7 +237,7 @@ public class SearchResultEvaluator {
 
 			for (int j = 0; j < resultFiles.size(); j++) {
 				File resultFile = resultFiles.get(j);
-				CounterMap<String, String> resultData = DocumentIdMapper.mapIndexIdsToDocIds(
+				StrCounterMap resultData = DocumentIdMapper.mapIndexIdsToDocIds(
 						PerformanceEvaluator.readSearchResults(resultFile.getPath()), docIdMap);
 
 				String paramStr = resultFile.getName().replace(".txt", "");
