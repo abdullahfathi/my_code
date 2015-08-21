@@ -51,7 +51,8 @@ public class Experiments {
 		// exp.searchByKLDFB();
 		// exp.searchByCBEEM();
 		// exp.searchBySW();
-		exp.searchByKLDSWPassage();
+		// exp.searchByKLDSWPassage();
+		exp.searchByKLDFbSwPassage();
 		// exp.searchByKLDPLM();
 		// exp.searchByKLDPassage();
 		// exp.searchByKLDProximityFB();
@@ -310,8 +311,62 @@ public class Experiments {
 		}
 	}
 
+	public void searchByKLDFbSwPassage() throws Exception {
+		System.out.println("search by KLD FB Smith Waterman Passages.");
+
+		SmithWatermanScorer swScorer = new SmithWatermanScorer();
+		SmithWatermanAligner swAligner = new SmithWatermanAligner();
+
+		PassageGenerator psgGenerator = new PassageGenerator();
+
+		for (int i = 0; i < QueryFileNames.length; i++) {
+			List<BaseQuery> bqs = QueryReader.readQueries(QueryFileNames[i]);
+			IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(IndexDirNames[i]);
+			IndexReader indexReader = indexSearcher.getIndexReader();
+
+			String resDirName = OutputDirNames[i];
+
+			resDirName = resDirName + "temp-res/kld-fb-sw-psg.txt";
+
+			TextFileWriter writer = new TextFileWriter(resDirName);
+
+			for (int j = 0; j < bqs.size(); j++) {
+				BaseQuery bq = bqs.get(j);
+				List<String> qWords = AnalyzerUtils.getWords(bq.getSearchText(), analyzer);
+				Counter<String> qWordCounts = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
+
+				BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
+
+				SparseVector docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
+				docScores.normalize();
+
+				Indexer<String> wordIndexer = new Indexer<String>();
+				SparseVector qLM = VectorUtils.toSparseVector(qWordCounts, wordIndexer, true);
+				qLM.normalize();
+
+				List<Integer> qws = AnalyzerUtils.getWordIndexes(qWords, wordIndexer);
+
+				WordCountBox wcb = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer);
+
+				RelevanceModelBuilder rmb = new RelevanceModelBuilder(10, 15, 2000);
+				SparseVector rm = rmb.getPassageRelevanceModel(wcb, docScores, qLM, qws);
+
+				double mixture_for_rm = 0.5;
+
+				SparseVector expQLM = VectorMath.addAfterScale(qLM, rm, 1 - mixture_for_rm, mixture_for_rm);
+
+				KLDivergenceScorer kldScorer = new KLDivergenceScorer();
+				docScores = kldScorer.score(wcb, expQLM);
+
+				ResultWriter.write(writer, bq.getId(), docScores);
+			}
+
+			writer.close();
+		}
+	}
+
 	public void searchByKLDSWPassage() throws Exception {
-		System.out.println("search by Smith Waterman.");
+		System.out.println("search by KLD Smith Waterman Passages.");
 
 		SmithWatermanScorer swScorer = new SmithWatermanScorer();
 		SmithWatermanAligner swAligner = new SmithWatermanAligner();
