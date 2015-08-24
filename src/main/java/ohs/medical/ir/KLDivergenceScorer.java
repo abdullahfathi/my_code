@@ -217,7 +217,7 @@ public class KLDivergenceScorer {
 					double approx_prob = Math.exp(-div_sum);
 					psgScores.incrementAtLoc(j, j, approx_prob);
 				}
-				
+
 				double max_score = psgScores.max();
 				ret.incrementAtLoc(i, docId, max_score);
 			}

@@ -51,8 +51,8 @@ public class Experiments {
 		// exp.searchByKLDFB();
 		// exp.searchByCBEEM();
 		// exp.searchBySW();
-		// exp.searchByKLDSWPassage();
-		exp.searchByKLDFbSwPassage();
+//		exp.searchByKLDSWPassage();
+		 exp.searchByKLDFbSwPassage();
 		// exp.searchByKLDPLM();
 		// exp.searchByKLDPassage();
 		// exp.searchByKLDProximityFB();
@@ -349,7 +349,7 @@ public class Experiments {
 				WordCountBox wcb = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer);
 
 				RelevanceModelBuilder rmb = new RelevanceModelBuilder(10, 15, 2000);
-				SparseVector rm = rmb.getPassageRelevanceModel(wcb, docScores, qLM, qws);
+				SparseVector rm = rmb.getPassageRelevanceModel2(wcb, docScores, qLM, qws);
 
 				double mixture_for_rm = 0.5;
 
@@ -357,6 +357,10 @@ public class Experiments {
 
 				KLDivergenceScorer kldScorer = new KLDivergenceScorer();
 				docScores = kldScorer.score(wcb, expQLM);
+
+				// System.out.println(bq);
+				// System.out.printf("QM1:\t%s\n", VectorUtils.toCounter(qLM, wordIndexer));
+				// System.out.printf("QM2:\t%s\n", VectorUtils.toCounter(expQLM, wordIndexer));
 
 				ResultWriter.write(writer, bq.getId(), docScores);
 			}
