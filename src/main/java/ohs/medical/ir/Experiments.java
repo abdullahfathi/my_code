@@ -49,10 +49,10 @@ public class Experiments {
 		// exp.searchByQLD();
 		// exp.searchByKLD();
 		// exp.searchByKLDFB();
-		// exp.searchByCBEEM();
+		exp.searchByCBEEM();
 		// exp.searchBySW();
-//		exp.searchByKLDSWPassage();
-		 exp.searchByKLDFbSwPassage();
+		// exp.searchByKLDSWPassage();
+		// exp.searchByKLDFbSwPassage();
 		// exp.searchByKLDPLM();
 		// exp.searchByKLDPassage();
 		// exp.searchByKLDProximityFB();

@@ -50,9 +50,9 @@ public class CbeemDocumentSearcher {
 
 	private Indexer<String> wordIndexer;
 
-	private SparseVector[] collDocScores;
+	private SparseVector[] docScoreData;
 
-	private WordCountBox[] collWordCountBoxes;
+	private WordCountBox[] wcbs;
 
 	private DenseVector[] collDocPriors;
 
@@ -85,11 +85,11 @@ public class CbeemDocumentSearcher {
 		SparseVector[] ret = new SparseVector[num_colls];
 
 		for (int i = 0; i < num_colls; i++) {
-			SparseVector docScores = collDocScores[i];
+			SparseVector docScores = docScoreData[i];
 			docScores.sortByValue();
 
-			SparseMatrix docWordCountBox = collWordCountBoxes[i].getDocWordCounts();
-			SparseVector collWordCounts = collWordCountBoxes[i].getCollWordCounts();
+			SparseMatrix docWordCounts = wcbs[i].getDocWordCounts();
+			SparseVector collWordCounts = wcbs[i].getCollWordCounts();
 			DenseVector docPriors = collDocPriors[i];
 
 			SparseVector rm = new SparseVector(collWordCounts.size());
@@ -102,60 +102,60 @@ public class CbeemDocumentSearcher {
 				double cnt_w_in_all_colls = 0;
 
 				for (int k = 0; k < num_colls; k++) {
-					cnt_w_in_each_coll[k] = collWordCountBoxes[k].getCollWordCounts().valueAlways(w);
+					cnt_w_in_each_coll[k] = wcbs[k].getCollWordCounts().valueAlways(w);
 					cnt_w_in_all_colls += cnt_w_in_each_coll[k];
 				}
 
 				double cnt_w_in_coll = cnt_w_in_each_coll[i];
 				double cnt_sum_in_coll = cnt_sum_in_each_coll[i];
 
-				double prob_w_in_coll = cnt_w_in_coll / cnt_sum_in_coll;
-				double prob_w_in_all_colls = cnt_w_in_all_colls / cnt_sum_in_all_colls;
+				double pr_w_in_coll = cnt_w_in_coll / cnt_sum_in_coll;
+				double pr_w_in_all_colls = cnt_w_in_all_colls / cnt_sum_in_all_colls;
 
 				for (int k = 0; k < docScores.size() && k < num_fb_docs; k++) {
 					int docId = docScores.indexAtLoc(k);
 					double doc_weight = docScores.valueAtLoc(k);
 
-					SparseVector wordCounts = docWordCountBox.rowAlways(docId);
+					SparseVector wordCounts = docWordCounts.rowAlways(docId);
 					double cnt_w_in_doc = wordCounts.valueAlways(w);
 					double cnt_sum_in_doc = wordCounts.sum();
 					double mixture_for_coll = dirichlet_prior / (cnt_sum_in_doc + dirichlet_prior);
-					double prob_w_in_doc = cnt_w_in_doc / cnt_sum_in_doc;
+					double pr_w_in_doc = cnt_w_in_doc / cnt_sum_in_doc;
 
-					// double prob_w_in_doc = (cnt_w_in_doc + dirichlet_prior *
-					// prob_w_in_coll) / (cnt_sum_in_doc + dirichlet_prior);
-					prob_w_in_doc = (1 - mixture_for_coll) * prob_w_in_doc + mixture_for_coll * prob_w_in_coll;
-					prob_w_in_doc = (1 - mixture_for_all_colls) * prob_w_in_doc + mixture_for_all_colls * prob_w_in_all_colls;
+					// double pr_w_in_doc = (cnt_w_in_doc + dirichlet_prior *
+					// pr_w_in_coll) / (cnt_sum_in_doc + dirichlet_prior);
+					pr_w_in_doc = (1 - mixture_for_coll) * pr_w_in_doc + mixture_for_coll * pr_w_in_coll;
+					pr_w_in_doc = (1 - mixture_for_all_colls) * pr_w_in_doc + mixture_for_all_colls * pr_w_in_all_colls;
 
 					double doc_prior = useDocPrior ? cnt_sum_in_doc : 1;
-					double prob_w_in_fb_model = doc_weight * prob_w_in_doc * doc_prior;
+					double pr_w_in_fb_model = doc_weight * pr_w_in_doc * doc_prior;
 
-					if (prob_w_in_fb_model > 0) {
-						rm.incrementAtLoc(j, w, prob_w_in_fb_model);
+					if (pr_w_in_fb_model > 0) {
+						rm.incrementAtLoc(j, w, pr_w_in_fb_model);
 					}
 
-//					double log1 = Math.log(doc_weight);
-//					double log2 = Math.log(prob_w_in_doc);
-//					double log3 = Math.log(doc_prior);
-//					double log_sum = log1 + log2 + log3;
-//
-//					rm2.incrementAtLoc(j, w, log_sum);
+					// double log1 = Math.log(doc_weight);
+					// double log2 = Math.log(pr_w_in_doc);
+					// double log3 = Math.log(doc_prior);
+					// double log_sum = log1 + log2 + log3;
+					//
+					// rm2.incrementAtLoc(j, w, log_sum);
 				}
 			}
 			docScores.sortByIndex();
 			rm.normalize();
 
-//			double[] log_probs = rm2.values();
-//			double log_prob_sum = ArrayMath.sumLogProb(log_probs);
-//
-//			ArrayMath.add(log_probs, -log_prob_sum, log_probs);
-//			ArrayMath.exponentiate(log_probs, false, log_probs);
-//
-//			rm2.summation();
-//
-//			System.out.println(VectorUtils.toCounter(rm, wordIndexer));
-//			System.out.println(VectorUtils.toCounter(rm2, wordIndexer));
-//			System.out.println();
+			// double[] log_probs = rm2.values();
+			// double log_pr_sum = ArrayMath.sumLogProb(log_probs);
+			//
+			// ArrayMath.add(log_probs, -log_pr_sum, log_probs);
+			// ArrayMath.exponentiate(log_probs, false, log_probs);
+			//
+			// rm2.summation();
+			//
+			// System.out.println(VectorUtils.toCounter(rm, wordIndexer));
+			// System.out.println(VectorUtils.toCounter(rm2, wordIndexer));
+			// System.out.println();
 
 			ret[i] = rm;
 		}
@@ -165,7 +165,7 @@ public class CbeemDocumentSearcher {
 	private double[] getCollWordCountSums() {
 		double[] ret = new double[num_colls];
 		for (int i = 0; i < num_colls; i++) {
-			ret[i] = collWordCountBoxes[i].getCollectionCountSum();
+			ret[i] = wcbs[i].getCollectionCountSum();
 		}
 		return ret;
 	}
@@ -174,8 +174,8 @@ public class CbeemDocumentSearcher {
 		double[] cnt_sum_in_each_coll = getCollWordCountSums();
 		double cnt_sum_in_all_colls = ArrayMath.sum(cnt_sum_in_each_coll);
 
-		SparseMatrix docWordCountBox = collWordCountBoxes[colId].getDocWordCounts();
-		SparseVector collWordCounts = collWordCountBoxes[colId].getCollWordCounts();
+		SparseMatrix docWordCountBox = wcbs[colId].getDocWordCounts();
+		SparseVector collWordCounts = wcbs[colId].getCollWordCounts();
 
 		double dirichlet_prior = hyperParam.getDirichletPrior();
 		double mixture_for_all_colls = hyperParam.getMixtureForAllCollections();
@@ -184,21 +184,21 @@ public class CbeemDocumentSearcher {
 
 		for (int i = 0; i < qLM.size(); i++) {
 			int w = qLM.indexAtLoc(i);
-			double prob_w_in_query = qLM.valueAtLoc(i);
+			double pr_w_in_query = qLM.valueAtLoc(i);
 
 			double[] cnt_w_in_each_coll = new double[num_colls];
 			double cnt_w_in_all_colls = 0;
 
 			for (int j = 0; j < num_colls; j++) {
-				cnt_w_in_each_coll[j] = collWordCountBoxes[j].getCollWordCounts().valueAlways(w);
+				cnt_w_in_each_coll[j] = wcbs[j].getCollWordCounts().valueAlways(w);
 				cnt_w_in_all_colls += cnt_w_in_each_coll[j];
 			}
 
 			double cnt_w_in_coll = cnt_w_in_each_coll[colId];
 			double cnt_sum_in_coll = cnt_sum_in_each_coll[colId];
 
-			double prob_w_in_coll = cnt_w_in_coll / cnt_sum_in_coll;
-			double prob_w_in_all_colls = cnt_w_in_all_colls / cnt_sum_in_all_colls;
+			double pr_w_in_coll = cnt_w_in_coll / cnt_sum_in_coll;
+			double pr_w_in_all_colls = cnt_w_in_all_colls / cnt_sum_in_all_colls;
 
 			for (int j = 0; j < docWordCountBox.rowSize(); j++) {
 				int docId = docWordCountBox.indexAtRowLoc(j);
@@ -206,15 +206,15 @@ public class CbeemDocumentSearcher {
 				double cnt_w_in_doc = wordCounts.valueAlways(w);
 				double cnt_sum_in_doc = wordCounts.sum();
 				double mixture_for_coll = dirichlet_prior / (cnt_sum_in_doc + dirichlet_prior);
-				double prob_w_in_doc = cnt_w_in_doc / cnt_sum_in_doc;
-				// double prob_w_in_doc = (cnt_w_in_doc + dirichlet_prior *
-				// prob_w_in_coll) / (cnt_sum_in_doc + dirichlet_prior);
+				double pr_w_in_doc = cnt_w_in_doc / cnt_sum_in_doc;
+				// double pr_w_in_doc = (cnt_w_in_doc + dirichlet_prior *
+				// pr_w_in_coll) / (cnt_sum_in_doc + dirichlet_prior);
 
-				prob_w_in_doc = (1 - mixture_for_coll) * prob_w_in_doc + mixture_for_coll * prob_w_in_coll;
-				// prob_w_in_doc = (1 - mixture_for_all_colls) * prob_w_in_doc + mixture_for_all_colls * prob_w_in_all_colls;
+				pr_w_in_doc = (1 - mixture_for_coll) * pr_w_in_doc + mixture_for_coll * pr_w_in_coll;
+				// pr_w_in_doc = (1 - mixture_for_all_colls) * pr_w_in_doc + mixture_for_all_colls * pr_w_in_all_colls;
 
-				if (prob_w_in_doc > 0) {
-					double div = prob_w_in_query * Math.log(prob_w_in_query / prob_w_in_doc);
+				if (pr_w_in_doc > 0) {
+					double div = pr_w_in_query * Math.log(pr_w_in_query / pr_w_in_doc);
 					ret.incrementAtLoc(j, docId, div);
 				}
 			}
@@ -230,77 +230,10 @@ public class CbeemDocumentSearcher {
 		return ret;
 	}
 
-	private SparseVector search(int colId, BaseQuery bq, SparseVector docRels) throws Exception {
-		wordIndexer = new Indexer<String>();
-		logBuf = new StringBuffer();
-
-		collDocScores = new SparseVector[num_colls];
-		this.bq = bq;
-
-		List<String> qWords = AnalyzerUtils.getWords(bq.getSearchText(), analyzer);
-		Counter<String> qWordCounts = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
-
-		bq.setLuceneQuery(AnalyzerUtils.getQuery(qWords));
-
-		SparseVector qLM = VectorUtils.toSparseVector(qWordCounts, wordIndexer, true);
-		qLM.normalize();
-
-		// SparseVector expQueryModel = wikiQueryExpander.expand(wordIndexer, queryModel);
-		BooleanQuery expSearchQuery = AnalyzerUtils.getQuery(VectorUtils.toCounter(qLM, wordIndexer));
-
-		for (int i = 0; i < num_colls; i++) {
-			Query searchQuery = bq.getLuceneQuery();
-			int top_k = 100;
-
-			if (colId == i) {
-				top_k = hyperParam.getTopK();
-			}
-			collDocScores[i] = DocumentSearcher.search(searchQuery, indexSearchers[i], top_k);
-			collDocScores[i].normalize();
-		}
-
-		setWordCountBoxes();
-
-		SparseVector ret = search(colId, qLM, docRels);
-		return ret;
-	}
-
-	public void search(int colId, List<BaseQuery> baseQueries, List<SparseVector> queryDocRels, String resultFileName, String logFileName)
-			throws Exception {
-		if (logFileName != null) {
-			logWriter = new TextFileWriter(logFileName);
-			makeLog = true;
-		}
-
-		TextFileWriter writer = new TextFileWriter(resultFileName);
-
-		for (int i = 0; i < baseQueries.size(); i++) {
-			BaseQuery baseQuery = baseQueries.get(i);
-			SparseVector docRels = null;
-
-			if (queryDocRels != null) {
-				docRels = queryDocRels.get(i);
-			}
-
-			SparseVector docScores = search(colId, baseQuery, docRels);
-
-			ResultWriter.write(writer, baseQuery.getId(), docScores);
-
-			if (logWriter != null) {
-				logWriter.write(logBuf.toString().trim() + "\n\n");
-			}
-		}
-
-		writer.close();
-		if (logWriter != null) {
-			logWriter.close();
-		}
-	}
-
-	public SparseVector search(int colId, SparseVector qLM, SparseVector docRels) throws Exception {
+	public SparseVector score(int colId, SparseVector qLM, SparseVector docRels) throws Exception {
 		if (hyperParam.isUseDoubleScoring()) {
 			for (int i = 0; i < num_colls; i++) {
-				collDocScores[i] = score(i, qLM);
+				docScoreData[i] = score(i, qLM);
 			}
 		}
 
@@ -313,7 +246,7 @@ public class CbeemDocumentSearcher {
 
 		for (int i = 0; i < num_colls; i++) {
 			double coll_prior = 0;
-			SparseVector docScores = collDocScores[i];
+			SparseVector docScores = docScoreData[i];
 			docScores.sortByValue();
 
 			double num_docs_for_coll_prior = 0;
@@ -378,7 +311,7 @@ public class CbeemDocumentSearcher {
 			logBuf.append(String.format("RMM:\t%s\n\n", VectorUtils.toCounter(cbeem, wordIndexer).toString()));
 
 			if (docRels != null) {
-				logBuf.append(RankComparator.compareRankings(collDocScores[colId], ret, docRels));
+				logBuf.append(RankComparator.compareRankings(docScoreData[colId], ret, docRels));
 			}
 			logBuf.append("\n");
 		}
@@ -386,17 +319,90 @@ public class CbeemDocumentSearcher {
 		return ret;
 	}
 
+	private SparseVector search(int colId, BaseQuery bq, SparseVector docRels) throws Exception {
+		wordIndexer = new Indexer<String>();
+		logBuf = new StringBuffer();
+
+		docScoreData = new SparseVector[num_colls];
+		this.bq = bq;
+
+		List<String> queryWords = AnalyzerUtils.getWords(bq.getSearchText(), analyzer);
+		Counter<String> queryWordCounts = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
+
+		bq.setLuceneQuery(AnalyzerUtils.getQuery(queryWords));
+
+		SparseVector qLM = VectorUtils.toSparseVector(queryWordCounts, wordIndexer, true);
+		qLM.normalize();
+
+		SparseVector qWordCounts = VectorUtils.toSparseVector(queryWordCounts, wordIndexer, false);
+
+		// SparseVector expQueryModel = wikiQueryExpander.expand(wordIndexer, queryModel);
+		BooleanQuery expSearchQuery = AnalyzerUtils.getQuery(VectorUtils.toCounter(qLM, wordIndexer));
+
+		for (int i = 0; i < num_colls; i++) {
+			Query searchQuery = bq.getLuceneQuery();
+			int top_k = hyperParam.getTopK();
+
+			if (colId != i) {
+				top_k = hyperParam.getNumFBDocs();
+			}
+			docScoreData[i] = DocumentSearcher.search(searchQuery, indexSearchers[i], top_k);
+			// docScoreData[i].normalize();
+		}
+
+		setWordCountBoxes();
+
+		SparseVector ret = score(colId, qLM, docRels);
+		return ret;
+	}
+
+	public void computeQueryLikelihood(SparseVector qWordCounts) {
+
+	}
+
+	public void search(int colId, List<BaseQuery> baseQueries, List<SparseVector> queryDocRels, String resultFileName, String logFileName)
+			throws Exception {
+		if (logFileName != null) {
+			logWriter = new TextFileWriter(logFileName);
+			makeLog = true;
+		}
+
+		TextFileWriter writer = new TextFileWriter(resultFileName);
+
+		for (int i = 0; i < baseQueries.size(); i++) {
+			BaseQuery baseQuery = baseQueries.get(i);
+			SparseVector docRels = null;
+
+			if (queryDocRels != null) {
+				docRels = queryDocRels.get(i);
+			}
+
+			SparseVector docScores = search(colId, baseQuery, docRels);
+
+			ResultWriter.write(writer, baseQuery.getId(), docScores);
+
+			if (logWriter != null) {
+				logWriter.write(logBuf.toString().trim() + "\n\n");
+			}
+		}
+
+		writer.close();
+		if (logWriter != null) {
+			logWriter.close();
+		}
+	}
+
 	public void setMakeLog(boolean makeLog) {
 		this.makeLog = makeLog;
 	}
 
 	private void setWordCountBoxes() throws Exception {
-		collWordCountBoxes = new WordCountBox[num_colls];
+		wcbs = new WordCountBox[num_colls];
 
 		for (int i = 0; i < num_colls; i++) {
-			SparseVector docScores = collDocScores[i];
+			SparseVector docScores = docScoreData[i];
 			IndexReader indexReader = indexSearchers[i].getIndexReader();
-			collWordCountBoxes[i] = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer);
+			wcbs[i] = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer);
 		}
 	}
 
