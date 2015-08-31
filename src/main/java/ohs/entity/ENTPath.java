@@ -35,6 +35,8 @@ public class ENTPath {
 
 	public static final String ODK_TEST_DATA = DATA_DIR + "odk_test_data.txt";
 
+	public static final String ODK_TEST_DATA_LABELDED = DATA_DIR + "odk_test_data_labeled.txt";
+
 	public static final String ODK_OUTPUT_PAPER_FILE = DATA_DIR + "odk_output_paper.txt";
 
 	public static final String ODK_LOG_FILE = DATA_DIR + "odk_log.txt";

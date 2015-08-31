@@ -244,7 +244,9 @@ public class AbbreviationCollector {
 		String[] abbrFileNames = MIRPath.AbbrFileNames;
 
 		for (int i = 0; i < abbrFileNames.length; i++) {
-
+			// if (!abbrFileNames[i].contains("clef")) {
+			// continue;
+			// }
 			TextFileReader reader = new TextFileReader(abbrFileNames[i]);
 			while (reader.hasNext()) {
 				List<String> lines = reader.getNextLines();
@@ -301,7 +303,7 @@ public class AbbreviationCollector {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 		// extract();
-		// group();
+		group();
 		filter();
 		System.out.println("process ends.");
 	}

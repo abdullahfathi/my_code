@@ -11,7 +11,6 @@ import ohs.medical.ir.query.BaseQuery;
 import ohs.medical.ir.query.QueryReader;
 import ohs.medical.ir.query.RelevanceReader;
 import ohs.types.CounterMap;
-import ohs.types.common.StrCounterMap;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.Fields;
@@ -20,7 +19,6 @@ import org.apache.lucene.index.MultiFields;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
 
 public class DataStats {
 

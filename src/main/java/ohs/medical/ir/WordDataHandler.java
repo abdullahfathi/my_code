@@ -10,7 +10,6 @@ import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.lucene.common.IndexFieldName;
-import ohs.math.ArrayMath;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;

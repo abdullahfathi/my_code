@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import ohs.ling.struct.Token;
 import ohs.math.ArrayMath;
 import ohs.medical.ir.SmithWatermanScorer.ScoreMatrix;
 import ohs.string.sim.func.MatchType;

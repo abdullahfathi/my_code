@@ -1,18 +1,14 @@
 package ohs.medical.ir;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.lucene.common.IndexFieldName;
-import ohs.lucene.common.MedicalEnglishAnalyzer;
 import ohs.types.Counter;
 import ohs.types.ListMap;
 import ohs.utils.StopWatch;
@@ -23,10 +19,6 @@ import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.IndexWriterConfig.OpenMode;
-import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.util.Version;
 
 /**
  * Construct an inverted index with source document collection.

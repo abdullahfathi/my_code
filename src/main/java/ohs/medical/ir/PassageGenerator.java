@@ -2,22 +2,11 @@ package ohs.medical.ir;
 
 import java.util.List;
 
-import ohs.io.TextFileWriter;
-import ohs.lucene.common.AnalyzerUtils;
 import ohs.math.ArrayMath;
-import ohs.math.VectorUtils;
-import ohs.matrix.SparseVector;
 import ohs.medical.ir.SmithWatermanScorer.ScoreMatrix;
-import ohs.medical.ir.query.BaseQuery;
-import ohs.medical.ir.query.QueryReader;
 import ohs.types.Counter;
 import ohs.types.Indexer;
 import ohs.types.common.IntPair;
-
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.IndexSearcher;
 
 public class PassageGenerator {
 

@@ -71,11 +71,15 @@ public class RelevanceReader {
 		TextFileReader reader = new TextFileReader(fileName);
 		while (reader.hasNext()) {
 			String line = reader.next();
-			String[] parts = line.split(" ");
+			String[] parts = line.split("\\s");
 
 			String qId = parts[0];
 			String docId = parts[2];
 			double relevance = Double.parseDouble(parts[3]);
+
+			if (fileName.contains("clef2015.test.graded")) {
+				qId = qId.replace("qtest", "clef2015.test");
+			}
 
 			// if (relevance > 0) {
 			ret.setCount(qId, docId, relevance);

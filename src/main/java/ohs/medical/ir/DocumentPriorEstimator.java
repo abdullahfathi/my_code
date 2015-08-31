@@ -1,35 +1,23 @@
 package ohs.medical.ir;
 
-import java.io.File;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import ohs.io.TextFileWriter;
 import ohs.lucene.common.IndexFieldName;
-import ohs.lucene.common.MedicalEnglishAnalyzer;
 import ohs.math.ArrayMath;
 import ohs.math.VectorUtils;
 import ohs.matrix.DenseVector;
 import ohs.matrix.SparseVector;
 import ohs.types.Counter;
-import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.utils.StopWatch;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.DocsAndPositionsEnum;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
-import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.similarities.LMDirichletSimilarity;
-import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.BytesRef;
-import org.apache.lucene.util.Version;
 
 /**
  * 

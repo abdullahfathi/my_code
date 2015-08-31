@@ -271,6 +271,7 @@ public class DataReader {
 			if (ret[j].equals("empty")) {
 				ret[j] = "";
 			}
+			ret[j] = ret[j].trim();
 		}
 		return ret;
 	}

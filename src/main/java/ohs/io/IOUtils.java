@@ -51,12 +51,15 @@ public class IOUtils {
 
 	private static void addFilesUnder(File root, List<File> files, boolean recursive) {
 		if (root != null) {
-			for (File child : root.listFiles()) {
-				if (child.isFile()) {
-					files.add(child);
-				} else {
-					if (recursive) {
-						addFilesUnder(child, files, recursive);
+			File[] children = root.listFiles();
+			if (children != null) {
+				for (File child : root.listFiles()) {
+					if (child.isFile()) {
+						files.add(child);
+					} else {
+						if (recursive) {
+							addFilesUnder(child, files, recursive);
+						}
 					}
 				}
 			}
@@ -500,7 +503,7 @@ public class IOUtils {
 	public static List<String> readLines(String fileName, int num_read) throws Exception {
 		return readLines(fileName, UTF_8, num_read);
 	}
-	
+
 	public static List<String> readLines(String fileName, String encoding) throws Exception {
 		return readLines(fileName, encoding, Integer.MAX_VALUE);
 	}

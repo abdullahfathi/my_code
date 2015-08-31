@@ -1,7 +1,6 @@
 package ohs.medical.ir;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 import ohs.io.IOUtils;
@@ -31,10 +30,11 @@ import ohs.types.common.StrBidMap;
 import ohs.types.common.StrCounterMap;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
+
+import edu.stanford.nlp.ling.CoreAnnotations.DocSourceTypeAnnotation;
 
 /**
  * 
@@ -48,8 +48,8 @@ public class Experiments {
 		Experiments exp = new Experiments();
 		// exp.searchByQLD();
 		// exp.searchByKLD();
-		// exp.searchByKLDFB();
-		exp.searchByCBEEM();
+		exp.searchByKLDFB();
+		// exp.searchByCBEEM();
 		// exp.searchBySW();
 		// exp.searchByKLDSWPassage();
 		// exp.searchByKLDFbSwPassage();
@@ -306,6 +306,7 @@ public class Experiments {
 			String outputDirName = OutputDirNames[i];
 			String resFileName = outputDirName + "temp-res/cbeem.txt";
 
+			// SelectiveFeedback cbeemSearcher = new SelectiveFeedback(indexSearchers, docPriorData, hyperParameter, analyzer, false);
 			CbeemDocumentSearcher cbeemSearcher = new CbeemDocumentSearcher(indexSearchers, docPriorData, hyperParameter, analyzer, false);
 			cbeemSearcher.search(i, bqs, null, resFileName, null);
 		}
@@ -624,7 +625,7 @@ public class Experiments {
 	public void searchByKLDFB() throws Exception {
 		System.out.println("search by KLD FB.");
 
-		double mixture_for_rm = 0.5;
+		double mix_for_rm = 0.5;
 
 		for (int i = 0; i < QueryFileNames.length; i++) {
 			List<BaseQuery> bqs = QueryReader.readQueries(QueryFileNames[i]);
@@ -644,7 +645,7 @@ public class Experiments {
 				BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
 
 				SparseVector docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
-				docScores.normalize();
+				VectorMath.exponentiate(docScores, true);
 
 				Indexer<String> wordIndexer = new Indexer<String>();
 				SparseVector qLM = VectorUtils.toSparseVector(qWordCounts, wordIndexer, true);
@@ -663,7 +664,7 @@ public class Experiments {
 					RelevanceModelBuilder rmb = new RelevanceModelBuilder(10, 15, 2000);
 					SparseVector rm = rmb.getRelevanceModel(wcb, docScores);
 
-					SparseVector expQLM = VectorMath.addAfterScale(qLM, rm, 1 - mixture_for_rm, mixture_for_rm);
+					SparseVector expQLM = VectorMath.addAfterScale(qLM, rm, 1 - mix_for_rm, mix_for_rm);
 
 					KLDivergenceScorer kldScorer = new KLDivergenceScorer();
 					docScores = kldScorer.score(wcb, expQLM);

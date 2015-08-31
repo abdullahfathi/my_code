@@ -110,7 +110,6 @@ public class DocumentSearcher {
 			ScoreDoc scoreDoc = topDocs.scoreDocs[i];
 			ret.incrementAtLoc(i, scoreDoc.doc, scoreDoc.score);
 		}
-		ret.summation();
 		ret.sortByIndex();
 		return ret;
 	}

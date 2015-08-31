@@ -15,7 +15,6 @@ import ohs.matrix.SparseVector;
 import ohs.medical.ir.query.BaseQuery;
 import ohs.medical.ir.query.QueryReader;
 import ohs.medical.ir.query.RelevanceReader;
-import ohs.types.CounterMap;
 import ohs.types.common.StrBidMap;
 import ohs.types.common.StrCounterMap;
 import ohs.utils.StrUtils;

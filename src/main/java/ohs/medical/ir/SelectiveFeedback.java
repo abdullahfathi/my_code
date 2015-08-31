@@ -29,7 +29,7 @@ import org.apache.lucene.search.Query;
  * @author Heung-Seon Oh
  * 
  */
-public class CbeemDocumentSearcher {
+public class SelectiveFeedback {
 
 	private TextFileWriter logWriter;
 
@@ -55,8 +55,8 @@ public class CbeemDocumentSearcher {
 
 	private boolean makeLog = false;
 
-	public CbeemDocumentSearcher(IndexSearcher[] indexSearchers, DenseVector[] docPriorData, HyperParameter hyperParameter,
-			Analyzer analyzer, boolean makeLog) throws Exception {
+	public SelectiveFeedback(IndexSearcher[] indexSearchers, DenseVector[] docPriorData, HyperParameter hyperParameter, Analyzer analyzer,
+			boolean makeLog) throws Exception {
 		super();
 		this.indexSearchers = indexSearchers;
 		this.collDocPriors = docPriorData;
@@ -65,6 +65,7 @@ public class CbeemDocumentSearcher {
 		this.makeLog = makeLog;
 
 		num_colls = indexSearchers.length;
+
 	}
 
 	private SparseVector[] computeRelevanceModels() throws IOException {
@@ -75,6 +76,21 @@ public class CbeemDocumentSearcher {
 		double dirichlet_prior = hyperParam.getDirichletPrior();
 		double mixture_for_all_colls = hyperParam.getMixtureForAllCollections();
 		boolean useDocPrior = hyperParam.isUseDocPrior();
+
+		Counter<String> c = new Counter<String>();
+
+		for (int i = 0; i < docScoreData.length; i++) {
+			SparseVector docScores = docScoreData[i];
+
+			for (int j = 0; j < docScores.size(); j++) {
+				int docId = docScores.indexAtLoc(j);
+				double score = docScores.valueAtLoc(j);
+				String docLabel = String.format("%d_%d", i, docId);
+				c.incrementCount(docLabel, score);
+			}
+		}
+
+		List<String> docLabels = c.getSortedKeys();
 
 		SparseVector[] ret = new SparseVector[num_colls];
 
@@ -87,6 +103,7 @@ public class CbeemDocumentSearcher {
 			DenseVector docPriors = collDocPriors[i];
 
 			SparseVector rm = new SparseVector(collWordCounts.size());
+			SparseVector rm2 = new SparseVector(collWordCounts.size());
 
 			for (int j = 0; j < collWordCounts.size(); j++) {
 				int w = collWordCounts.indexAtLoc(j);
@@ -335,26 +352,18 @@ public class CbeemDocumentSearcher {
 		for (int i = 0; i < num_colls; i++) {
 			Query searchQuery = bq.getLuceneQuery();
 			int top_k = hyperParam.getTopK();
-			//
-			// if (colId != i) {
-			// top_k = hyperParam.getNumFBDocs();
-			// }
-			docScoreData[i] = DocumentSearcher.search(searchQuery, indexSearchers[i], top_k);
-		}
 
-		computePosteriors();
+			if (colId != i) {
+				top_k = hyperParam.getNumFBDocs();
+			}
+			docScoreData[i] = DocumentSearcher.search(searchQuery, indexSearchers[i], top_k);
+			// docScoreData[i].normalize();
+		}
 
 		setWordCountBoxes();
 
 		SparseVector ret = score(colId, qLM, docRels);
 		return ret;
-	}
-
-	private void computePosteriors() {
-		for (int j = 0; j < docScoreData.length; j++) {
-			SparseVector docScores = docScoreData[j];
-			VectorMath.exponentiate(docScores, true);
-		}
 	}
 
 	public void search(int colId, List<BaseQuery> baseQueries, List<SparseVector> queryDocRels, String resultFileName, String logFileName)

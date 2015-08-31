@@ -1,14 +1,10 @@
 package ohs.medical.ir;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import antlr.collections.impl.Vector;
-import edu.stanford.nlp.parser.shiftreduce.BinaryTransition.Side;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseVector;
 import ohs.types.Counter;
-import ohs.types.Pair;
 import ohs.types.common.IntCounter;
 import ohs.types.common.IntPair;
 

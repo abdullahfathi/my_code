@@ -36,6 +36,30 @@ public class VectorMath {
 		addAfterScale(a, b, 1, 1, c);
 	}
 
+	public static void exponentiate(Vector a, boolean normalizeByMax) {
+		if (normalizeByMax) {
+			double max = a.max();
+			double sum = 0;
+			for (int i = 0; i < a.size(); i++) {
+				double value = a.valueAtLoc(i);
+				value = Math.exp(value - max);
+				a.setAtLoc(i, value);
+				sum += value;
+			}
+			a.setSum(sum);
+			a.normalize();
+		} else {
+			double sum = 0;
+			for (int i = 0; i < a.size(); i++) {
+				double value = a.valueAtLoc(i);
+				value = Math.exp(value);
+				a.setAtLoc(i, value);
+				sum += value;
+			}
+			a.setSum(sum);
+		}
+	}
+
 	public static SparseVector add(Vector[] vs) {
 		double[] coefs = new double[vs.length];
 		ArrayUtils.setAll(coefs, 1);

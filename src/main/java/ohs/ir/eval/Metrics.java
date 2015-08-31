@@ -342,19 +342,40 @@ public class Metrics {
 		return ret;
 	}
 
-	public static double[] riskRewardFunction(Counter<String> baselinePerformances, Counter<String> targetPerformances) {
+	public static double[] riskRewardFunction(Counter<String> baselines, Counter<String> targets) {
 		double risk = 0;
 		double reward = 0;
 
-		for (String qId : baselinePerformances.keySet()) {
-			double score1 = baselinePerformances.getCount(qId);
-			double score2 = targetPerformances.getCount(qId);
+		for (String qId : baselines.keySet()) {
+			double score1 = baselines.getCount(qId);
+			double score2 = targets.getCount(qId);
 			risk += Math.max(0, score1 - score2);
 			reward += Math.max(0, score2 - score1);
 		}
-		risk /= baselinePerformances.size();
-		reward /= baselinePerformances.size();
+		risk /= baselines.size();
+		reward /= baselines.size();
 		return new double[] { risk, reward };
+	}
+
+	/**
+	 * Risk-Reward Tradeoff
+	 * 
+	 * 1. Wang, L., Bennett, P.N., Collins-Thompson, K.: Robust ranking models via risk-sensitive optimization. Proceedings of the 35th
+	 * international ACM SIGIR conference on Research and development in information retrieval - SIGIR ’12. p. 761. ACM Press, New York, New
+	 * York, USA (2012).
+	 * 
+	 * 
+	 * @param baselines
+	 * @param targets
+	 * @param alpha
+	 * @return
+	 */
+	public static double riskRewardTradeoff(Counter<String> baselines, Counter<String> targets, double alpha) {
+		double[] rr = riskRewardFunction(baselines, targets);
+		double risk = rr[0];
+		double reward = rr[1];
+		double ret = reward - (1 + alpha) * risk;
+		return ret;
 	}
 
 	private double[] getDocRelevances(List<String> docIds, int n, Counter<String> docRels) {

@@ -293,7 +293,7 @@ public class MIRPath {
 	 * Common File Name Sets
 	 */
 
-	public static String[] QueryFileNames = { TREC_CDS_QUERY_2014_FILE, CLEF_EHEALTH_QUERY_2014_FILE, OHSUMED_QUERY_FILE,
+	public static String[] QueryFileNames = { TREC_CDS_QUERY_2014_FILE, CLEF_EHEALTH_QUERY_2015_FILE, OHSUMED_QUERY_FILE,
 			TREC_GENOMICS_QUERY_2007_FILE };
 
 	// public static String[] IndexDirNames = { MIRPath.TREC_CDS_INDEX_DIR,
@@ -313,7 +313,7 @@ public class MIRPath {
 	public static final String[] DocPriorFileNames = { TREC_CDS_DOCUMENT_PRIOR_FILE, CLEF_EHEALTH_DOCUMENT_PRIOR_FILE,
 			OHSUMED_DOCUMENT_PRIOR_FILE, WIKI_DOCUMENT_PRIOR_FILE };
 
-	public static final String[] RelevanceFileNames = { TREC_CDS_RELEVANCE_JUDGE_2014_FILE, CLEF_EHEALTH_RELEVANCE_JUDGE_2014_FILE,
+	public static final String[] RelevanceFileNames = { TREC_CDS_RELEVANCE_JUDGE_2014_FILE, CLEF_EHEALTH_RELEVANCE_JUDGE_2015_FILE,
 			OHSUMED_RELEVANCE_JUDGE_FILE, TREC_GENOMICS_RELEVANCE_JUDGE_2007_FILE };
 
 	public static final String[] DocIdMapFileNames = { TREC_CDS_DOCUMENT_ID_MAP_FILE, CLEF_EHEALTH_DOCUMENT_ID_MAP_FIE,
