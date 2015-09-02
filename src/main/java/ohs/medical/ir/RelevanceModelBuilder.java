@@ -140,7 +140,7 @@ public class RelevanceModelBuilder {
 			List<IntPair> psgLocs = psgLocScores.getSortedKeys();
 
 			SparseVector[] psgWordCountData = new SparseVector[psgLocs.size()];
-			Counter<Integer> c = new Counter<Integer>();
+			IntCounter c = new IntCounter();
 
 			for (int j = 0; j < psgLocs.size() && j < psgLocs.size(); j++) {
 				IntPair psgLoc = psgLocs.get(j);

@@ -63,7 +63,7 @@ public class PerformanceEvaluator {
 
 	public int[] top_n_for_each_eval = { 5, 10, 20 };
 
-	public List<Performance> evalute(CounterMap<String, String>  resultData, CounterMap<String, String>  relevanceData) {
+	public List<Performance> evalute(StrCounterMap resultData, StrCounterMap relevData) {
 		List<Performance> ret = new ArrayList<Performance>();
 
 		for (int top_n : top_n_for_each_eval) {
@@ -71,13 +71,13 @@ public class PerformanceEvaluator {
 
 			for (String qId : resultData.keySet()) {
 				Counter<String> docScores = resultData.getCounter(qId);
-				Counter<String> docRelevances = relevanceData.getCounter(qId);
+				Counter<String> docRels = relevData.getCounter(qId);
 
 				List<String> docIds = docScores.getSortedKeys();
 
-				double num_relevant_in_result = Metrics.relevantAtN(docIds, docScores.size(), docRelevances);
-				double num_relevant_in_judgements = Metrics.relevant(docRelevances);
-				double num_relevant_at_n = Metrics.relevantAtN(docIds, top_n, docRelevances);
+				double num_relevant_in_result = Metrics.relevantAtN(docIds, docScores.size(), docRels);
+				double num_relevant_in_judgements = Metrics.relevant(docRels);
+				double num_relevant_at_n = Metrics.relevantAtN(docIds, top_n, docRels);
 				double num_retrieved = docScores.size();
 
 				cm.setCount(MetricType.RETRIEVED, qId, num_retrieved);
@@ -85,9 +85,9 @@ public class PerformanceEvaluator {
 				cm.setCount(MetricType.RELEVANT_IN_RET, qId, num_relevant_in_result);
 				cm.setCount(MetricType.RELEVANT_AT, qId, num_relevant_at_n);
 
-				double precision = Metrics.precisionAtN(docIds, top_n, docRelevances);
-				double ap = Metrics.averagePrecisionAtN(docIds, top_n, docRelevances);
-				double ndcg = Metrics.normalizedDiscountedCumulativeGainAtN(docIds, top_n, docRelevances);
+				double precision = Metrics.precisionAtN(docIds, top_n, docRels);
+				double ap = Metrics.averagePrecisionAtN(docIds, top_n, docRels);
+				double ndcg = Metrics.normalizedDiscountedCumulativeGainAtN(docIds, top_n, docRels);
 
 				cm.setCount(MetricType.PRECISION, qId, precision);
 				cm.setCount(MetricType.AP, qId, ap);

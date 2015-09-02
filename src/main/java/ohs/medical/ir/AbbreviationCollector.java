@@ -15,6 +15,7 @@ import ohs.lucene.common.IndexFieldName;
 import ohs.medical.ir.clef.ehealth_2014.AbbreviationExtractor;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
+import ohs.types.common.StrCounter;
 import ohs.types.common.StrCounterMap;
 import ohs.types.common.StrPair;
 import ohs.utils.StopWatch;
@@ -55,7 +56,7 @@ public class AbbreviationCollector {
 		String[] indexDirs = MIRPath.IndexDirNames;
 		String[] abbrFileNames = MIRPath.AbbrFileNames;
 
-		for (int i = 0; i < abbrFileNames.length; i++) {
+		for (int i = 3; i < abbrFileNames.length; i++) {
 			System.out.printf("extract abbreviations from [%s].\n", indexDirs[i]);
 
 			IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(indexDirs[i]);
@@ -123,92 +124,100 @@ public class AbbreviationCollector {
 	}
 
 	public static void filter() {
-		TextFileReader reader = new TextFileReader(MIRPath.ABBREVIATION_GROUP_FILE);
+		String[] collDirs = MIRPath.CollDirs;
 
-		CounterMap<String, String> cm = new CounterMap<String, String>();
+		for (int i = 0; i < collDirs.length; i++) {
+			String inputFileName = collDirs[i] + "abbrs_group.txt";
+			String outputFileName = collDirs[i] + "abbrs_filter.txt";
 
-		while (reader.hasNext()) {
-			List<String> lines = reader.getNextLines();
+			TextFileReader reader = new TextFileReader(inputFileName);
 
-			String data = lines.get(0);
-			Counter<String> c = new Counter<String>();
+			CounterMap<String, String> cm = new CounterMap<String, String>();
 
-			for (int i = 1; i < lines.size(); i++) {
-				String[] parts = lines.get(i).split("\t");
-				String longForm = parts[0];
-				int cnt = Integer.parseInt(parts[1]);
-				c.setCount(longForm, cnt);
+			while (reader.hasNext()) {
+				List<String> lines = reader.getNextLines();
+
+				String data = lines.get(0);
+				StrCounter c = new StrCounter();
+
+				for (int j = 1; j < lines.size(); j++) {
+					String[] parts = lines.get(j).split("\t");
+					String longForm = parts[0];
+					int cnt = Integer.parseInt(parts[1]);
+					c.setCount(longForm, cnt);
+				}
+
+				cm.setCounter(data, c);
 			}
+			reader.close();
 
-			cm.setCounter(data, c);
-		}
-		reader.close();
+			Iterator<String> iter1 = cm.keySet().iterator();
 
-		Iterator<String> iter1 = cm.keySet().iterator();
+			while (iter1.hasNext()) {
+				String data = iter1.next();
 
-		while (iter1.hasNext()) {
-			String data = iter1.next();
+				String[] parts = data.split("\t");
+				String shortForm = parts[1];
 
-			String[] parts = data.split("\t");
-			String shortForm = parts[1];
+				if (shortForm.equals("BLAST")) {
+					System.out.println();
+				}
 
-			if (shortForm.equals("BLAST")) {
-				System.out.println();
-			}
+				Counter<String> longCounts = cm.getCounter(data);
+				Set<Character> set = new HashSet<Character>();
 
-			Counter<String> longCounts = cm.getCounter(data);
-			Set<Character> set = new HashSet<Character>();
+				for (int j = 0; j < shortForm.length(); j++) {
+					set.add(Character.toLowerCase(shortForm.charAt(j)));
+				}
 
-			for (int i = 0; i < shortForm.length(); i++) {
-				set.add(Character.toLowerCase(shortForm.charAt(i)));
-			}
+				Iterator<String> iter2 = longCounts.keySet().iterator();
+				while (iter2.hasNext()) {
+					String longForm = iter2.next();
 
-			Iterator<String> iter2 = longCounts.keySet().iterator();
-			while (iter2.hasNext()) {
-				String longForm = iter2.next();
+					if (longForm.toLowerCase().contains(shortForm.toLowerCase())) {
+						iter2.remove();
+					} else {
+						String[] toks = longForm.split(" ");
+						int num_matches = 0;
 
-				if (longForm.toLowerCase().contains(shortForm.toLowerCase())) {
-					iter2.remove();
-				} else {
-					String[] toks = longForm.split(" ");
-					int num_matches = 0;
+						for (int k = 0; k < toks.length; k++) {
+							char ch = toks[k].toLowerCase().charAt(0);
+							if (set.contains(ch)) {
+								num_matches++;
+							}
+						}
 
-					for (int i = 0; i < toks.length; i++) {
-						char ch = toks[i].toLowerCase().charAt(0);
-						if (set.contains(ch)) {
-							num_matches++;
+						double ratio = 1f * num_matches / toks.length;
+
+						if (ratio < 0.5) {
+							iter2.remove();
 						}
 					}
+				}
 
-					double ratio = 1f * num_matches / toks.length;
-
-					if (ratio < 0.5) {
-						iter2.remove();
-					}
+				if (longCounts.size() == 0) {
+					iter1.remove();
 				}
 			}
 
-			if (longCounts.size() == 0) {
-				iter1.remove();
+			Counter<String> shortCounts = cm.getInnerCountSums();
+
+			TextFileWriter writer = new TextFileWriter(outputFileName);
+
+			for (String sf : shortCounts.getSortedKeys()) {
+				StringBuffer sb = new StringBuffer();
+				sb.append(sf);
+
+				Counter<String> longCounts = cm.getCounter(sf);
+				for (String lf : longCounts.getSortedKeys()) {
+					int cnt = (int) longCounts.getCount(lf);
+					sb.append(String.format("\n%s\t%d", lf, cnt));
+				}
+				writer.write(sb.toString() + "\n\n");
 			}
+			writer.close();
 		}
 
-		Counter<String> shortCounts = cm.getInnerCountSums();
-
-		TextFileWriter writer = new TextFileWriter(MIRPath.ABBREVIATION_FILTERED_FILE);
-
-		for (String shortForm : shortCounts.getSortedKeys()) {
-			StringBuffer sb = new StringBuffer();
-			sb.append(shortForm);
-
-			Counter<String> longCounts = cm.getCounter(shortForm);
-			for (String longForm : longCounts.getSortedKeys()) {
-				int cnt = (int) longCounts.getCount(longForm);
-				sb.append(String.format("\n%s\t%d", longForm, cnt));
-			}
-			writer.write(sb.toString() + "\n\n");
-		}
-		writer.close();
 	}
 
 	private static List<Span[]> getSpans(List<StrPair> pairs, String content) {
@@ -239,14 +248,17 @@ public class AbbreviationCollector {
 	}
 
 	public static void group() {
-		StrCounterMap shortLongCounts = new StrCounterMap();
 
 		String[] abbrFileNames = MIRPath.AbbrFileNames;
+		String[] collDirs = MIRPath.CollDirs;
 
 		for (int i = 0; i < abbrFileNames.length; i++) {
 			// if (!abbrFileNames[i].contains("clef")) {
 			// continue;
 			// }
+
+			StrCounterMap shortLongCounts = new StrCounterMap();
+
 			TextFileReader reader = new TextFileReader(abbrFileNames[i]);
 			while (reader.hasNext()) {
 				List<String> lines = reader.getNextLines();
@@ -271,38 +283,35 @@ public class AbbreviationCollector {
 				}
 			}
 			reader.close();
-		}
 
-		for (String shortForm : shortLongCounts.keySet()) {
-			Counter<String> long_count = shortLongCounts.getCounter(shortForm);
-			// long_count.pruneKeysBelowThreshold(5);
-		}
+			Counter<String> short_count = shortLongCounts.getInnerCountSums();
 
-		Counter<String> short_count = shortLongCounts.getInnerCountSums();
+			String outputFileName = collDirs[i] + "abbrs_group.txt";
 
-		TextFileWriter writer = new TextFileWriter(MIRPath.ABBREVIATION_GROUP_FILE);
+			TextFileWriter writer = new TextFileWriter(outputFileName);
 
-		List<String> shortForms = short_count.getSortedKeys();
+			List<String> shortForms = short_count.getSortedKeys();
 
-		for (int i = 0; i < shortForms.size(); i++) {
-			String shortForm = shortForms.get(i);
-			Counter<String> longCounts = shortLongCounts.getCounter(shortForm);
+			for (int j = 0; j < shortForms.size(); j++) {
+				String shortForm = shortForms.get(j);
+				Counter<String> longCounts = shortLongCounts.getCounter(shortForm);
 
-			StringBuffer sb = new StringBuffer();
-			sb.append(String.format("ShortForm:\t%s\t%d", shortForm, (int) longCounts.totalCount()));
+				StringBuffer sb = new StringBuffer();
+				sb.append(String.format("ShortForm:\t%s\t%d", shortForm, (int) longCounts.totalCount()));
 
-			for (String longForm : longCounts.getSortedKeys()) {
-				int count = (int) longCounts.getCount(longForm);
-				sb.append(String.format("\n%s\t%d", longForm, count));
+				for (String longForm : longCounts.getSortedKeys()) {
+					int count = (int) longCounts.getCount(longForm);
+					sb.append(String.format("\n%s\t%d", longForm, count));
+				}
+				writer.write(sb.toString() + "\n\n");
 			}
-			writer.write(sb.toString() + "\n\n");
+			writer.close();
 		}
-		writer.close();
 	}
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
-		// extract();
+		extract();
 		group();
 		filter();
 		System.out.println("process ends.");

@@ -25,6 +25,7 @@ import ohs.medical.ir.query.RelevanceReader;
 import ohs.medical.ir.trec.cds_2015.ProximityRelevanceModelBuilder;
 import ohs.types.Counter;
 import ohs.types.Indexer;
+import ohs.types.ListMap;
 import ohs.types.common.IntPair;
 import ohs.types.common.StrBidMap;
 import ohs.types.common.StrCounterMap;
@@ -48,8 +49,8 @@ public class Experiments {
 		Experiments exp = new Experiments();
 		// exp.searchByQLD();
 		// exp.searchByKLD();
-		exp.searchByKLDFB();
-		// exp.searchByCBEEM();
+		// exp.searchByKLDFB();
+		exp.searchByCBEEM();
 		// exp.searchBySW();
 		// exp.searchByKLDSWPassage();
 		// exp.searchByKLDFbSwPassage();
@@ -93,6 +94,8 @@ public class Experiments {
 			StrCounterMap relData = RelevanceReader.readRelevances(relFileName);
 
 			List<File> files = IOUtils.getFilesUnder(outoputDirName + "/temp-res");
+			ListMap<String, Performance> perfMap = new ListMap<String, Performance>();
+			String baselinePath = null;
 
 			for (int j = 0; j < files.size(); j++) {
 				File file = files.get(j);
@@ -108,13 +111,35 @@ public class Experiments {
 				eval.setTopNs(new int[] { 10 });
 				List<Performance> perfs = eval.evalute(resultData, relData);
 
-				System.out.println(file.getPath());
-				sb.append(file.getPath());
+				if (file.getName().contains("qld")) {
+					baselinePath = file.getPath();
+				}
+
+				perfMap.set(file.getPath(), perfs);
+			}
+
+			List<Performance> baselinePerfs = perfMap.get(baselinePath);
+
+			for (String path : perfMap.keySet()) {
+				List<Performance> perfs = perfMap.get(path);
+
+				if (!path.equals(baselinePath)) {
+					for (int j = 0; j < perfs.size(); j++) {
+						Performance baselinePerf = baselinePerfs.get(j);
+						Performance perf = perfs.get(j);
+						perf.computeRiskRewardTradeoffs(baselinePerf);
+					}
+				}
+
+				System.out.println(path);
+				sb.append(path);
+
 				for (int k = 0; k < perfs.size(); k++) {
 					sb.append("\n" + perfs.get(k).toString());
 				}
 				sb.append("\n\n");
 			}
+
 		}
 
 		IOUtils.write(MIRPath.PERFORMANCE_FILE, sb.toString().trim());
@@ -304,7 +329,7 @@ public class Experiments {
 			List<BaseQuery> bqs = QueryReader.readQueries(QueryFileNames[i]);
 
 			String outputDirName = OutputDirNames[i];
-			String resFileName = outputDirName + "temp-res/cbeem.txt";
+			String resFileName = outputDirName + "temp-res/04_cbeem.txt";
 
 			// SelectiveFeedback cbeemSearcher = new SelectiveFeedback(indexSearchers, docPriorData, hyperParameter, analyzer, false);
 			CbeemDocumentSearcher cbeemSearcher = new CbeemDocumentSearcher(indexSearchers, docPriorData, hyperParameter, analyzer, false);
@@ -593,7 +618,7 @@ public class Experiments {
 
 			String resDirName = OutputDirNames[i];
 
-			resDirName = resDirName + "temp-res/kld.txt";
+			resDirName = resDirName + "temp-res/02_kld.txt";
 
 			TextFileWriter writer = new TextFileWriter(resDirName);
 
@@ -634,7 +659,7 @@ public class Experiments {
 
 			String resDirName = OutputDirNames[i];
 
-			resDirName = resDirName + "temp-res/kld-fb.txt";
+			resDirName = resDirName + "temp-res/03_kld-fb.txt";
 
 			TextFileWriter writer = new TextFileWriter(resDirName);
 
@@ -931,7 +956,7 @@ public class Experiments {
 
 			String resDirName = OutputDirNames[i];
 
-			resDirName = resDirName + "temp-res/qld.txt";
+			resDirName = resDirName + "temp-res/01_qld.txt";
 
 			TextFileWriter writer = new TextFileWriter(resDirName);
 

@@ -298,8 +298,8 @@ public class SearchResultEvaluator {
 
 							for (int l = 0; l < metricTypes.length; l++) {
 								MetricType metricType = metricTypes[l];
-								Counter<String> c1 = baseline.getMetricQueryValue().getCounter(metricType);
-								Counter<String> c2 = target.getMetricQueryValue().getCounter(metricType);
+								Counter<String> c1 = baseline.getMetricQueryScores().getCounter(metricType);
+								Counter<String> c2 = target.getMetricQueryScores().getCounter(metricType);
 
 								double[] scores1 = new double[c1.size()];
 								double[] scores2 = new double[c2.size()];
@@ -326,8 +326,8 @@ public class SearchResultEvaluator {
 
 							for (int l = 0; l < metricTypes.length; l++) {
 								MetricType metricType = metricTypes[l];
-								Counter<String> c1 = baseline.getMetricQueryValue().getCounter(metricType);
-								Counter<String> c2 = target.getMetricQueryValue().getCounter(metricType);
+								Counter<String> c1 = baseline.getMetricQueryScores().getCounter(metricType);
+								Counter<String> c2 = target.getMetricQueryScores().getCounter(metricType);
 
 								double risk = 0;
 								double reward = 0;
@@ -372,7 +372,7 @@ public class SearchResultEvaluator {
 						}
 						sb3.append("\n");
 
-						CounterMap<String, MetricType> queryMetricValues = target.getMetricQueryValue().invert();
+						CounterMap<String, MetricType> queryMetricValues = target.getMetricQueryScores().invert();
 
 						List<String> queryIds = new ArrayList<String>(new TreeSet<String>(queryMetricValues.keySet()));
 

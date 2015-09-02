@@ -370,6 +370,11 @@ public class Metrics {
 	 * @param alpha
 	 * @return
 	 */
+	
+	public static double riskRewardTradeoff(Counter<String> baselines, Counter<String> targets) {
+		return riskRewardTradeoff(baselines, targets, 5);
+	}
+	
 	public static double riskRewardTradeoff(Counter<String> baselines, Counter<String> targets, double alpha) {
 		double[] rr = riskRewardFunction(baselines, targets);
 		double risk = rr[0];

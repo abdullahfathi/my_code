@@ -319,7 +319,8 @@ public class MIRPath {
 	public static final String[] DocIdMapFileNames = { TREC_CDS_DOCUMENT_ID_MAP_FILE, CLEF_EHEALTH_DOCUMENT_ID_MAP_FIE,
 			OHSUMED_DOCUMENT_ID_MAP_FILE, TREC_GENOMICS_DOCUMENT_ID_MAP_FILE };
 
-	public static final String[] AbbrFileNames = { TREC_CDS_ABBREVIATION_FILE, CLEF_EHEALTH_ABBREVIATION_FILE, OHSUMED_ABBREVIATION_FILE };
+	public static final String[] AbbrFileNames = { TREC_CDS_ABBREVIATION_FILE, CLEF_EHEALTH_ABBREVIATION_FILE, OHSUMED_ABBREVIATION_FILE,
+			TREC_GENOMICS_ABBREVIATION_FILE };
 
 	public static final String[] CollNames = { "TREC CDS", "CLEF eHealth", "OHSUMED", "TREC GENOMICS", "WIKI" };
 
@@ -328,5 +329,7 @@ public class MIRPath {
 
 	public static final String[] QueryDocFileNames = { TREC_CDS_QUERY_DOC_FILE, CLEF_EHEALTH_QUERY_DOC_FILE, OHSUMED_QUERY_DOC_FILE,
 			TREC_GENOMICS_QUERY_DOC_FILE };
+
+	public static final String[] CollDirs = { TREC_CDS_DIR, CLEF_EHEALTH_DIR, OHSUMED_DIR, TREC_GENOMICS_DIR };
 
 }

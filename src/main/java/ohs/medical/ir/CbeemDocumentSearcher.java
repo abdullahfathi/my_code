@@ -342,7 +342,7 @@ public class CbeemDocumentSearcher {
 			docScoreData[i] = DocumentSearcher.search(searchQuery, indexSearchers[i], top_k);
 		}
 
-		computePosteriors();
+		// computePosteriors();
 
 		setWordCountBoxes();
 

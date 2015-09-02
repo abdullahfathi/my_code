@@ -4,7 +4,9 @@ import java.text.NumberFormat;
 import java.util.Set;
 import java.util.TreeSet;
 
+import ohs.types.Counter;
 import ohs.types.CounterMap;
+import ohs.types.common.StrCounterMap;
 
 public class Performance {
 	private int total_relevant_in_ret;
@@ -23,38 +25,75 @@ public class Performance {
 
 	private int total_relevant_at_n;
 
-	private CounterMap<MetricType, String> metric_query_value;
+	private CounterMap<MetricType, String> metricQueryScores;
 
-	public Performance(int top_n, CounterMap<MetricType, String> metric_query_value) {
+	private double precision_risk_reward_tradeoff;
+
+	private double map_risk_reward_tradeoff;
+
+	private double ndcg_risk_reward_tradeoff;
+
+	public Performance(int top_n, CounterMap<MetricType, String> metricQueryScores) {
 		this.top_n = top_n;
-		this.metric_query_value = metric_query_value;
-		compute();
+		this.metricQueryScores = metricQueryScores;
+		computeAveragePerformance();
 	}
 
-	private void compute() {
-		total_retrieved = (int) metric_query_value.getCounter(MetricType.RETRIEVED).totalCount();
-		total_relevant = (int) metric_query_value.getCounter(MetricType.RELEVANT_ALL).totalCount();
-		total_relevant_in_ret = (int) metric_query_value.getCounter(MetricType.RELEVANT_IN_RET).totalCount();
-		total_relevant_at_n = (int) metric_query_value.getCounter(MetricType.RELEVANT_AT).totalCount();
-		map = metric_query_value.getCounter(MetricType.AP).average();
-		ndcg = metric_query_value.getCounter(MetricType.NDCG).average();
-		precision = metric_query_value.getCounter(MetricType.PRECISION).average();
+	private void computeAveragePerformance() {
+		total_retrieved = (int) metricQueryScores.getCounter(MetricType.RETRIEVED).totalCount();
+		total_relevant = (int) metricQueryScores.getCounter(MetricType.RELEVANT_ALL).totalCount();
+		total_relevant_in_ret = (int) metricQueryScores.getCounter(MetricType.RELEVANT_IN_RET).totalCount();
+		total_relevant_at_n = (int) metricQueryScores.getCounter(MetricType.RELEVANT_AT).totalCount();
+		map = metricQueryScores.getCounter(MetricType.AP).average();
+		ndcg = metricQueryScores.getCounter(MetricType.NDCG).average();
+		precision = metricQueryScores.getCounter(MetricType.PRECISION).average();
+	}
+
+	public void computeRiskRewardTradeoffs(Performance baseline) {
+		CounterMap<MetricType, String> baselineScores = baseline.getMetricQueryScores();
+		CounterMap<MetricType, String> targetScores = metricQueryScores;
+
+		MetricType[] mts = { MetricType.PRECISION, MetricType.AP, MetricType.NDCG };
+		double[] rrts = new double[mts.length];
+
+		for (int i = 0; i < mts.length; i++) {
+			MetricType mt = mts[i];
+			Counter<String> qs1 = baselineScores.getCounter(mt);
+			Counter<String> gs2 = targetScores.getCounter(mt);
+			rrts[i] = Metrics.riskRewardTradeoff(qs1, gs2);
+		}
+
+		precision_risk_reward_tradeoff = rrts[0];
+		map_risk_reward_tradeoff = rrts[1];
+		ndcg_risk_reward_tradeoff = rrts[2];
 	}
 
 	public double getMAP() {
 		return map;
 	}
 
-	public CounterMap<MetricType, String> getMetricQueryValue() {
-		return metric_query_value;
+	public double getMapRiskRewardTradeoff() {
+		return map_risk_reward_tradeoff;
+	}
+
+	public CounterMap<MetricType, String> getMetricQueryScores() {
+		return metricQueryScores;
 	}
 
 	public double getNDCG() {
 		return ndcg;
 	}
 
+	public double getNdcgRiskRewardTradeoff() {
+		return ndcg_risk_reward_tradeoff;
+	}
+
 	public double getPrecisionAtN() {
 		return precision;
+	}
+
+	public double getPrecisionRiskRewardTradeoff() {
+		return precision_risk_reward_tradeoff;
 	}
 
 	public int getTopN() {
@@ -88,7 +127,7 @@ public class Performance {
 		nf.setMinimumFractionDigits(5);
 		nf.setGroupingUsed(false);
 
-		Set<String> queryIds = new TreeSet<String>(metric_query_value.getCounter(MetricType.RETRIEVED).keySet());
+		Set<String> queryIds = new TreeSet<String>(metricQueryScores.getCounter(MetricType.RETRIEVED).keySet());
 
 		ret.append(String.format("[Performance for Top-%d]\n", top_n));
 		ret.append(String.format("Queries:\t%d\n", queryIds.size()));
@@ -115,7 +154,7 @@ public class Performance {
 				ret.append(qId);
 				for (int i = 0; i < mts.length; i++) {
 					MetricType mt = mts[i];
-					double value = metric_query_value.getCount(mt, qId);
+					double value = metricQueryScores.getCount(mt, qId);
 					if (i < 4) {
 						ret.append("\t" + (int) value);
 					} else {
