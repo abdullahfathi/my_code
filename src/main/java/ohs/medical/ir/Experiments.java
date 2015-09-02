@@ -50,7 +50,7 @@ public class Experiments {
 		// exp.searchByQLD();
 		// exp.searchByKLD();
 		// exp.searchByKLDFB();
-		exp.searchByCBEEM();
+		// exp.searchByCBEEM();
 		// exp.searchBySW();
 		// exp.searchByKLDSWPassage();
 		// exp.searchByKLDFbSwPassage();
@@ -150,7 +150,7 @@ public class Experiments {
 		TextFileReader reader = new TextFileReader(MIRPath.PERFORMANCE_FILE);
 		TextFileWriter writer = new TextFileWriter(MIRPath.PERFORMANCE_SUMMARY_FILE);
 
-		writer.write("FileName\tCollection\tModelName\tRelevant\tRetrieved\tRelInRet\tRelevantAt\tP\tMap\tNDCG\n");
+		writer.write("FileName\tCollection\tModelName\tRelevant\tRetrieved\tRelInRet\tRelevantAt\tP\tMap\tNDCG\tP_RRT\tMAP_RRT\tNDCG_RRT\n");
 
 		while (reader.hasNext()) {
 			List<String> lines = reader.getNextLines();
@@ -196,10 +196,15 @@ public class Experiments {
 			double p = Double.parseDouble(lines.get(7).split("\t")[1]);
 			double map = Double.parseDouble(lines.get(8).split("\t")[1]);
 			double ndcg = Double.parseDouble(lines.get(9).split("\t")[1]);
+			double p_rrt = Double.parseDouble(lines.get(10).split("\t")[1]);
+			double map_rrt = Double.parseDouble(lines.get(11).split("\t")[1]);
+			double ndcg_rrt = Double.parseDouble(lines.get(12).split("\t")[1]);
 
-			String output = String.format("%s\t%s\t%s\t%d\t%d\t%d\t%d\t%f\t%f\t%f",
+			String output = String.format("%s\t%s\t%s\t%d\t%d\t%d\t%d\t%f\t%f\t%f\t%f\t%f\t%f",
 
-			file.getPath(), collName, modelName, num_relevant, num_retrieved, num_relevant_in_retrieved, num_relevant_at, p, map, ndcg);
+			file.getPath(), collName, modelName, num_relevant, num_retrieved, num_relevant_in_retrieved, num_relevant_at,
+
+			p, map, ndcg, p_rrt, map_rrt, ndcg_rrt);
 
 			writer.write(output + "\n");
 

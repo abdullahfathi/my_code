@@ -127,7 +127,6 @@ public class DocumentScorer {
 		// ret.normalizeColumns();
 		ret.normalizeRows();
 		return ret;
-
 	}
 
 	private SparseVector computeClusterScores(SparseVector queryModel, List<SparseVector> clusterWordCounts, SparseVector collWordCounts) {

@@ -60,7 +60,7 @@ public class Performance {
 			MetricType mt = mts[i];
 			Counter<String> qs1 = baselineScores.getCounter(mt);
 			Counter<String> gs2 = targetScores.getCounter(mt);
-			rrts[i] = Metrics.riskRewardTradeoff(qs1, gs2);
+			rrts[i] = Metrics.riskRewardTradeoff(qs1, gs2, 1);
 		}
 
 		precision_risk_reward_tradeoff = rrts[0];
@@ -138,6 +138,9 @@ public class Performance {
 		ret.append(String.format("P@%d:\t%s\n", top_n, nf.format(precision)));
 		ret.append(String.format("MAP@%d:\t%s\n", top_n, nf.format(map)));
 		ret.append(String.format("NDCG@%d:\t%s\n", top_n, nf.format(ndcg)));
+		ret.append(String.format("P_RRT@%d:\t%s\n", top_n, nf.format(precision_risk_reward_tradeoff)));
+		ret.append(String.format("MAP_RRT@%d:\t%s\n", top_n, nf.format(map_risk_reward_tradeoff)));
+		ret.append(String.format("NDCG_RRT@%d:\t%s\n", top_n, nf.format(ndcg_risk_reward_tradeoff)));
 
 		if (showIndividuals) {
 			MetricType[] mts = { MetricType.RETRIEVED, MetricType.RELEVANT_ALL, MetricType.RELEVANT_IN_RET, MetricType.RELEVANT_AT,
