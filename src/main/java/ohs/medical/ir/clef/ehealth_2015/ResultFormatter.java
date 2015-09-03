@@ -70,7 +70,7 @@ public class ResultFormatter {
 			}
 
 			System.out.printf("%s -> %s\n", inputFile.getName(), outputFileName);
-			CounterMap<String, String> searchResults = PerformanceEvaluator.readSearchResults(inputFile.getPath());
+			StrCounterMap searchResults = PerformanceEvaluator.readSearchResults(inputFile.getPath());
 			searchResults = DocumentIdMapper.mapIndexIdsToDocIds(searchResults, docIdMap);
 
 			writeResults(outputFile, searchResults);
@@ -79,7 +79,7 @@ public class ResultFormatter {
 		System.out.println("process ends.");
 	}
 
-	private static void writeResults(File outputFile, CounterMap<String, String> resultData) {
+	private static void writeResults(File outputFile, StrCounterMap resultData) {
 		System.out.printf("write to [%s]\n", outputFile.getPath());
 		TextFileWriter writer = new TextFileWriter(outputFile);
 
@@ -87,7 +87,7 @@ public class ResultFormatter {
 		nf.setMinimumFractionDigits(20);
 		nf.setGroupingUsed(false);
 
-		CounterMap<String, String> temp = new CounterMap<String, String>();
+		StrCounterMap temp = new StrCounterMap();
 
 		for (String qId : resultData.keySet()) {
 			Counter<String> docScores = resultData.getCounter(qId);

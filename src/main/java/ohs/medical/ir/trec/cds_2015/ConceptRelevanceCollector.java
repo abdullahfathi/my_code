@@ -92,7 +92,7 @@ public class ConceptRelevanceCollector {
 
 			for (int j = 0; j < bqs.size(); j++) {
 				BaseQuery bq = bqs.get(j);
-				Counter<String> c = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
+				StrCounter c = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
 				SparseVector queryConceptWeights = DocumentSearcher.search(AnalyzerUtils.getQuery(c), wikiSearcher, 100);
 
 				writer.write(String.format("Q_%d:\t", j + 1) + getString(queryConceptWeights) + "\n");
@@ -149,8 +149,8 @@ public class ConceptRelevanceCollector {
 		}
 	}
 
-	private Counter<String> getConcepts(IndexReader reader, SparseVector conceptWeights) {
-		Counter<String> ret = new Counter<String>();
+	private StrCounter getConcepts(IndexReader reader, SparseVector conceptWeights) {
+		StrCounter ret = new StrCounter();
 
 		return ret;
 	}

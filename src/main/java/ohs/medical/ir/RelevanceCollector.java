@@ -14,9 +14,9 @@ import ohs.matrix.SparseVector;
 import ohs.medical.ir.query.BaseQuery;
 import ohs.medical.ir.query.QueryReader;
 import ohs.medical.ir.query.RelevanceReader;
-import ohs.types.Counter;
 import ohs.types.Indexer;
 import ohs.types.common.StrBidMap;
+import ohs.types.common.StrCounter;
 import ohs.types.common.StrCounterMap;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -71,7 +71,7 @@ public class RelevanceCollector {
 				queryRels = RelevanceReader.readTrecGenomicsRelevances(relDataFileNames[i]);
 			}
 
-			Counter<String> qWordCounts = new Counter<String>();
+			StrCounter qWordCounts = new StrCounter();
 
 			for (int j = 0; j < bqs.size(); j++) {
 				BaseQuery bq = bqs.get(j);
@@ -120,7 +120,7 @@ public class RelevanceCollector {
 				queryRels = RelevanceReader.readTrecGenomicsRelevances(relDataFileNames[i]);
 			}
 
-			List<Counter<String>> qs = new ArrayList<Counter<String>>();
+			List<StrCounter> qs = new ArrayList<StrCounter>();
 
 			for (int j = 0; j < bqs.size(); j++) {
 				BaseQuery bq = bqs.get(j);
@@ -149,7 +149,7 @@ public class RelevanceCollector {
 
 				Indexer<String> wordIndexer = new Indexer<String>();
 
-				Counter<String> qwcs = qs.get(j);
+				StrCounter qwcs = qs.get(j);
 
 				SparseVector q = VectorUtils.toSparseVector(qs.get(j), wordIndexer, true);
 
@@ -254,7 +254,7 @@ public class RelevanceCollector {
 				queryRels = RelevanceReader.readTrecGenomicsRelevances(relDataFileNames[i]);
 			}
 
-			List<Counter<String>> qs = new ArrayList<Counter<String>>();
+			List<StrCounter> qs = new ArrayList<StrCounter>();
 
 			for (int j = 0; j < bqs.size(); j++) {
 				BaseQuery bq = bqs.get(j);
@@ -283,7 +283,7 @@ public class RelevanceCollector {
 
 				Indexer<String> wordIndexer = new Indexer<String>();
 
-				Counter<String> qwcs = qs.get(j);
+				StrCounter qwcs = qs.get(j);
 
 				SparseVector q = VectorUtils.toSparseVector(qs.get(j), wordIndexer, true);
 
@@ -341,7 +341,7 @@ public class RelevanceCollector {
 		wcs.scale(1f / norm);
 	}
 
-	public String toString(Counter<String> c) {
+	public String toString(StrCounter c) {
 		StringBuffer sb = new StringBuffer();
 		List<String> keys = c.getSortedKeys();
 		for (int i = 0; i < keys.size(); i++) {

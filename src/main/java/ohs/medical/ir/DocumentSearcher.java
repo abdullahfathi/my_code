@@ -13,6 +13,7 @@ import ohs.matrix.SparseVector;
 import ohs.medical.ir.query.BaseQuery;
 import ohs.medical.ir.query.QueryReader;
 import ohs.types.Indexer;
+import ohs.types.common.StrCounter;
 import ohs.types.common.StrCounterMap;
 
 import org.apache.lucene.index.DirectoryReader;
@@ -116,7 +117,7 @@ public class DocumentSearcher {
 
 	public static SparseVector search(SparseVector queryModel, Indexer<String> wordIndexer, IndexSearcher indexSearcher, int top_k)
 			throws Exception {
-		Query q = AnalyzerUtils.getQuery(VectorUtils.toCounter(queryModel, wordIndexer));
+		Query q = AnalyzerUtils.getQuery((StrCounter) VectorUtils.toCounter(queryModel, wordIndexer));
 		return search(q, indexSearcher, top_k);
 	}
 

@@ -20,8 +20,8 @@ import ohs.medical.ir.MIRPath;
 import ohs.medical.ir.ResultWriter;
 import ohs.medical.ir.WordCountBox;
 import ohs.medical.ir.query.BaseQuery;
-import ohs.types.Counter;
 import ohs.types.Indexer;
+import ohs.types.common.StrCounter;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.IndexReader;
@@ -222,7 +222,7 @@ public class TrecCbeemDocumentSearcher {
 
 		List<String> qWords = AnalyzerUtils.getWords(bq.getSearchText(), analyzer);
 
-		Counter<String> qWordCounts = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
+		StrCounter qWordCounts = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
 		bq.setLuceneQuery(AnalyzerUtils.getQuery(qWords));
 
 		SparseVector qLM = VectorUtils.toSparseVector(qWordCounts, wordIndexer, true);

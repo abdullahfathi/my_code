@@ -31,9 +31,9 @@ import ohs.medical.ir.WordCountBox;
 import ohs.medical.ir.query.BaseQuery;
 import ohs.medical.ir.query.QueryReader;
 import ohs.medical.ir.query.RelevanceReader;
-import ohs.types.Counter;
 import ohs.types.Indexer;
 import ohs.types.common.StrBidMap;
+import ohs.types.common.StrCounter;
 import ohs.types.common.StrCounterMap;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -185,7 +185,7 @@ public class TrecSearcher {
 			for (int i = 0; i < qIds.size(); i++) {
 				String qId = qIds.get(i) + "";
 
-				Counter<String> docScores = cm.getCounter(qId);
+				StrCounter docScores = (StrCounter) cm.getCounter(qId);
 				List<String> docIds = docScores.getSortedKeys();
 
 				for (int j = 0; j < docIds.size(); j++) {
@@ -273,7 +273,7 @@ public class TrecSearcher {
 
 			Indexer<String> wordIndexer = new Indexer<String>();
 			StringBuffer qBuf = new StringBuffer(bq.getSearchText());
-			Counter<String> qWordCounts = AnalyzerUtils.getWordCounts(qBuf.toString(), analyzer);
+			StrCounter qWordCounts = AnalyzerUtils.getWordCounts(qBuf.toString(), analyzer);
 
 			SparseVector queryModel = VectorUtils.toSparseVector(qWordCounts, wordIndexer, true);
 			queryModel.normalize();
@@ -395,7 +395,7 @@ public class TrecSearcher {
 			BaseQuery bq = bqs.get(i);
 			System.out.println(bq);
 
-			Counter<String> qWordCounts = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
+			StrCounter qWordCounts = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
 
 			BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
 
@@ -430,7 +430,7 @@ public class TrecSearcher {
 
 			Indexer<String> wordIndexer = new Indexer<String>();
 			StringBuffer qBuf = new StringBuffer(bq.getSearchText());
-			Counter<String> qWordCounts = AnalyzerUtils.getWordCounts(qBuf.toString(), analyzer);
+			StrCounter qWordCounts = AnalyzerUtils.getWordCounts(qBuf.toString(), analyzer);
 
 			SparseVector qLM = VectorUtils.toSparseVector(qWordCounts, wordIndexer, true);
 			qLM.normalize();
@@ -511,7 +511,7 @@ public class TrecSearcher {
 
 			Indexer<String> wordIndexer = new Indexer<String>();
 			StringBuffer qBuf = new StringBuffer(bq.getSearchText());
-			Counter<String> qWordCounts = AnalyzerUtils.getWordCounts(qBuf.toString(), analyzer);
+			StrCounter qWordCounts = AnalyzerUtils.getWordCounts(qBuf.toString(), analyzer);
 
 			SparseVector queryModel = VectorUtils.toSparseVector(qWordCounts, wordIndexer, true);
 			queryModel.normalize();
@@ -594,7 +594,7 @@ public class TrecSearcher {
 			BaseQuery bq = bqs.get(i);
 			System.out.println(bq);
 
-			Counter<String> wordCounts = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
+			StrCounter wordCounts = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
 
 			BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
 
@@ -625,7 +625,7 @@ public class TrecSearcher {
 			BaseQuery bq = bqs.get(i);
 			System.out.println(bq);
 
-			Counter<String> qWordCounts = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
+			StrCounter qWordCounts = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
 
 			BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
 
@@ -659,7 +659,7 @@ public class TrecSearcher {
 
 			Indexer<String> wordIndexer = new Indexer<String>();
 			StringBuffer qBuf = new StringBuffer(bq.getSearchText());
-			Counter<String> qWordCounts = AnalyzerUtils.getWordCounts(qBuf.toString(), analyzer);
+			StrCounter qWordCounts = AnalyzerUtils.getWordCounts(qBuf.toString(), analyzer);
 
 			SparseVector queryModel = VectorUtils.toSparseVector(qWordCounts, wordIndexer, true);
 			queryModel.normalize();

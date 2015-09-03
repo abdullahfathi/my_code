@@ -81,7 +81,7 @@ public class PerformanceEvaluator {
 				double num_retrieved = docScores.size();
 
 				cm.setCount(MetricType.RETRIEVED, qId, num_retrieved);
-				cm.setCount(MetricType.RELEVANT_ALL, qId, num_relevant_in_judgements);
+				cm.setCount(MetricType.RELEVANT, qId, num_relevant_in_judgements);
 				cm.setCount(MetricType.RELEVANT_IN_RET, qId, num_relevant_in_result);
 				cm.setCount(MetricType.RELEVANT_AT, qId, num_relevant_at_n);
 
@@ -89,7 +89,7 @@ public class PerformanceEvaluator {
 				double ap = Metrics.averagePrecisionAtN(docIds, top_n, docRels);
 				double ndcg = Metrics.normalizedDiscountedCumulativeGainAtN(docIds, top_n, docRels);
 
-				cm.setCount(MetricType.PRECISION, qId, precision);
+				cm.setCount(MetricType.P, qId, precision);
 				cm.setCount(MetricType.AP, qId, ap);
 				cm.setCount(MetricType.NDCG, qId, ndcg);
 			}

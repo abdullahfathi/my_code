@@ -69,10 +69,10 @@ public class SearchResultEvaluator {
 
 				Counter<MetricType> c = new Counter<MetricType>();
 				c.setCount(MetricType.RETRIEVED, num_retrieved);
-				c.setCount(MetricType.RELEVANT_ALL, num_relevant_all);
+				c.setCount(MetricType.RELEVANT, num_relevant_all);
 				c.setCount(MetricType.RELEVANT_IN_RET, num_relevant_in_ret);
 				c.setCount(MetricType.RELEVANT_AT, num_relevant_at);
-				c.setCount(MetricType.PRECISION, precision);
+				c.setCount(MetricType.P, precision);
 				c.setCount(MetricType.AP, ap);
 				c.setCount(MetricType.NDCG, ndcg);
 				cm.setCounter(qId, c);
@@ -294,7 +294,7 @@ public class SearchResultEvaluator {
 						sb2.append(String.format("\t%s", nf.format((target.getNDCG()))));
 
 						{
-							MetricType[] metricTypes = { MetricType.PRECISION, MetricType.AP, MetricType.NDCG };
+							MetricType[] metricTypes = { MetricType.P, MetricType.AP, MetricType.NDCG };
 
 							for (int l = 0; l < metricTypes.length; l++) {
 								MetricType metricType = metricTypes[l];
@@ -319,7 +319,7 @@ public class SearchResultEvaluator {
 						}
 
 						{
-							MetricType[] metricTypes = { MetricType.PRECISION, MetricType.AP, MetricType.NDCG };
+							MetricType[] metricTypes = { MetricType.P, MetricType.AP, MetricType.NDCG };
 
 							NumberFormat nf2 = NumberFormat.getInstance();
 							nf2.setMinimumFractionDigits(6);
@@ -360,8 +360,8 @@ public class SearchResultEvaluator {
 					}
 
 					{
-						MetricType[] types = new MetricType[] { MetricType.RETRIEVED, MetricType.RELEVANT_ALL, MetricType.RELEVANT_IN_RET,
-								MetricType.RELEVANT_AT, MetricType.PRECISION, MetricType.AP, MetricType.NDCG };
+						MetricType[] types = new MetricType[] { MetricType.RETRIEVED, MetricType.RELEVANT, MetricType.RELEVANT_IN_RET,
+								MetricType.RELEVANT_AT, MetricType.P, MetricType.AP, MetricType.NDCG };
 
 						StringBuffer sb3 = new StringBuffer();
 						sb3.append(String.format("Top-%d", target.getTopN()));
@@ -404,7 +404,7 @@ public class SearchResultEvaluator {
 							for (int m = 0; m < types.length; m++) {
 								MetricType type = types[m];
 								double score = metricValues.getCount(type);
-								if (type == MetricType.PRECISION || type == MetricType.AP || type == MetricType.NDCG) {
+								if (type == MetricType.P || type == MetricType.AP || type == MetricType.NDCG) {
 									sb3.append(String.format("\t%s", nf.format(score)));
 								} else {
 									sb3.append(String.format("\t%d", (int) score));
@@ -420,7 +420,7 @@ public class SearchResultEvaluator {
 							MetricType type = types[l];
 							double score = overallValues.getCount(types[l]);
 
-							if (type == MetricType.PRECISION || type == MetricType.AP || type == MetricType.NDCG) {
+							if (type == MetricType.P || type == MetricType.AP || type == MetricType.NDCG) {
 								score /= queryIds.size();
 								sb3.append(String.format("\t%s", nf.format(score)));
 							} else {

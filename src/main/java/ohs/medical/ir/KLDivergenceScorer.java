@@ -228,6 +228,8 @@ public class KLDivergenceScorer {
 		int propFunction = 0;
 		double sigma = 175;
 
+		System.out.println(VectorUtils.toCounter(qLM, wcb.getWordIndexer()));
+
 		for (int i = 0; i < wcb.getDocWordCounts().rowSize(); i++) {
 			int docId = wcb.getDocWordCounts().indexAtRowLoc(i);
 			List<Integer> words = wcb.getDocWords().get(docId);
@@ -288,7 +290,7 @@ public class KLDivergenceScorer {
 				double approx_prob = Math.exp(-div_sum);
 				plmScores.incrementAtLoc(j, center, approx_prob);
 			}
-			double score = plmScores.max();
+			double score = plmScores.size() == 0 ? 0 : plmScores.max();
 			ret.incrementAtLoc(i, docId, score);
 
 		}

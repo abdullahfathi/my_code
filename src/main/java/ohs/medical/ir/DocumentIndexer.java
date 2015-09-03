@@ -95,10 +95,10 @@ public class DocumentIndexer {
 		// di.indexTrecCds();
 		// di.indexClefEHealth();
 		// di.indexOhsumed();
-//		di.indexTrecGenomics();
+		// di.indexTrecGenomics();
 
 		// di.indexWiki();
-		di.makeDocumentIdMap();
+		// di.makeDocumentIdMap();
 
 		System.out.println("process ends.");
 	}

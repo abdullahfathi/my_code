@@ -18,6 +18,7 @@ import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.types.ListMap;
 import ohs.types.common.IntCounterMap;
+import ohs.types.common.StrCounter;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
@@ -29,8 +30,8 @@ import org.apache.lucene.util.BytesRef;
 
 public class WordCountBox {
 
-	public static Counter<String> getDocFreqs(IndexReader indexReader, String field, Collection<String> c) throws Exception {
-		Counter<String> ret = new Counter<String>();
+	public static StrCounter getDocFreqs(IndexReader indexReader, String field, Collection<String> c) throws Exception {
+		StrCounter ret = new StrCounter();
 		for (String word : c) {
 			Term term = new Term(field, word);
 			double df = indexReader.docFreq(term);
@@ -132,8 +133,8 @@ public class WordCountBox {
 		return ret;
 	}
 
-	public static Counter<String> getWordCounts(IndexReader indexReader, String field, Counter<String> c) throws Exception {
-		Counter<String> ret = new Counter<String>();
+	public static StrCounter getWordCounts(IndexReader indexReader, String field, StrCounter c) throws Exception {
+		StrCounter ret = new StrCounter();
 		for (String word : c.keySet()) {
 			Term term = new Term(field, word);
 			double cnt = indexReader.totalTermFreq(term);

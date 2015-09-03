@@ -1,21 +1,20 @@
 package ohs.medical.ir;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
 import ohs.lucene.common.AnalyzerUtils;
-import ohs.lucene.common.IndexFieldName;
 import ohs.lucene.common.MedicalEnglishAnalyzer;
-import ohs.math.VectorUtils;
-import ohs.matrix.SparseMatrix;
 import ohs.types.Counter;
+import ohs.types.CounterMap;
 import ohs.types.common.StrCounter;
 import ohs.types.common.StrCounterMap;
+import ohs.utils.StrUtils;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 
 public class AbbreviationExpander {
 
@@ -62,7 +61,73 @@ public class AbbreviationExpander {
 		}
 		reader.close();
 
-		System.out.println(ret.toString());
+		ret.normalize();
+
+		// System.out.println(ret.toString());
+
+		return ret;
+	}
+
+	private StrCounterMap abbrMap;
+
+	public AbbreviationExpander(String fileName) throws Exception {
+		abbrMap = readAbbreviationData(fileName);
+	}
+
+	public String expand(String searchText) {
+		StrCounter ret = new StrCounter();
+		double mixture = 0.5;
+
+		List<String> words = StrUtils.split(searchText);
+		CounterMap<String, String> cm = new CounterMap<String, String>();
+
+		StringBuffer sb = new StringBuffer();
+
+		for (int i = 0; i < words.size(); i++) {
+			String word = words.get(i);
+			sb.append(word);
+			if (abbrMap.containsKey(word) && !cm.containsKey(word)) {
+				Counter<String> c = abbrMap.getCounter(word);
+				sb.append(" (");
+				for (String w : c.getSortedKeys()) {
+					sb.append(" " + w);
+				}
+				sb.append(" )");
+			}
+			sb.append(" ");
+		}
+
+		return sb.toString().trim();
+	}
+
+	public StrCounter expand(StrCounter qLM) {
+		StrCounter ret = new StrCounter();
+		double mixture = 0.5;
+
+		for (String word : qLM.keySet()) {
+			double prob = qLM.getCount(word);
+			if (abbrMap.containsKey(word)) {
+				Counter<String> c = abbrMap.getCounter(word);
+
+				double prob_for_query_word = prob * (1 - mixture);
+				double prob_for_abbr_word = prob * mixture;
+
+				for (String w : c.keySet()) {
+					double prob2 = c.getCount(w);
+					ret.incrementCount(w, prob_for_abbr_word * prob2);
+				}
+
+				ret.incrementCount(word, prob_for_query_word);
+
+				// System.out.println(tok);
+				// System.out.println(abbrMap.getCounter(tok));
+				// System.out.println();
+			} else {
+				ret.incrementCount(word, prob);
+			}
+		}
+
+		double sum = ret.totalCount();
 
 		return ret;
 	}

@@ -17,6 +17,7 @@ import ohs.matrix.Vector;
 import ohs.medical.ir.query.BaseQuery;
 import ohs.types.Counter;
 import ohs.types.Indexer;
+import ohs.types.common.StrCounter;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.IndexReader;
@@ -67,7 +68,7 @@ public class CbeemDocumentSearcher {
 		num_colls = indexSearchers.length;
 	}
 
-	private SparseVector[] computeRelevanceModels() throws IOException {
+	private SparseVector[] getRelevanceModels() throws IOException {
 		double[] cnt_sum_in_each_coll = getCollWordCountSums();
 		double cnt_sum_in_all_colls = ArrayMath.sum(cnt_sum_in_each_coll);
 
@@ -230,7 +231,7 @@ public class CbeemDocumentSearcher {
 			}
 		}
 
-		SparseVector[] rms = computeRelevanceModels();
+		SparseVector[] rms = getRelevanceModels();
 
 		double[] mixture_for_each_coll_rm = new double[num_colls];
 
@@ -266,6 +267,8 @@ public class CbeemDocumentSearcher {
 			// mixture_for_each_coll_rm[targetId] += (0.5 * avg);
 			mixture_for_each_coll_rm[colId] += (avg);
 		}
+
+		// mixture_for_each_coll_rm[colId] = score_sum_except_target_coll;
 
 		ArrayMath.normalize(mixture_for_each_coll_rm, mixture_for_each_coll_rm);
 
@@ -320,7 +323,7 @@ public class CbeemDocumentSearcher {
 		this.bq = bq;
 
 		List<String> queryWords = AnalyzerUtils.getWords(bq.getSearchText(), analyzer);
-		Counter<String> queryWordCounts = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
+		StrCounter queryWordCounts = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
 
 		bq.setLuceneQuery(AnalyzerUtils.getQuery(queryWords));
 
@@ -335,10 +338,9 @@ public class CbeemDocumentSearcher {
 		for (int i = 0; i < num_colls; i++) {
 			Query searchQuery = bq.getLuceneQuery();
 			int top_k = hyperParam.getTopK();
-			//
-			// if (colId != i) {
-			// top_k = hyperParam.getNumFBDocs();
-			// }
+			if (colId != i) {
+				top_k = hyperParam.getNumFBDocs();
+			}
 			docScoreData[i] = DocumentSearcher.search(searchQuery, indexSearchers[i], top_k);
 		}
 

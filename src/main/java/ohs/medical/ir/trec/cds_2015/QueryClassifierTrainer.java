@@ -19,10 +19,10 @@ import ohs.medical.ir.query.QueryReader;
 import ohs.medical.ir.query.TrecCdsQuery;
 import ohs.ml.svm.wrapper.LibSvmTrainer;
 import ohs.ml.svm.wrapper.LibSvmWrapper;
-import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.types.ListMap;
+import ohs.types.common.StrCounter;
 import ohs.utils.StrUtils;
 import de.bwaldvogel.liblinear.Feature;
 import de.bwaldvogel.liblinear.FeatureNode;
@@ -70,7 +70,7 @@ public class QueryClassifierTrainer {
 					relevance = Double.parseDouble(parts[1]);
 				}
 
-				Counter<String> c = new Counter<String>();
+				StrCounter c = new StrCounter();
 				String[] toks = parts[2].split(" ");
 				for (int j = 0; j < toks.length; j++) {
 					String[] two = StrUtils.split2Two(":", toks[j]);
@@ -141,7 +141,7 @@ public class QueryClassifierTrainer {
 					relevance = Double.parseDouble(parts[1]);
 				}
 
-				Counter<String> c = new Counter<String>();
+				StrCounter c = new StrCounter();
 				String[] toks = parts[2].split(" ");
 				for (int j = 0; j < toks.length; j++) {
 					String[] two = StrUtils.split2Two(":", toks[j]);

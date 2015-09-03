@@ -27,11 +27,11 @@ public class Performance {
 
 	private CounterMap<MetricType, String> metricQueryScores;
 
-	private double precision_risk_reward_tradeoff;
+	private double precision_rrt;
 
-	private double map_risk_reward_tradeoff;
+	private double map_rrt;
 
-	private double ndcg_risk_reward_tradeoff;
+	private double ndcg_rrt;
 
 	public Performance(int top_n, CounterMap<MetricType, String> metricQueryScores) {
 		this.top_n = top_n;
@@ -41,19 +41,19 @@ public class Performance {
 
 	private void computeAveragePerformance() {
 		total_retrieved = (int) metricQueryScores.getCounter(MetricType.RETRIEVED).totalCount();
-		total_relevant = (int) metricQueryScores.getCounter(MetricType.RELEVANT_ALL).totalCount();
+		total_relevant = (int) metricQueryScores.getCounter(MetricType.RELEVANT).totalCount();
 		total_relevant_in_ret = (int) metricQueryScores.getCounter(MetricType.RELEVANT_IN_RET).totalCount();
 		total_relevant_at_n = (int) metricQueryScores.getCounter(MetricType.RELEVANT_AT).totalCount();
 		map = metricQueryScores.getCounter(MetricType.AP).average();
 		ndcg = metricQueryScores.getCounter(MetricType.NDCG).average();
-		precision = metricQueryScores.getCounter(MetricType.PRECISION).average();
+		precision = metricQueryScores.getCounter(MetricType.P).average();
 	}
 
 	public void computeRiskRewardTradeoffs(Performance baseline) {
 		CounterMap<MetricType, String> baselineScores = baseline.getMetricQueryScores();
 		CounterMap<MetricType, String> targetScores = metricQueryScores;
 
-		MetricType[] mts = { MetricType.PRECISION, MetricType.AP, MetricType.NDCG };
+		MetricType[] mts = { MetricType.P, MetricType.AP, MetricType.NDCG };
 		double[] rrts = new double[mts.length];
 
 		for (int i = 0; i < mts.length; i++) {
@@ -63,9 +63,9 @@ public class Performance {
 			rrts[i] = Metrics.riskRewardTradeoff(qs1, gs2, 1);
 		}
 
-		precision_risk_reward_tradeoff = rrts[0];
-		map_risk_reward_tradeoff = rrts[1];
-		ndcg_risk_reward_tradeoff = rrts[2];
+		precision_rrt = rrts[0];
+		map_rrt = rrts[1];
+		ndcg_rrt = rrts[2];
 	}
 
 	public double getMAP() {
@@ -73,7 +73,7 @@ public class Performance {
 	}
 
 	public double getMapRiskRewardTradeoff() {
-		return map_risk_reward_tradeoff;
+		return map_rrt;
 	}
 
 	public CounterMap<MetricType, String> getMetricQueryScores() {
@@ -85,7 +85,7 @@ public class Performance {
 	}
 
 	public double getNdcgRiskRewardTradeoff() {
-		return ndcg_risk_reward_tradeoff;
+		return ndcg_rrt;
 	}
 
 	public double getPrecisionAtN() {
@@ -93,7 +93,7 @@ public class Performance {
 	}
 
 	public double getPrecisionRiskRewardTradeoff() {
-		return precision_risk_reward_tradeoff;
+		return precision_rrt;
 	}
 
 	public int getTopN() {
@@ -117,10 +117,10 @@ public class Performance {
 	}
 
 	public String toString() {
-		return toString(false);
+		return toString(false, null);
 	}
 
-	public String toString(boolean showIndividuals) {
+	public String toString(boolean showEachQueryPerformance, Performance baseline) {
 		StringBuffer ret = new StringBuffer();
 
 		NumberFormat nf = NumberFormat.getInstance();
@@ -138,32 +138,50 @@ public class Performance {
 		ret.append(String.format("P@%d:\t%s\n", top_n, nf.format(precision)));
 		ret.append(String.format("MAP@%d:\t%s\n", top_n, nf.format(map)));
 		ret.append(String.format("NDCG@%d:\t%s\n", top_n, nf.format(ndcg)));
-		ret.append(String.format("P_RRT@%d:\t%s\n", top_n, nf.format(precision_risk_reward_tradeoff)));
-		ret.append(String.format("MAP_RRT@%d:\t%s\n", top_n, nf.format(map_risk_reward_tradeoff)));
-		ret.append(String.format("NDCG_RRT@%d:\t%s\n", top_n, nf.format(ndcg_risk_reward_tradeoff)));
+		ret.append(String.format("P_RRT@%d:\t%s\n", top_n, nf.format(precision_rrt)));
+		ret.append(String.format("MAP_RRT@%d:\t%s\n", top_n, nf.format(map_rrt)));
+		ret.append(String.format("NDCG_RRT@%d:\t%s\n", top_n, nf.format(ndcg_rrt)));
 
-		if (showIndividuals) {
-			MetricType[] mts = { MetricType.RETRIEVED, MetricType.RELEVANT_ALL, MetricType.RELEVANT_IN_RET, MetricType.RELEVANT_AT,
-					MetricType.PRECISION, MetricType.AP, MetricType.NDCG };
+		if (showEachQueryPerformance) {
+			MetricType[] mts = { MetricType.RETRIEVED, MetricType.RELEVANT, MetricType.RELEVANT_IN_RET, MetricType.RELEVANT_AT,
+					MetricType.P, MetricType.AP, MetricType.NDCG };
 
-			ret.append("\n[Individual Performances]\n");
+			ret.append("[Individual Performances]\n");
 			ret.append("Id");
 			for (MetricType mt : mts) {
 				ret.append(String.format("\t%s", mt));
 			}
+
+			if (baseline != null) {
+				for (int i = 4; i < mts.length; i++) {
+					ret.append(String.format("\t%s_CHN", mts[i]));
+				}
+			}
+
 			ret.append("\n");
 
 			for (String qId : queryIds) {
 				ret.append(qId);
 				for (int i = 0; i < mts.length; i++) {
 					MetricType mt = mts[i];
-					double value = metricQueryScores.getCount(mt, qId);
+					double score = metricQueryScores.getCount(mt, qId);
 					if (i < 4) {
-						ret.append("\t" + (int) value);
+						ret.append("\t" + (int) score);
 					} else {
-						ret.append("\t" + nf.format(value));
+						ret.append("\t" + nf.format(score));
 					}
 				}
+
+				if (baseline != null) {
+					for (int i = 4; i < mts.length; i++) {
+						MetricType mt = mts[i];
+						double score = metricQueryScores.getCount(mt, qId);
+						double baseline_score = baseline.getMetricQueryScores().getCount(mt, qId);
+						double change = score - baseline_score;
+						ret.append("\t" + nf.format(change));
+					}
+				}
+
 				ret.append("\n");
 			}
 		}
