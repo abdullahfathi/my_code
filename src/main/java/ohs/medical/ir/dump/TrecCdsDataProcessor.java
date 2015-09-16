@@ -177,6 +177,7 @@ public class TrecCdsDataProcessor {
 			Element titleElem = (Element) xmlDoc.getElementsByTagName("article-title").item(0);
 			Element absElem = (Element) xmlDoc.getElementsByTagName("abstract").item(0);
 			Element bodyElem = (Element) xmlDoc.getElementsByTagName("body").item(0);
+	
 
 			if (titleElem != null) {
 				title = titleElem.getTextContent().trim();

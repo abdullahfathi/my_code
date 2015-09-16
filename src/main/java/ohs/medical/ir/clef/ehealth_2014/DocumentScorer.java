@@ -21,6 +21,7 @@ import ohs.matrix.SparseVector;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
+import ohs.types.common.StrCounter;
 
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
@@ -142,7 +143,8 @@ public class DocumentScorer {
 
 				double count_w_in_cluster = cwc.valueAlways(w);
 				double count_sum_in_cluster = cwc.sum();
-				double prob_w_in_cluster = (count_w_in_cluster + dirichlet_prior * prob_w_in_collection) / (count_sum_in_cluster + dirichlet_prior);
+				double prob_w_in_cluster = (count_w_in_cluster + dirichlet_prior * prob_w_in_collection)
+						/ (count_sum_in_cluster + dirichlet_prior);
 
 				double prob_w_in_tr_doc = 0;
 				prob_w_in_cluster = (1 - trans_mixture) * prob_w_in_cluster + trans_mixture * prob_w_in_tr_doc;
@@ -163,7 +165,8 @@ public class DocumentScorer {
 		return ret;
 	}
 
-	private SparseVector computeDocumentScores(SparseVector queryModel, SparseMatrix docWordCounts, SparseVector collWordCounts, SparseMatrix transModels) {
+	private SparseVector computeDocumentScores(SparseVector queryModel, SparseMatrix docWordCounts, SparseVector collWordCounts,
+			SparseMatrix transModels) {
 		SparseVector ret = new SparseVector(docWordCounts.rowSize());
 
 		for (int i = 0; i < queryModel.size(); i++) {
@@ -215,7 +218,8 @@ public class DocumentScorer {
 		return ret;
 	}
 
-	private SparseVector computeRelevanceModel(SparseVector docScores, SparseMatrix docWordCounts, SparseVector collWordCounts, SparseVector docPriors) {
+	private SparseVector computeRelevanceModel(SparseVector docScores, SparseMatrix docWordCounts, SparseVector collWordCounts,
+			SparseVector docPriors) {
 
 		Set<Integer> fbWords = new HashSet<Integer>();
 
@@ -283,7 +287,8 @@ public class DocumentScorer {
 		return VectorUtils.toSparseVector(ret);
 	}
 
-	private SparseVector computeRelevanceModelMixture(List<SparseVector> indexScoreData, List<SparseMatrix> docWordCountData, List<SparseVector> docPriorData) {
+	private SparseVector computeRelevanceModelMixture(List<SparseVector> indexScoreData, List<SparseMatrix> docWordCountData,
+			List<SparseVector> docPriorData) {
 		List<SparseVector> relevanceModels = new ArrayList<SparseVector>();
 
 		for (int i = 0; i < indexScoreData.size(); i++) {
@@ -318,7 +323,8 @@ public class DocumentScorer {
 		return VectorUtils.toSparseVector(ret);
 	}
 
-	private CounterMap<Integer, Integer> computeTranslatedDocumentModels(SparseMatrix docWordCounts, SparseVector collWordCounts, SparseMatrix transMatrix) {
+	private CounterMap<Integer, Integer> computeTranslatedDocumentModels(SparseMatrix docWordCounts, SparseVector collWordCounts,
+			SparseMatrix transMatrix) {
 
 		CounterMap<Integer, Integer> ret = new CounterMap<Integer, Integer>();
 
@@ -660,8 +666,8 @@ public class DocumentScorer {
 		return ret;
 	}
 
-	private Counter<String> getCounter(List<String> words) {
-		Counter<String> ret = new Counter<String>();
+	private StrCounter getCounter(List<String> words) {
+		StrCounter ret = new StrCounter();
 		for (String word : words) {
 			ret.incrementCount(word, 1);
 		}
@@ -726,7 +732,7 @@ public class DocumentScorer {
 		return ret;
 	}
 
-	private SparseVector getModel(Counter<String> wordCounts) {
+	private SparseVector getModel(StrCounter wordCounts) {
 		SparseVector ret = VectorUtils.toSparseVector(wordCounts, wordIndexer);
 		ret.normalize();
 		System.out.printf("Model:\t%s\n", VectorUtils.toCounter(ret, wordIndexer));
@@ -774,7 +780,8 @@ public class DocumentScorer {
 		System.out.printf("Entire vocabulary size:\t%d\n", wordIndexer.size());
 	}
 
-	public Counter<Integer> score(List<String> queryWords, List<SparseVector> docScoreData, List<List<String>> dischargeWords) throws Exception {
+	public Counter<Integer> score(List<String> queryWords, List<SparseVector> docScoreData, List<List<String>> dischargeWords)
+			throws Exception {
 
 		SparseVector queryModel = getModel(getCounter(queryWords));
 
@@ -820,8 +827,8 @@ public class DocumentScorer {
 		if (useClustering) {
 			DocumentClusterer docClusterer = new DocumentClusterer(
 
-			docScoreData.get(0), docWordCountData.get(0), collWordCountData.get(0), docFreqData.get(0), indexReaders.get(0).maxDoc(), docScoreData.get(0)
-					.size(), 0.9, wordIndexer);
+			docScoreData.get(0), docWordCountData.get(0), collWordCountData.get(0), docFreqData.get(0), indexReaders.get(0).maxDoc(),
+					docScoreData.get(0).size(), 0.9, wordIndexer);
 
 			docClusterer.doClustering();
 
