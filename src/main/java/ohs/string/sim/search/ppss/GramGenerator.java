@@ -15,7 +15,7 @@ import ohs.string.sim.search.ppss.Gram.Type;
 public class GramGenerator implements Serializable {
 
 	public static List<Gram[]> generate(GramGenerator gramGenerator, List<StringRecord> ss) {
-		StringSorter.sort(ss);
+		StringSorter.sortByLength(ss);
 
 		List<Gram[]> ret = new ArrayList<Gram[]>();
 		for (int i = 0; i < ss.size(); i++) {

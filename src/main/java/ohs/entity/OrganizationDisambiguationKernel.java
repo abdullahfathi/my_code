@@ -2,15 +2,12 @@ package ohs.entity;
 
 import java.io.BufferedWriter;
 import java.io.Serializable;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import com.sun.org.apache.xpath.internal.operations.Or;
 
 import ohs.classifier.centroid.CentroidClassifier;
 import ohs.entity.OrganizationDetector.UnivComponent;
@@ -19,7 +16,6 @@ import ohs.entity.data.struct.Organization;
 import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
-import ohs.math.VectorMath;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseVector;
 import ohs.string.sim.search.ppss.Gram;
@@ -28,7 +24,6 @@ import ohs.string.sim.search.ppss.GramOrderer;
 import ohs.string.sim.search.ppss.GramWeighter;
 import ohs.string.sim.search.ppss.PivotalPrefixStringSearcher;
 import ohs.string.sim.search.ppss.StringRecord;
-import ohs.types.BidMap;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
@@ -51,6 +46,7 @@ public class OrganizationDisambiguationKernel implements Serializable {
 	 */
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
+
 		System.out.println("process ends.");
 	}
 
@@ -61,7 +57,8 @@ public class OrganizationDisambiguationKernel implements Serializable {
 
 		OrganizationDisambiguationKernel odk = new OrganizationDisambiguationKernel();
 		odk.readOrganizations(orgFileName);
-		odk.createOrganizationNormalizer(abbrFileName);
+		odk.createDetector();
+		odk.createNormalizer(abbrFileName);
 		odk.createSearchers(null);
 		// odk.createClassifiers();
 		// odk.write(ENTPath.ODK_FILE);
@@ -164,7 +161,7 @@ public class OrganizationDisambiguationKernel implements Serializable {
 
 	private OrganizationNormalizer normalizer;
 
-	private OrganizationDetector detector = new OrganizationDetector();
+	private OrganizationDetector detector;
 
 	private TextFileWriter logWriter = new TextFileWriter(ENTPath.ODK_LOG_FILE);
 
@@ -221,10 +218,29 @@ public class OrganizationDisambiguationKernel implements Serializable {
 		}
 	}
 
-	public void createOrganizationNormalizer(String fileName) {
+	public void createDetector() {
+		detector = new OrganizationDetector();
+	}
+
+	/**
+	 * Create OrganizationNormalizer with patterns in a given file.
+	 * 
+	 * @param fileName
+	 * 
+	 * 
+	 */
+	public void createNormalizer(String fileName) {
 		normalizer = new OrganizationNormalizer(fileName);
 	}
 
+	/**
+	 * Create two pivotal prefix searchers for English and Korean. If extOrgFileName is given, global gram orders are determined based on
+	 * external organization names.
+	 * 
+	 * @param extOrgFileName
+	 * 
+	 *            Contains external organization names. They are used to compute global gram orders employed in Searchers.
+	 */
 	public void createSearchers(String extOrgFileName) {
 		Counter<BilingualText> c = null;
 
@@ -460,6 +476,11 @@ public class OrganizationDisambiguationKernel implements Serializable {
 		return ret;
 	}
 
+	/**
+	 * Read organization names. The input of ODK is mapped to the a set of organization names.
+	 * 
+	 * @param orgFileName
+	 */
 	public void readOrganizations(String orgFileName) {
 		orgs = DataReader.readOrganizations(orgFileName);
 		orgMap = new HashMap<Integer, Organization>();

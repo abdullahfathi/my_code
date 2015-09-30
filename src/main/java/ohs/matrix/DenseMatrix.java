@@ -17,7 +17,12 @@ public class DenseMatrix implements Matrix {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		double[][] a = { { 0, 1 }, { 2, 3 } };
 
+		DenseMatrix m = new DenseMatrix(a);
+
+		System.out.println(m.toString());
+		System.out.println();
 	}
 
 	public static DenseMatrix read(ObjectInputStream ois) throws Exception {

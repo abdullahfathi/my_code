@@ -12,14 +12,14 @@ import java.util.List;
  */
 public class StringSorter implements Serializable {
 
-	public static class StringComparator implements Comparator<StringRecord> {
+	public static class LengthComparator implements Comparator<StringRecord> {
 		@Override
 		public int compare(StringRecord o1, StringRecord o2) {
 			return o1.getString().length() - o2.getString().length();
 		}
 	}
 
-	public static void sort(List<StringRecord> ss) {
-		Collections.sort(ss, new StringComparator());
+	public static void sortByLength(List<StringRecord> ss) {
+		Collections.sort(ss, new LengthComparator());
 	}
 }

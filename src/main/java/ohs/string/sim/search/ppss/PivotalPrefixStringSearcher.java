@@ -165,12 +165,12 @@ public class PivotalPrefixStringSearcher implements Serializable {
 		List<BilingualText> orgNames = DataReader.readBaseOrgNames(ENTPath.BASE_ORG_NAME_FILE);
 		// Counter<BilingualText> externalOrgCounts = DataReader.readBilingualTextCounter(ENTPath.DOMESTIC_PAPER_ORG_NAME_FILE);
 
-		List<StringRecord> strings = new ArrayList<StringRecord>();
-		List<StringRecord> strings2 = new ArrayList<StringRecord>();
+		List<StringRecord> srs = new ArrayList<StringRecord>();
+		List<StringRecord> srs2 = new ArrayList<StringRecord>();
 
 		for (int i = 0; i < orgNames.size(); i++) {
-			strings.add(new StringRecord(i, orgNames.get(i).getKorean()));
-			strings2.add(new StringRecord(i, orgNames.get(i).getKorean()));
+			srs.add(new StringRecord(i, orgNames.get(i).getKorean()));
+			srs2.add(new StringRecord(i, orgNames.get(i).getKorean()));
 		}
 
 		// GramOrderer gramOrderer = new GramOrderer();
@@ -196,7 +196,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 
 		PivotalPrefixStringSearcher ppss = new PivotalPrefixStringSearcher(q, tau, true);
 		// ppss.setGramSorter(gramOrderer);
-		ppss.index(strings);
+		ppss.index(srs);
 		// ppss.write(ENTPath.PPSS_INDEX_FILE);
 		// ppss.writeObject(ENTPath.PPSS_OBJECT_FILE);
 
@@ -461,7 +461,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 	}
 
 	public void index(List<StringRecord> srs) {
-		StringSorter.sort(srs);
+		StringSorter.sortByLength(srs);
 
 		ss = new ArrayList<StringRecord>();
 		allGrams = new ArrayList<Gram[]>();

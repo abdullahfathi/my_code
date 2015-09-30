@@ -95,7 +95,7 @@ public class TestDataGenerater {
 
 		OrganizationDisambiguationKernel odk = new OrganizationDisambiguationKernel();
 		odk.readOrganizations(orgFileName);
-		odk.createOrganizationNormalizer(abbrFileName);
+		odk.createNormalizer(abbrFileName);
 		odk.createSearchers(null);
 		// odk.createClassifiers();
 		// odk.write(ENTPath.ODK_FILE);
