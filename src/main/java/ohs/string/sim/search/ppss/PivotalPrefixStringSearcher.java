@@ -45,16 +45,16 @@ public class PivotalPrefixStringSearcher implements Serializable {
 	 */
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
-		// test1();
+		test1();
 		// test2();
-		test3();
+		// test3();
 		System.out.println("process ends.");
 	}
 
 	public static void test1() throws Exception {
 
 		List<BilingualText> orgNames = DataReader.readBaseOrgNames(ENTPath.BASE_ORG_NAME_FILE);
-		Counter<BilingualText> externalOrgCounts = DataReader.readBilingualTextCounter(ENTPath.DOMESTIC_PAPER_ORG_NAME_FILE);
+		Counter<BilingualText> extOrgCounts = DataReader.readBilingualTextCounter(ENTPath.DOMESTIC_PAPER_ORG_NAME_FILE);
 
 		List<StringRecord> strings = new ArrayList<StringRecord>();
 		List<StringRecord> strings2 = new ArrayList<StringRecord>();
@@ -66,22 +66,21 @@ public class PivotalPrefixStringSearcher implements Serializable {
 
 		GramOrderer gramOrderer = new GramOrderer();
 
-		{
-			List<StringRecord> ss = new ArrayList<StringRecord>();
-
-			for (BilingualText orgName : externalOrgCounts.keySet()) {
-				String korName = orgName.getKorean();
-				if (korName.length() == 0) {
-					continue;
-				}
-				ss.add(new StringRecord(ss.size(), korName));
-			}
-
-			Counter<String> gramWeights1 = GramWeighter.compute(new GramGenerator(2), ss);
-			System.out.println(gramWeights1);
-			gramOrderer.setGramWeights(gramWeights1);
-			// gramOrderer.setIsAscendingOrder(false);
-		}
+		// {
+		// List<StringRecord> ss = new ArrayList<StringRecord>();
+		//
+		// for (BilingualText orgName : externalOrgCounts.keySet()) {
+		// String korName = orgName.getKorean();
+		// if (korName.length() == 0) {
+		// continue;
+		// }
+		// ss.add(new StringRecord(ss.size(), korName));
+		// }
+		//
+		// Counter<String> gramWeights1 = GramWeighter.compute(new GramGenerator(2), ss);
+		// System.out.println(gramWeights1);
+		// gramOrderer.setGramWeights(gramWeights1);
+		// }
 
 		int q = 2;
 		int tau = 3;
@@ -92,46 +91,32 @@ public class PivotalPrefixStringSearcher implements Serializable {
 		// ppss.write(ENTPath.PPSS_INDEX_FILE);
 		// ppss.writeObject(ENTPath.PPSS_OBJECT_FILE);
 
-		// {
-		// TextFileWriter writer = new TextFileWriter(ENTPath.DATA_DIR + "ppss_res.txt");
-		// for (int i = 0; i < strings2.size(); i++) {
-		// String str = strings2.get(i);
-		// System.out.println(str);
-		//
-		// // if (!str.contains("경남양돈산업클러스터사업단")) {
-		// // continue;
-		// // }
-		// Counter<String> res = ext.search(str);
-		// writer.write(String.format("Input:\t%s\n", str));
-		// writer.write(String.format("Output:\t%s\n\n", res.toStringSortedByValues(false, false, res.size())));
-		// }
-		//
-		// writer.close();
-		// }
-
 		{
 
 			TextFileWriter writer = new TextFileWriter(ENTPath.PPSS_RESULT_FILE);
-			List<BilingualText> orgNameList = externalOrgCounts.getSortedKeys();
+			List<BilingualText> testOrgs = extOrgCounts.getSortedKeys();
 
-			for (int i = 0; i < orgNameList.size(); i++) {
-				BilingualText name = orgNameList.get(i);
-				double cnt = externalOrgCounts.getCount(name);
-
-				// if (cnt > 100 || cnt < 50) {
-				// continue;
-				// }
-
-				if (!name.getKorean().contains("한양대학교 토목공학과")) {
-					continue;
-				}
+			for (int i = 0; i < testOrgs.size(); i++) {
+				BilingualText name = testOrgs.get(i);
+				double cnt = extOrgCounts.getCount(name);
 
 				System.out.println(name + "\n");
 				Counter<StringRecord> res = ppss.search(name.getKorean());
 				StringBuffer sb = new StringBuffer();
-				sb.append("Input:\n");
+				sb.append("[Input]:\n");
 				sb.append(name.toString() + "\n");
-				sb.append(String.format("Output:\t%s\n\n", res.toStringSortedByValues(true, true, res.size())));
+				sb.append(String.format("[Output]:\n"));
+
+				List<StringRecord> orgs = res.getSortedKeys();
+
+				for (int j = 0; j < orgs.size() && j < 10; j++) {
+					StringRecord sr = orgs.get(j);
+					double score = res.getCount(sr);
+					sb.append(String.format("%d, %d, %s, %s\n", j + 1, sr.getId(), sr.getString(), score + ""));
+				}
+
+				System.out.println(sb.toString());
+
 				writer.write(sb.toString());
 			}
 			writer.close();
@@ -676,7 +661,7 @@ public class PivotalPrefixStringSearcher implements Serializable {
 					/*
 					 * Lemma 2. If ss r and s are similar, we have
 					 * 
-					 * If last(pre(r)) > last(pre(s)), piv(s) ∩ pre(r) != phi; If last(pre(r)) <= last(pre(s)), piv(r) ∩ pre(s) != phi;
+					 * If last(pre(r)) > last(pre(s)), piv(s) ∩ pre(r) != phi ; If last(pre(r)) <= last(pre(s)), piv(r) ∩ pre(s) != phi;
 					 */
 
 					if (Math.abs(p - gram.getStart()) > tau

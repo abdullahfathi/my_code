@@ -124,6 +124,81 @@ public class KLDivergenceScorer {
 		return ret;
 	}
 
+	public SparseVector scoreByPLMs(WordCountBox wcb, SparseVector qLM) {
+		SparseVector ret = new SparseVector(wcb.getDocWordCounts().rowSize());
+
+		int propFunction = 0;
+		double sigma = 175;
+
+		System.out.println(VectorUtils.toCounter(qLM, wcb.getWordIndexer()));
+
+		for (int i = 0; i < wcb.getDocWordCounts().rowSize(); i++) {
+			int docId = wcb.getDocWordCounts().indexAtRowLoc(i);
+			List<Integer> words = wcb.getDocWords().get(docId);
+			List<IntPair> locWords = PLMUtils.getQueryLocsInDocument(qLM, words);
+
+			double doc_len = words.size();
+
+			SparseVector plmScores = new SparseVector(locWords.size());
+
+			// double psg_len_sum = 0;
+			// for (int j = 0; j < ws.size(); j++) {
+			// int center = j;
+			// double psg_len = PropagationCountSum(center, doc_len, -1, sigma);
+			// psg_len_sum += psg_len;
+			// }
+
+			for (int j = 0; j < locWords.size(); j++) {
+				int center = locWords.get(j).getFirst();
+				double psg_len = PLMUtils.PropagationCountSum(center, doc_len, propFunction, sigma);
+
+				IntCounter c = new IntCounter();
+
+				for (int w : qLM.indexes()) {
+					c.incrementCount(w, 0);
+				}
+
+				for (int k = 0; k < locWords.size(); k++) {
+					int w = locWords.get(k).getSecond();
+					int pos = locWords.get(k).getFirst();
+					double prop_count = PLMUtils.PropagationCount((pos - center) / sigma, propFunction);
+					double pr = prop_count / psg_len;
+					c.incrementCount(w, pr);
+				}
+
+				SparseVector plm = VectorUtils.toSparseVector(c);
+
+				for (int k = 0; k < plm.size(); k++) {
+					int w = plm.indexAtLoc(k);
+					double prob_w_in_doc = plm.valueAtLoc(k);
+					double mixture_for_coll = dirichlet_prior / (dirichlet_prior + psg_len);
+					double prob_w_in_coll = wcb.getCollWordCounts().valueAlways(w) / wcb.getCollectionCountSum();
+					prob_w_in_doc = (1 - mixture_for_coll) * prob_w_in_doc + mixture_for_coll * prob_w_in_coll;
+					plm.setAtLoc(k, prob_w_in_doc);
+				}
+				plm.summation();
+
+				double div_sum = 0;
+
+				for (int k = 0; k < qLM.size(); k++) {
+					int w = qLM.indexAtLoc(k);
+					double prob_w_in_q = qLM.valueAtLoc(k);
+					double prob_w_in_doc = plm.valueAlways(w);
+					if (prob_w_in_doc > 0) {
+						div_sum += prob_w_in_q * Math.log(prob_w_in_q / prob_w_in_doc);
+					}
+				}
+
+				double approx_prob = Math.exp(-div_sum);
+				plmScores.incrementAtLoc(j, center, approx_prob);
+			}
+			double score = plmScores.size() == 0 ? 0 : plmScores.max();
+			ret.incrementAtLoc(i, docId, score);
+
+		}
+		return ret;
+	}
+
 	public SparseVector scoreBySWPassages(WordCountBox wcb, SparseVector qLM, List<Integer> qWords) {
 		SparseVector ret = new SparseVector(wcb.getDocWordCounts().rowSize());
 
@@ -219,81 +294,6 @@ public class KLDivergenceScorer {
 			}
 		}
 
-		return ret;
-	}
-
-	public SparseVector scoreByPLMs(WordCountBox wcb, SparseVector qLM) {
-		SparseVector ret = new SparseVector(wcb.getDocWordCounts().rowSize());
-
-		int propFunction = 0;
-		double sigma = 175;
-
-		System.out.println(VectorUtils.toCounter(qLM, wcb.getWordIndexer()));
-
-		for (int i = 0; i < wcb.getDocWordCounts().rowSize(); i++) {
-			int docId = wcb.getDocWordCounts().indexAtRowLoc(i);
-			List<Integer> words = wcb.getDocWords().get(docId);
-			List<IntPair> locWords = PLMUtils.getQueryLocsInDocument(qLM, words);
-
-			double doc_len = words.size();
-
-			SparseVector plmScores = new SparseVector(locWords.size());
-
-			// double psg_len_sum = 0;
-			// for (int j = 0; j < ws.size(); j++) {
-			// int center = j;
-			// double psg_len = PropagationCountSum(center, doc_len, -1, sigma);
-			// psg_len_sum += psg_len;
-			// }
-
-			for (int j = 0; j < locWords.size(); j++) {
-				int center = locWords.get(j).getFirst();
-				double psg_len = PLMUtils.PropagationCountSum(center, doc_len, propFunction, sigma);
-
-				IntCounter c = new IntCounter();
-
-				for (int w : qLM.indexes()) {
-					c.incrementCount(w, 0);
-				}
-
-				for (int k = 0; k < locWords.size(); k++) {
-					int w = locWords.get(k).getSecond();
-					int pos = locWords.get(k).getFirst();
-					double prop_count = PLMUtils.PropagationCount((pos - center) / sigma, propFunction);
-					double pr = prop_count / psg_len;
-					c.incrementCount(w, pr);
-				}
-
-				SparseVector plm = VectorUtils.toSparseVector(c);
-
-				for (int k = 0; k < plm.size(); k++) {
-					int w = plm.indexAtLoc(k);
-					double prob_w_in_doc = plm.valueAtLoc(k);
-					double mixture_for_coll = dirichlet_prior / (dirichlet_prior + psg_len);
-					double prob_w_in_coll = wcb.getCollWordCounts().valueAlways(w) / wcb.getCollectionCountSum();
-					prob_w_in_doc = (1 - mixture_for_coll) * prob_w_in_doc + mixture_for_coll * prob_w_in_coll;
-					plm.setAtLoc(k, prob_w_in_doc);
-				}
-				plm.summation();
-
-				double div_sum = 0;
-
-				for (int k = 0; k < qLM.size(); k++) {
-					int w = qLM.indexAtLoc(k);
-					double prob_w_in_q = qLM.valueAtLoc(k);
-					double prob_w_in_doc = plm.valueAlways(w);
-					if (prob_w_in_doc > 0) {
-						div_sum += prob_w_in_q * Math.log(prob_w_in_q / prob_w_in_doc);
-					}
-				}
-
-				double approx_prob = Math.exp(-div_sum);
-				plmScores.incrementAtLoc(j, center, approx_prob);
-			}
-			double score = plmScores.size() == 0 ? 0 : plmScores.max();
-			ret.incrementAtLoc(i, docId, score);
-
-		}
 		return ret;
 	}
 

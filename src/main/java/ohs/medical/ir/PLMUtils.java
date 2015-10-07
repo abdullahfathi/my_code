@@ -9,19 +9,6 @@ import ohs.types.common.IntPair;
 public class PLMUtils {
 	public static final double pi = Math.PI;
 
-	public static List<IntPair> getQueryLocsInDocument(SparseVector queryModel, List<Integer> words) {
-		List<IntPair> ret = new ArrayList<IntPair>();
-		for (int j = 0; j < words.size(); j++) {
-			int w = words.get(j);
-			if (queryModel.location(w) < 0) {
-				continue;
-			}
-			ret.add(new IntPair(j, w));
-		}
-		return ret;
-
-	}
-
 	// Cumulative distribution function of Arc Kernel
 	public static double ArcCDF(double x, double mean, double sigma) {
 		double res;
@@ -90,6 +77,19 @@ public class PLMUtils {
 			}
 		}
 		return res;
+	}
+
+	public static List<IntPair> getQueryLocsInDocument(SparseVector queryModel, List<Integer> words) {
+		List<IntPair> ret = new ArrayList<IntPair>();
+		for (int j = 0; j < words.size(); j++) {
+			int w = words.get(j);
+			if (queryModel.location(w) < 0) {
+				continue;
+			}
+			ret.add(new IntPair(j, w));
+		}
+		return ret;
+
 	}
 
 	public static double PropagationCount(double dis, int propFunction) {

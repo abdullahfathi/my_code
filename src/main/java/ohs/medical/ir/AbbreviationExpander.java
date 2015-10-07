@@ -74,32 +74,6 @@ public class AbbreviationExpander {
 		abbrMap = readAbbreviationData(fileName);
 	}
 
-	public String expand(String searchText) {
-		StrCounter ret = new StrCounter();
-		double mixture = 0.5;
-
-		List<String> words = StrUtils.split(searchText);
-		CounterMap<String, String> cm = new CounterMap<String, String>();
-
-		StringBuffer sb = new StringBuffer();
-
-		for (int i = 0; i < words.size(); i++) {
-			String word = words.get(i);
-			sb.append(word);
-			if (abbrMap.containsKey(word) && !cm.containsKey(word)) {
-				Counter<String> c = abbrMap.getCounter(word);
-				sb.append(" (");
-				for (String w : c.getSortedKeys()) {
-					sb.append(" " + w);
-				}
-				sb.append(" )");
-			}
-			sb.append(" ");
-		}
-
-		return sb.toString().trim();
-	}
-
 	public StrCounter expand(StrCounter qLM) {
 		StrCounter ret = new StrCounter();
 		double mixture = 0.5;
@@ -130,5 +104,31 @@ public class AbbreviationExpander {
 		double sum = ret.totalCount();
 
 		return ret;
+	}
+
+	public String expand(String searchText) {
+		StrCounter ret = new StrCounter();
+		double mixture = 0.5;
+
+		List<String> words = StrUtils.split(searchText);
+		CounterMap<String, String> cm = new CounterMap<String, String>();
+
+		StringBuffer sb = new StringBuffer();
+
+		for (int i = 0; i < words.size(); i++) {
+			String word = words.get(i);
+			sb.append(word);
+			if (abbrMap.containsKey(word) && !cm.containsKey(word)) {
+				Counter<String> c = abbrMap.getCounter(word);
+				sb.append(" (");
+				for (String w : c.getSortedKeys()) {
+					sb.append(" " + w);
+				}
+				sb.append(" )");
+			}
+			sb.append(" ");
+		}
+
+		return sb.toString().trim();
 	}
 }

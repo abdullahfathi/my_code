@@ -19,7 +19,12 @@ public class OrganizationNormalizer {
 	 */
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
+		test();
 
+		System.out.println("process ends.");
+	}
+
+	public static void test() {
 		OrganizationNormalizer n = new OrganizationNormalizer(ENTPath.COMMON_DEPT_ABBR_DICT_FILE);
 
 		TextFileReader reader = new TextFileReader(ENTPath.DOMESTIC_PAPER_ORG_NAME_FILE);
@@ -31,7 +36,7 @@ public class OrganizationNormalizer {
 			String engOrg = parts[1].equals("null") ? null : parts[1];
 
 			BilingualText orgName = new BilingualText(korOrg, engOrg);
-			double count = Double.parseDouble(parts[2]);
+			double cnt = Double.parseDouble(parts[2]);
 
 			// if (count < 50 || count > 100) {
 			// continue;
@@ -40,18 +45,21 @@ public class OrganizationNormalizer {
 			if (orgName.getKorean() == null || orgName.getEnglish() == null) {
 				continue;
 			}
+
 			BilingualText orgName2 = n.normalize(orgName);
 
 			if (!orgName.equals(orgName2)) {
-				System.out.println(orgName);
-				System.out.println(orgName2);
-				System.out.println();
+				StringBuffer sb = new StringBuffer();
+				sb.append("[Input]\n");
+				sb.append(String.format("%s\n", orgName));
+				sb.append("[Output]\n");
+				sb.append(String.format("%s\n", orgName2));
+				System.out.println(sb.toString());
 			}
 
 		}
 		reader.close();
 
-		System.out.println("process ends.");
 	}
 
 	private Map<String, String> engAbbrs;

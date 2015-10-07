@@ -11,53 +11,6 @@ import ohs.utils.StrUtils;
 
 public class PerformanceEvaluator {
 
-	public static void main(String[] args) {
-		System.out.println("process begins.");
-		refineTestData();
-		evaluate();
-		System.out.println("process ends.");
-	}
-
-	public static void refineTestData() {
-		List<String[]> lines = new ArrayList<String[]>();
-		TextFileReader reader = new TextFileReader(ENTPath.ODK_TEST_DATA_LABELDED, IOUtils.EUC_KR);
-		TextFileWriter writer = new TextFileWriter(ENTPath.DATA_DIR + "odk_test_data_refined.txt");
-
-		while (reader.hasNext()) {
-			String line = reader.next();
-			line = line.replace("\"", "");
-			String[] parts = DataReader.split(line);
-
-			int len = 0;
-			for (int i = 0; i < parts.length; i++) {
-				len += parts[i].length();
-			}
-
-			if (len == 0) {
-				StringBuffer sb = new StringBuffer();
-
-				for (int i = 0; i < lines.size(); i++) {
-					String[] temp = lines.get(i);
-
-					sb.append(StrUtils.join("\t", lines.get(i)));
-					if (i != lines.size() - 1) {
-						sb.append("\n");
-					}
-				}
-
-				String output = sb.toString();
-				writer.write(output + "\n\n");
-				lines = new ArrayList<String[]>();
-			} else {
-				lines.add(parts);
-			}
-
-			// System.out.println(line);
-		}
-		reader.close();
-		writer.close();
-	}
-
 	public static void evaluate() {
 		int[] num_candidates = { 1, 5, 10 };
 
@@ -158,6 +111,53 @@ public class PerformanceEvaluator {
 
 		System.out.println(sb.toString());
 
+	}
+
+	public static void main(String[] args) {
+		System.out.println("process begins.");
+		refineTestData();
+		evaluate();
+		System.out.println("process ends.");
+	}
+
+	public static void refineTestData() {
+		List<String[]> lines = new ArrayList<String[]>();
+		TextFileReader reader = new TextFileReader(ENTPath.ODK_TEST_DATA_LABELDED, IOUtils.EUC_KR);
+		TextFileWriter writer = new TextFileWriter(ENTPath.DATA_DIR + "odk_test_data_refined.txt");
+
+		while (reader.hasNext()) {
+			String line = reader.next();
+			line = line.replace("\"", "");
+			String[] parts = DataReader.split(line);
+
+			int len = 0;
+			for (int i = 0; i < parts.length; i++) {
+				len += parts[i].length();
+			}
+
+			if (len == 0) {
+				StringBuffer sb = new StringBuffer();
+
+				for (int i = 0; i < lines.size(); i++) {
+					String[] temp = lines.get(i);
+
+					sb.append(StrUtils.join("\t", lines.get(i)));
+					if (i != lines.size() - 1) {
+						sb.append("\n");
+					}
+				}
+
+				String output = sb.toString();
+				writer.write(output + "\n\n");
+				lines = new ArrayList<String[]>();
+			} else {
+				lines.add(parts);
+			}
+
+			// System.out.println(line);
+		}
+		reader.close();
+		writer.close();
 	}
 
 }

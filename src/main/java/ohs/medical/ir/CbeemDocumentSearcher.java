@@ -68,6 +68,21 @@ public class CbeemDocumentSearcher {
 		num_colls = indexSearchers.length;
 	}
 
+	private void computePosteriors() {
+		for (int j = 0; j < docScoreData.length; j++) {
+			SparseVector docScores = docScoreData[j];
+			VectorMath.exponentiate(docScores, true);
+		}
+	}
+
+	private double[] getCollWordCountSums() {
+		double[] ret = new double[num_colls];
+		for (int i = 0; i < num_colls; i++) {
+			ret[i] = wcbs[i].getCollectionCountSum();
+		}
+		return ret;
+	}
+
 	private SparseVector[] getRelevanceModels() throws IOException {
 		double[] cnt_sum_in_each_coll = getCollWordCountSums();
 		double cnt_sum_in_all_colls = ArrayMath.sum(cnt_sum_in_each_coll);
@@ -152,14 +167,6 @@ public class CbeemDocumentSearcher {
 			// System.out.println();
 
 			ret[i] = rm;
-		}
-		return ret;
-	}
-
-	private double[] getCollWordCountSums() {
-		double[] ret = new double[num_colls];
-		for (int i = 0; i < num_colls; i++) {
-			ret[i] = wcbs[i].getCollectionCountSum();
 		}
 		return ret;
 	}
@@ -350,13 +357,6 @@ public class CbeemDocumentSearcher {
 
 		SparseVector ret = score(colId, qLM, docRels);
 		return ret;
-	}
-
-	private void computePosteriors() {
-		for (int j = 0; j < docScoreData.length; j++) {
-			SparseVector docScores = docScoreData[j];
-			VectorMath.exponentiate(docScores, true);
-		}
 	}
 
 	public void search(int colId, List<BaseQuery> baseQueries, List<SparseVector> queryDocRels, String resultFileName, String logFileName)

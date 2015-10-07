@@ -41,21 +41,10 @@ public class CounterMap<K, V> implements java.io.Serializable {
 		counterMap = new HashMap<K, Counter<V>>();
 	}
 
-	public void clear() {
-		for (Counter<V> c : counterMap.values()) {
-			c.clear();
-		}
-		counterMap.clear();
-	}
-
 	public CounterMap(CounterMap<K, V> cm) {
 		this();
 		incrementAll(cm);
 	}
-
-	// public void setCount(Pair<K,V> pair) {
-	//
-	// }
 
 	/**
 	 * Finds the key with maximum count. This is a linear operation, and ties are broken arbitrarily.
@@ -74,6 +63,17 @@ public class CounterMap<K, V> implements java.io.Serializable {
 			}
 		}
 		return maxKey;
+	}
+
+	// public void setCount(Pair<K,V> pair) {
+	//
+	// }
+
+	public void clear() {
+		for (Counter<V> c : counterMap.values()) {
+			c.clear();
+		}
+		counterMap.clear();
 	}
 
 	public boolean containsKey(K key) {

@@ -16,6 +16,20 @@ import org.apache.lucene.search.TermQuery;
 
 public class AnalyzerUtils {
 
+	public static BooleanQuery getQuery(List<String> words) throws Exception {
+		return getQuery(words, IndexFieldName.CONTENT);
+	}
+
+	public static BooleanQuery getQuery(List<String> words, String field) throws Exception {
+		BooleanQuery ret = new BooleanQuery();
+		for (int i = 0; i < words.size(); i++) {
+			String word = words.get(i);
+			TermQuery tq = new TermQuery(new Term(field, word));
+			ret.add(tq, Occur.SHOULD);
+		}
+		return ret;
+	}
+
 	public static BooleanQuery getQuery(StrCounter wordCounts) throws Exception {
 		return getQuery(wordCounts, IndexFieldName.CONTENT);
 	}
@@ -28,20 +42,6 @@ public class AnalyzerUtils {
 			double cnt = wordCounts.getCount(word);
 			TermQuery tq = new TermQuery(new Term(field, word));
 			tq.setBoost((float) cnt);
-			ret.add(tq, Occur.SHOULD);
-		}
-		return ret;
-	}
-
-	public static BooleanQuery getQuery(List<String> words) throws Exception {
-		return getQuery(words, IndexFieldName.CONTENT);
-	}
-
-	public static BooleanQuery getQuery(List<String> words, String field) throws Exception {
-		BooleanQuery ret = new BooleanQuery();
-		for (int i = 0; i < words.size(); i++) {
-			String word = words.get(i);
-			TermQuery tq = new TermQuery(new Term(field, word));
 			ret.add(tq, Occur.SHOULD);
 		}
 		return ret;

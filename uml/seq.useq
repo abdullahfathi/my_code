@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence-diagram version="1.1.8" icons="true">  
+  <object id="1" language="java" name="ohs.entity.OrganizationIdentificationKernel" project="my_code" 
+    file="/my_code/src/main/java/ohs/entity/OrganizationIdentificationKernel.java" binary="false" 
+    label="organizationIdentificationKernel" type="class" autoSize="true">    
+    <position height="-1" width="-1" x="608" y="0"/>    
+    <execution id="2">      
+      <position height="84" width="0" x="0" y="84"/>    
+    </execution>    
+    <execution id="4">      
+      <position height="21" width="0" x="0" y="126"/>    
+    </execution>    
+    <execution id="5">      
+      <position height="84" width="0" x="0" y="180"/>    
+    </execution>    
+    <execution id="7">      
+      <position height="21" width="0" x="0" y="222"/>    
+    </execution>    
+    <execution id="8">      
+      <position height="84" width="0" x="0" y="278"/>    
+    </execution>    
+    <execution id="10">      
+      <position height="21" width="0" x="0" y="320"/>    
+    </execution>    
+    <execution id="11">      
+      <position height="84" width="0" x="0" y="380"/>    
+    </execution>    
+    <execution id="13">      
+      <position height="21" width="0" x="0" y="422"/>    
+    </execution>    
+    <execution id="14">      
+      <position height="214" width="0" x="0" y="472"/>    
+    </execution>    
+    <execution id="16">      
+      <position height="151" width="0" x="0" y="514"/>    
+    </execution>  
+  </object>  
+  <object id="23" language="java" name="ohs.entity.OrganizationNormalizer" project="my_code" 
+    file="/my_code/src/main/java/ohs/entity/OrganizationNormalizer.java" binary="false" label="normalizer" type="class" 
+    autoSize="true">    
+    <position height="0" width="0" x="0" y="0"/>    
+    <execution id="18">      
+      <position height="21" width="0" x="0" y="545"/>    
+    </execution>  
+  </object>  
+  <object id="24" language="java" name="ohs.entity.OrganizationDetector" project="my_code" 
+    file="/my_code/src/main/java/ohs/entity/OrganizationDetector.java" binary="false" label="detector" type="class" 
+    autoSize="true">    
+    <position height="0" width="0" x="0" y="0"/>    
+    <execution id="20">      
+      <position height="21" width="0" x="0" y="587"/>    
+    </execution>  
+  </object>  
+  <object id="25" language="java" name="ohs.string.sim.search.ppss.PivotalPrefixStringSearcher" project="my_code" 
+    file="/my_code/src/main/java/ohs/string/sim/search/ppss/PivotalPrefixStringSearcher.java" binary="false" 
+    label="searcher" type="class" autoSize="true">    
+    <position height="0" width="0" x="0" y="0"/>    
+    <execution id="22">      
+      <position height="21" width="0" x="0" y="623"/>    
+    </execution>  
+  </object>  
+  <message id="3" operation="readOrganizations(java.lang.String):void">    
+    <end type="SOURCE" refId="2"/>    
+    <end type="TARGET" refId="4"/>  
+  </message>  
+  <message id="6" operation="createDetector():void">    
+    <end type="SOURCE" refId="5"/>    
+    <end type="TARGET" refId="7"/>  
+  </message>  
+  <message id="9" operation="createNormalizer(java.lang.String):void">    
+    <end type="SOURCE" refId="8"/>    
+    <end type="TARGET" refId="10"/>  
+  </message>  
+  <message id="12" operation="createSearchers(java.lang.String):void">    
+    <end type="SOURCE" refId="11"/>    
+    <end type="TARGET" refId="13"/>  
+  </message>  
+  <message id="15" operation="identify(ohs.entity.data.struct.BilingualText):ohs.types.Counter&lt;Organization&gt;">    
+    <end type="SOURCE" refId="14"/>    
+    <end type="TARGET" refId="16"/>  
+  </message>  
+  <message id="17" operation="normalize(ohs.entity.data.struct.BilingualText):ohs.entity.data.struct.BilingualText">    
+    <end type="SOURCE" refId="16"/>    
+    <end type="TARGET" refId="18"/>  
+  </message>  
+  <message id="19" 
+    operation="detect(ohs.entity.data.struct.BilingualText):ohs.types.ListMap&lt;UnivComponent,IntPair&gt;[]">    
+    <end type="SOURCE" refId="16"/>    
+    <end type="TARGET" refId="20"/>  
+  </message>  
+  <message id="21" operation="search(java.lang.String):ohs.types.Counter&lt;StringRecord&gt;">    
+    <end type="SOURCE" refId="16"/>    
+    <end type="TARGET" refId="22"/>  
+  </message>
+</sequence-diagram>

@@ -65,179 +65,6 @@ public class NGramGenerator {
 		return ret;
 	}
 
-	private void writeBlock(CounterMap<String, Integer> cm, TextFileWriter writer, int block_id, int block_size) {
-		List<String> ngrams = new ArrayList<String>(cm.keySet());
-		Collections.sort(ngrams);
-
-		int start = block_id * block_size;
-		int end = (block_id + 1) * block_size - 1;
-
-		writer.write(String.format("BLOCK:\t%d\n", block_id));
-		writer.write(String.format("RANGE:\t%d-%d\n", start, end));
-
-		for (int j = 0; j < ngrams.size(); j++) {
-			String ngram = ngrams.get(j);
-			Counter<Integer> docCounts = cm.getCounter(ngram);
-			List<Integer> docIds = new ArrayList<Integer>(docCounts.keySet());
-
-			Collections.sort(docIds);
-
-			writer.write(ngram);
-
-			for (int k = 0; k < docIds.size(); k++) {
-				int docId = docIds.get(k);
-				int cnt = (int) docCounts.getCount(docId);
-				writer.write(String.format("\t%d:%d", docId, cnt));
-			}
-			writer.write("\n");
-		}
-		writer.write("\n");
-
-	}
-
-	public void serialize() throws Exception {
-
-		int num_docs = IOUtils.countLines(NGPath.JOURNAL_TEXT_FILE);
-
-		Indexer<String> wordIndexer = new Indexer<String>();
-
-		TextFileReader reader = new TextFileReader(NGPath.JOURNAL_TEXT_FILE);
-		reader.setPrintNexts(false);
-
-		TextFileWriter writer = new TextFileWriter(NGPath.JOURNAL_SER_FILE);
-
-		ObjectOutputStream oos = IOUtils.openObjectOutputStream(NGPath.JOURNAL_SER_FILE);
-		oos.writeInt(num_docs);
-
-		while (reader.hasNext()) {
-			reader.print(10000);
-			String line = reader.next();
-			String[] parts = line.split("\t");
-			String year = parts[0];
-			String doi = parts[1];
-			String title = parts[2];
-			String abs = parts[3];
-			String body = parts[4].replace("<NL>", "\n");
-
-			String[] sents = body.split("\n");
-			int[][] doc = new int[sents.length][];
-
-			for (int i = 0; i < sents.length; i++) {
-				List<String> words = StrUtils.split(sents[i]);
-
-				int[] ws = new int[words.size()];
-
-				for (int j = 0; j < words.size(); j++) {
-					int w = wordIndexer.getIndex(words.get(j));
-					ws[j] = w;
-				}
-				doc[i] = ws;
-			}
-
-			IOUtils.write(oos, doc);
-		}
-		reader.printLast();
-		oos.close();
-
-		IOUtils.write(NGPath.VOC_FILE, wordIndexer);
-	}
-
-	public void generate() throws Exception {
-		int[] ngram_sizes = { 2, 3, 4, 5 };
-
-		int num_blocks = 0;
-		int block_size = 100;
-
-		for (int i = 0; i < ngram_sizes.length; i++) {
-			int ngram_size = ngram_sizes[i];
-
-			ObjectInputStream ois = IOUtils.openObjectInputStream(NGPath.JOURNAL_SER_FILE);
-			int num_docs = ois.readInt();
-
-			for (int j = 0; j < num_docs; j++) {
-				int[][] doc = IOUtils.readIntegerMatrix(ois);
-			}
-		}
-	}
-
-	private Counter<Integer[]> ngram(int[][] doc, int ngram_size) {
-
-		for (int i = 0; i < doc.length; i++) {
-			int[] sent = doc[i];
-			int[] ngram = new int[ngram_size];
-
-			for (int j = ngram_size; j < sent.length; j++) {
-				int start = j - ngram_size;
-				int end = j;
-
-				for (int k = start, loc = 0; k < end; k++, loc++) {
-					ngram[loc] = sent[k];
-				}
-			}
-		}
-
-		return null;
-	}
-
-	public void makeTextDump() throws Exception {
-		TextFileWriter writer = new TextFileWriter(NGPath.JOURNAL_TEXT_FILE);
-
-		File[] dataFiles = new File(NGPath.JOURNAL_DIR).listFiles();
-
-		for (int i = 0; i < dataFiles.length; i++) {
-			File dataFile = dataFiles[i];
-
-			if (dataFile.isFile() && dataFile.getName().endsWith(".zip")) {
-
-			} else {
-				continue;
-			}
-
-			int num_files = 0;
-
-			ZipInputStream is = new ZipInputStream(new FileInputStream(dataFile));
-			ZipEntry entry = null;
-			// read every single entry in TAR file
-			while ((entry = is.getNextEntry()) != null) {
-				// the following two lines remove the .tar.gz extension for the folder name
-				// System.out.println(entry.getName());
-
-				if (!entry.isDirectory()) {
-					String fileName = entry.getName();
-
-					if (!fileName.contains("journal")) {
-						continue;
-					}
-
-					num_files++;
-
-					String year = fileName.split("/")[0];
-					year = year.split("_")[0];
-
-					StringBuffer sb = new StringBuffer();
-
-					int c;
-
-					while ((c = is.read()) != -1) {
-						sb.append((char) c);
-					}
-
-					if (sb.length() > 0) {
-						String[] textParts = parse(sb.toString());
-
-						if (textParts.length == 4) {
-							String output = year + "\t" + StrUtils.join("\t", textParts);
-							writer.write(output + "\n");
-						}
-					}
-				}
-			}
-			is.close();
-
-			System.out.printf("read [%d] files from [%s]\n", num_files, dataFile.getName());
-		}
-	}
-
 	public static String[] parse(String xmlText) throws Exception {
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		dbf.setValidating(false);
@@ -304,6 +131,179 @@ public class NGramGenerator {
 		}
 
 		return ret;
+	}
+
+	public void generate() throws Exception {
+		int[] ngram_sizes = { 2, 3, 4, 5 };
+
+		int num_blocks = 0;
+		int block_size = 100;
+
+		for (int i = 0; i < ngram_sizes.length; i++) {
+			int ngram_size = ngram_sizes[i];
+
+			ObjectInputStream ois = IOUtils.openObjectInputStream(NGPath.JOURNAL_SER_FILE);
+			int num_docs = ois.readInt();
+
+			for (int j = 0; j < num_docs; j++) {
+				int[][] doc = IOUtils.readIntegerMatrix(ois);
+			}
+		}
+	}
+
+	public void makeTextDump() throws Exception {
+		TextFileWriter writer = new TextFileWriter(NGPath.JOURNAL_TEXT_FILE);
+
+		File[] dataFiles = new File(NGPath.JOURNAL_DIR).listFiles();
+
+		for (int i = 0; i < dataFiles.length; i++) {
+			File dataFile = dataFiles[i];
+
+			if (dataFile.isFile() && dataFile.getName().endsWith(".zip")) {
+
+			} else {
+				continue;
+			}
+
+			int num_files = 0;
+
+			ZipInputStream is = new ZipInputStream(new FileInputStream(dataFile));
+			ZipEntry entry = null;
+			// read every single entry in TAR file
+			while ((entry = is.getNextEntry()) != null) {
+				// the following two lines remove the .tar.gz extension for the folder name
+				// System.out.println(entry.getName());
+
+				if (!entry.isDirectory()) {
+					String fileName = entry.getName();
+
+					if (!fileName.contains("journal")) {
+						continue;
+					}
+
+					num_files++;
+
+					String year = fileName.split("/")[0];
+					year = year.split("_")[0];
+
+					StringBuffer sb = new StringBuffer();
+
+					int c;
+
+					while ((c = is.read()) != -1) {
+						sb.append((char) c);
+					}
+
+					if (sb.length() > 0) {
+						String[] textParts = parse(sb.toString());
+
+						if (textParts.length == 4) {
+							String output = year + "\t" + StrUtils.join("\t", textParts);
+							writer.write(output + "\n");
+						}
+					}
+				}
+			}
+			is.close();
+
+			System.out.printf("read [%d] files from [%s]\n", num_files, dataFile.getName());
+		}
+	}
+
+	private Counter<Integer[]> ngram(int[][] doc, int ngram_size) {
+
+		for (int i = 0; i < doc.length; i++) {
+			int[] sent = doc[i];
+			int[] ngram = new int[ngram_size];
+
+			for (int j = ngram_size; j < sent.length; j++) {
+				int start = j - ngram_size;
+				int end = j;
+
+				for (int k = start, loc = 0; k < end; k++, loc++) {
+					ngram[loc] = sent[k];
+				}
+			}
+		}
+
+		return null;
+	}
+
+	public void serialize() throws Exception {
+
+		int num_docs = IOUtils.countLines(NGPath.JOURNAL_TEXT_FILE);
+
+		Indexer<String> wordIndexer = new Indexer<String>();
+
+		TextFileReader reader = new TextFileReader(NGPath.JOURNAL_TEXT_FILE);
+		reader.setPrintNexts(false);
+
+		TextFileWriter writer = new TextFileWriter(NGPath.JOURNAL_SER_FILE);
+
+		ObjectOutputStream oos = IOUtils.openObjectOutputStream(NGPath.JOURNAL_SER_FILE);
+		oos.writeInt(num_docs);
+
+		while (reader.hasNext()) {
+			reader.print(10000);
+			String line = reader.next();
+			String[] parts = line.split("\t");
+			String year = parts[0];
+			String doi = parts[1];
+			String title = parts[2];
+			String abs = parts[3];
+			String body = parts[4].replace("<NL>", "\n");
+
+			String[] sents = body.split("\n");
+			int[][] doc = new int[sents.length][];
+
+			for (int i = 0; i < sents.length; i++) {
+				List<String> words = StrUtils.split(sents[i]);
+
+				int[] ws = new int[words.size()];
+
+				for (int j = 0; j < words.size(); j++) {
+					int w = wordIndexer.getIndex(words.get(j));
+					ws[j] = w;
+				}
+				doc[i] = ws;
+			}
+
+			IOUtils.write(oos, doc);
+		}
+		reader.printLast();
+		oos.close();
+
+		IOUtils.write(NGPath.VOC_FILE, wordIndexer);
+	}
+
+	private void writeBlock(CounterMap<String, Integer> cm, TextFileWriter writer, int block_id, int block_size) {
+		List<String> ngrams = new ArrayList<String>(cm.keySet());
+		Collections.sort(ngrams);
+
+		int start = block_id * block_size;
+		int end = (block_id + 1) * block_size - 1;
+
+		writer.write(String.format("BLOCK:\t%d\n", block_id));
+		writer.write(String.format("RANGE:\t%d-%d\n", start, end));
+
+		for (int j = 0; j < ngrams.size(); j++) {
+			String ngram = ngrams.get(j);
+			Counter<Integer> docCounts = cm.getCounter(ngram);
+			List<Integer> docIds = new ArrayList<Integer>(docCounts.keySet());
+
+			Collections.sort(docIds);
+
+			writer.write(ngram);
+
+			for (int k = 0; k < docIds.size(); k++) {
+				int docId = docIds.get(k);
+				int cnt = (int) docCounts.getCount(docId);
+				writer.write(String.format("\t%d:%d", docId, cnt));
+			}
+			writer.write("\n");
+		}
+		writer.write("\n");
+
 	}
 
 }

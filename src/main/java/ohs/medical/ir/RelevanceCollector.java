@@ -35,7 +35,7 @@ public class RelevanceCollector {
 		System.out.println("process ends.");
 	}
 
-	public void collect3() throws Exception {
+	public void collect() throws Exception {
 		String[] queryFileNames = MIRPath.QueryFileNames;
 
 		String[] indexDirNames = MIRPath.IndexDirNames;
@@ -71,17 +71,74 @@ public class RelevanceCollector {
 				queryRels = RelevanceReader.readTrecGenomicsRelevances(relDataFileNames[i]);
 			}
 
-			StrCounter qWordCounts = new StrCounter();
+			List<StrCounter> qs = new ArrayList<StrCounter>();
 
 			for (int j = 0; j < bqs.size(); j++) {
 				BaseQuery bq = bqs.get(j);
-				qWordCounts.incrementAll(AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer));
+				qs.add(AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer));
 			}
 
-			System.out.println(qWordCounts);
+			StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(docMapFileNames[i]);
 
+			// queryRelevances = RelevanceReader.filter(queryRelevances, docIdMap);
+
+			// baseQueries = QueryReader.filter(baseQueries, queryRelevances);
+
+			List<SparseVector> docRelData = DocumentIdMapper.mapDocIdsToIndexIds(bqs, queryRels, docIdMap);
+
+			IndexReader indexReader = indexSearchers[i].getIndexReader();
+
+			if (bqs.size() != docRelData.size()) {
+				throw new Exception();
+			}
+
+			TextFileWriter writer = new TextFileWriter(queryDocFileNames[i]);
+
+			for (int j = 0; j < bqs.size(); j++) {
+				BaseQuery bq = bqs.get(j);
+				SparseVector docRels = docRelData.get(j);
+
+				Indexer<String> wordIndexer = new Indexer<String>();
+
+				StrCounter qwcs = qs.get(j);
+
+				SparseVector q = VectorUtils.toSparseVector(qs.get(j), wordIndexer, true);
+
+				{
+					SparseVector docFreqs = VectorUtils.toSparseVector(
+							WordCountBox.getDocFreqs(indexReader, IndexFieldName.CONTENT, qs.get(j).keySet()), wordIndexer, true);
+					computeTFIDFs(q, docFreqs, indexReader.maxDoc());
+
+				}
+
+				WordCountBox wcb = WordCountBox.getWordCountBox(indexReader, docRels, wordIndexer);
+				SparseMatrix sm = wcb.getDocWordCounts();
+				SparseVector docFreqs = wcb.getCollDocFreqs();
+
+				for (int k = 0; k < sm.rowSize(); k++) {
+					int docId = sm.indexAtRowLoc(k);
+					SparseVector sv = sm.vectorAtRowLoc(k);
+					computeTFIDFs(sv, docFreqs, wcb.getNumDocsInCollection());
+				}
+
+				writer.write(String.format("#Query\t%d\t%s\n", j + 1, toString(VectorUtils.toCounter(q, wordIndexer))));
+
+				docRels.sortByValue();
+
+				for (int k = 0; k < docRels.size(); k++) {
+					int docId = docRels.indexAtLoc(k);
+					double rel = docRels.valueAtLoc(k);
+					SparseVector sv = sm.rowAlways(docId);
+
+					if (sv.size() == 0) {
+						continue;
+					}
+
+					writer.write(String.format("%d\t%d\t%s\n", docId, (int) rel, toString(VectorUtils.toCounter(sv, wordIndexer))));
+				}
+				writer.write("\n");
+			}
 		}
-
 	}
 
 	public void collect2() throws Exception {
@@ -218,7 +275,7 @@ public class RelevanceCollector {
 		}
 	}
 
-	public void collect() throws Exception {
+	public void collect3() throws Exception {
 		String[] queryFileNames = MIRPath.QueryFileNames;
 
 		String[] indexDirNames = MIRPath.IndexDirNames;
@@ -254,74 +311,17 @@ public class RelevanceCollector {
 				queryRels = RelevanceReader.readTrecGenomicsRelevances(relDataFileNames[i]);
 			}
 
-			List<StrCounter> qs = new ArrayList<StrCounter>();
+			StrCounter qWordCounts = new StrCounter();
 
 			for (int j = 0; j < bqs.size(); j++) {
 				BaseQuery bq = bqs.get(j);
-				qs.add(AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer));
+				qWordCounts.incrementAll(AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer));
 			}
 
-			StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(docMapFileNames[i]);
+			System.out.println(qWordCounts);
 
-			// queryRelevances = RelevanceReader.filter(queryRelevances, docIdMap);
-
-			// baseQueries = QueryReader.filter(baseQueries, queryRelevances);
-
-			List<SparseVector> docRelData = DocumentIdMapper.mapDocIdsToIndexIds(bqs, queryRels, docIdMap);
-
-			IndexReader indexReader = indexSearchers[i].getIndexReader();
-
-			if (bqs.size() != docRelData.size()) {
-				throw new Exception();
-			}
-
-			TextFileWriter writer = new TextFileWriter(queryDocFileNames[i]);
-
-			for (int j = 0; j < bqs.size(); j++) {
-				BaseQuery bq = bqs.get(j);
-				SparseVector docRels = docRelData.get(j);
-
-				Indexer<String> wordIndexer = new Indexer<String>();
-
-				StrCounter qwcs = qs.get(j);
-
-				SparseVector q = VectorUtils.toSparseVector(qs.get(j), wordIndexer, true);
-
-				{
-					SparseVector docFreqs = VectorUtils.toSparseVector(
-							WordCountBox.getDocFreqs(indexReader, IndexFieldName.CONTENT, qs.get(j).keySet()), wordIndexer, true);
-					computeTFIDFs(q, docFreqs, indexReader.maxDoc());
-
-				}
-
-				WordCountBox wcb = WordCountBox.getWordCountBox(indexReader, docRels, wordIndexer);
-				SparseMatrix sm = wcb.getDocWordCounts();
-				SparseVector docFreqs = wcb.getCollDocFreqs();
-
-				for (int k = 0; k < sm.rowSize(); k++) {
-					int docId = sm.indexAtRowLoc(k);
-					SparseVector sv = sm.vectorAtRowLoc(k);
-					computeTFIDFs(sv, docFreqs, wcb.getNumDocsInCollection());
-				}
-
-				writer.write(String.format("#Query\t%d\t%s\n", j + 1, toString(VectorUtils.toCounter(q, wordIndexer))));
-
-				docRels.sortByValue();
-
-				for (int k = 0; k < docRels.size(); k++) {
-					int docId = docRels.indexAtLoc(k);
-					double rel = docRels.valueAtLoc(k);
-					SparseVector sv = sm.rowAlways(docId);
-
-					if (sv.size() == 0) {
-						continue;
-					}
-
-					writer.write(String.format("%d\t%d\t%s\n", docId, (int) rel, toString(VectorUtils.toCounter(sv, wordIndexer))));
-				}
-				writer.write("\n");
-			}
 		}
+
 	}
 
 	private void computeTFIDFs(SparseVector wcs, SparseVector docFreqs, double num_docs) {

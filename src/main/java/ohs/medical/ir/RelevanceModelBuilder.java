@@ -31,199 +31,6 @@ public class RelevanceModelBuilder {
 		this.dirichlet_prior = dirichlet_prior;
 	}
 
-	public SparseVector getPositionalRelevanceModel(SparseVector qLM, WordCountBox wcb, SparseVector docScores) {
-		double pi = Math.PI;
-		double sigma = 175;
-		double mixture_for_coll = 0.5;
-
-		int fb_type = 1;
-
-		IntCounter fbCounts = new IntCounter();
-
-		for (int i = 0; i < docScores.size(); i++) {
-			int docId = docScores.indexAtLoc(i);
-			double doc_score = docScores.valueAtLoc(i);
-			List<Integer> words = wcb.getDocWords().get(docId);
-			List<IntPair> locWords = PLMUtils.getQueryLocsInDocument(qLM, words);
-
-			double real_doc_len = locWords.size();
-			double len_norm = Math.sqrt(2 * pi) * sigma;
-			double pos_score_sum = 0;
-
-			double[] posScores = new double[words.size()];
-
-			for (int j = 0; j < words.size(); j++) {
-				IntCounter c = new IntCounter();
-
-				for (int qw : qLM.indexes()) {
-					c.incrementCount(qw, 0);
-				}
-
-				for (int k = 0; k < locWords.size(); k++) {
-					int pos = locWords.get(k).getFirst();
-					int w = locWords.get(k).getSecond();
-
-					double dis = (pos - j) / sigma;
-					double pr = Math.exp(-dis * dis / 2.0) / len_norm;
-					c.incrementCount(w, pr);
-				}
-
-				SparseVector plm = VectorUtils.toSparseVector(c);
-
-				for (int k = 0; k < plm.size(); k++) {
-					int w = plm.indexAtLoc(k);
-					double pr_w_in_doc = plm.valueAtLoc(k);
-					double cnt_w_in_coll = wcb.getCollWordCounts().valueAlways(w);
-					double coll_cnt_sum = wcb.getCollectionCountSum();
-					double pr_w_in_coll = cnt_w_in_coll / coll_cnt_sum;
-					pr_w_in_doc = (1 - mixture_for_coll) * pr_w_in_doc + mixture_for_coll * pr_w_in_coll;
-					plm.setAtLoc(k, pr_w_in_doc);
-				}
-				plm.summation();
-
-				double div_sum = 0;
-
-				for (int k = 0; k < qLM.size(); k++) {
-					int w = qLM.indexAtLoc(k);
-					double pr_w_in_query = qLM.valueAtLoc(k);
-					double pr_w_in_doc = plm.valueAlways(w);
-
-					if (pr_w_in_doc > 0) {
-						double div = pr_w_in_query * Math.log(pr_w_in_query / pr_w_in_doc);
-						div_sum += div;
-					}
-				}
-
-				double approx_prob = Math.exp(-div_sum);
-				posScores[j] = approx_prob;
-				pos_score_sum += approx_prob;
-			}
-
-			for (int j = 0; j < posScores.length; j++) {
-				int w = words.get(j);
-				double pos_score = posScores[j];
-
-				if (fb_type == 1) {
-					pos_score /= real_doc_len;
-				} else if (fb_type == 2) {
-					pos_score = pos_score * doc_score / pos_score_sum;
-				}
-
-				if (pos_score > 0) {
-					fbCounts.incrementCount(w, pos_score);
-				}
-			}
-		}
-
-		SparseVector ret = VectorUtils.toSparseVector(fbCounts);
-		ret.keepTopN(num_fb_words);
-		ret.normalize();
-		return ret;
-	}
-
-	public SparseVector getPassageRelevanceModel2(WordCountBox wcb, SparseVector docScores, SparseVector qLM, List<Integer> qWords)
-			throws IOException {
-		docScores.sortByValue();
-
-		SparseVector ret = new SparseVector(wcb.getCollWordCounts().size());
-
-		PassageGenerator psgGenerator = new PassageGenerator();
-
-		IntCounterMap cm = new IntCounterMap();
-
-		for (int i = 0; i < docScores.size() && i < num_fb_docs; i++) {
-			int docId = docScores.indexAtLoc(i);
-			List<Integer> dWords = wcb.getDocWords().get(docId);
-
-			Counter<IntPair> psgLocScores = psgGenerator.generate(qWords, dWords);
-
-			List<IntPair> psgLocs = psgLocScores.getSortedKeys();
-
-			SparseVector[] psgWordCountData = new SparseVector[psgLocs.size()];
-			IntCounter c = new IntCounter();
-
-			for (int j = 0; j < psgLocs.size() && j < psgLocs.size(); j++) {
-				IntPair psgLoc = psgLocs.get(j);
-
-				int start = psgLoc.getFirst();
-				int offset = psgLoc.getSecond();
-				int end = start + offset;
-
-				for (int k = start; k < end; k++) {
-					int w_in_psg = dWords.get(k);
-					c.incrementCount(w_in_psg, 1);
-				}
-			}
-
-			cm.setCounter(docId, c);
-		}
-
-		SparseMatrix docPsgWordCounts = VectorUtils.toSpasreMatrix(cm);
-		SparseVector psgScores = new SparseVector(docPsgWordCounts.rowSize());
-
-		for (int i = 0; i < docPsgWordCounts.rowSize(); i++) {
-			int docId = docPsgWordCounts.indexAtRowLoc(i);
-			SparseVector psgWordCounts = docPsgWordCounts.rowAtLoc(i);
-
-			double div_sum = 0;
-
-			for (int j = 0; j < qLM.size(); j++) {
-				int w = qLM.indexAtLoc(j);
-				double pr_w_in_query = qLM.valueAtLoc(j);
-				double cnt_w_in_coll = wcb.getCollWordCounts().valueAlways(w);
-				double pr_w_in_coll = cnt_w_in_coll / wcb.getCollectionCountSum();
-
-				double cnt_w_in_psg = psgWordCounts.valueAlways(w);
-				double cnt_sum_in_psg = psgWordCounts.sum();
-				double mixture_for_coll = 0.5;
-				double pr_w_in_doc = cnt_w_in_psg / cnt_sum_in_psg;
-
-				pr_w_in_doc = (1 - mixture_for_coll) * pr_w_in_doc + mixture_for_coll * pr_w_in_coll;
-
-				if (pr_w_in_doc > 0) {
-					div_sum += pr_w_in_query * Math.log(pr_w_in_query / pr_w_in_doc);
-				}
-			}
-
-			double approx_prob = Math.exp(-div_sum);
-			psgScores.incrementAtLoc(i, docId, approx_prob);
-		}
-
-		for (int j = 0; j < wcb.getCollWordCounts().size(); j++) {
-			int w = wcb.getCollWordCounts().indexAtLoc(j);
-			double cnt_w_in_coll = wcb.getCollWordCounts().valueAlways(w);
-			double cnt_sum_in_coll = wcb.getCollectionCountSum();
-			double pr_w_in_coll = cnt_w_in_coll / cnt_sum_in_coll;
-
-			for (int k = 0; k < docScores.size() && k < num_fb_docs; k++) {
-				int docId = docScores.indexAtLoc(k);
-				double doc_weight = docScores.valueAtLoc(k);
-				double psg_weight = psgScores.valueAlways(docId);
-				psg_weight = Math.exp(psg_weight);
-
-				SparseVector docWordCounts = wcb.getDocWordCounts().rowAlways(docId);
-				SparseVector psgWordCounts = docPsgWordCounts.rowAlways(docId);
-
-				double cnt_w_in_doc = docWordCounts.valueAlways(w);
-				double cnt_sum_in_doc = docWordCounts.sum();
-				double mixture_for_coll = dirichlet_prior / (cnt_sum_in_doc + dirichlet_prior);
-				double pr_w_in_doc = cnt_w_in_doc / cnt_sum_in_doc;
-				pr_w_in_doc = (1 - mixture_for_coll) * pr_w_in_doc + mixture_for_coll * pr_w_in_coll;
-				double doc_prior = 1;
-				double pr_w_in_fb_model = doc_weight * pr_w_in_doc * doc_prior * psg_weight;
-
-				if (pr_w_in_fb_model > 0) {
-					ret.incrementAtLoc(j, w, pr_w_in_fb_model);
-				}
-			}
-		}
-
-		docScores.sortByIndex();
-		ret.keepTopN(num_fb_words);
-		ret.normalize();
-		return ret;
-	}
-
 	public SparseVector getPassageRelevanceModel(WordCountBox wcb, SparseVector docScores, SparseVector qLM, List<Integer> qWords)
 			throws IOException {
 		docScores.sortByValue();
@@ -349,6 +156,199 @@ public class RelevanceModelBuilder {
 		}
 
 		docScores.sortByIndex();
+		ret.keepTopN(num_fb_words);
+		ret.normalize();
+		return ret;
+	}
+
+	public SparseVector getPassageRelevanceModel2(WordCountBox wcb, SparseVector docScores, SparseVector qLM, List<Integer> qWords)
+			throws IOException {
+		docScores.sortByValue();
+
+		SparseVector ret = new SparseVector(wcb.getCollWordCounts().size());
+
+		PassageGenerator psgGenerator = new PassageGenerator();
+
+		IntCounterMap cm = new IntCounterMap();
+
+		for (int i = 0; i < docScores.size() && i < num_fb_docs; i++) {
+			int docId = docScores.indexAtLoc(i);
+			List<Integer> dWords = wcb.getDocWords().get(docId);
+
+			Counter<IntPair> psgLocScores = psgGenerator.generate(qWords, dWords);
+
+			List<IntPair> psgLocs = psgLocScores.getSortedKeys();
+
+			SparseVector[] psgWordCountData = new SparseVector[psgLocs.size()];
+			IntCounter c = new IntCounter();
+
+			for (int j = 0; j < psgLocs.size() && j < psgLocs.size(); j++) {
+				IntPair psgLoc = psgLocs.get(j);
+
+				int start = psgLoc.getFirst();
+				int offset = psgLoc.getSecond();
+				int end = start + offset;
+
+				for (int k = start; k < end; k++) {
+					int w_in_psg = dWords.get(k);
+					c.incrementCount(w_in_psg, 1);
+				}
+			}
+
+			cm.setCounter(docId, c);
+		}
+
+		SparseMatrix docPsgWordCounts = VectorUtils.toSpasreMatrix(cm);
+		SparseVector psgScores = new SparseVector(docPsgWordCounts.rowSize());
+
+		for (int i = 0; i < docPsgWordCounts.rowSize(); i++) {
+			int docId = docPsgWordCounts.indexAtRowLoc(i);
+			SparseVector psgWordCounts = docPsgWordCounts.rowAtLoc(i);
+
+			double div_sum = 0;
+
+			for (int j = 0; j < qLM.size(); j++) {
+				int w = qLM.indexAtLoc(j);
+				double pr_w_in_query = qLM.valueAtLoc(j);
+				double cnt_w_in_coll = wcb.getCollWordCounts().valueAlways(w);
+				double pr_w_in_coll = cnt_w_in_coll / wcb.getCollectionCountSum();
+
+				double cnt_w_in_psg = psgWordCounts.valueAlways(w);
+				double cnt_sum_in_psg = psgWordCounts.sum();
+				double mixture_for_coll = 0.5;
+				double pr_w_in_doc = cnt_w_in_psg / cnt_sum_in_psg;
+
+				pr_w_in_doc = (1 - mixture_for_coll) * pr_w_in_doc + mixture_for_coll * pr_w_in_coll;
+
+				if (pr_w_in_doc > 0) {
+					div_sum += pr_w_in_query * Math.log(pr_w_in_query / pr_w_in_doc);
+				}
+			}
+
+			double approx_prob = Math.exp(-div_sum);
+			psgScores.incrementAtLoc(i, docId, approx_prob);
+		}
+
+		for (int j = 0; j < wcb.getCollWordCounts().size(); j++) {
+			int w = wcb.getCollWordCounts().indexAtLoc(j);
+			double cnt_w_in_coll = wcb.getCollWordCounts().valueAlways(w);
+			double cnt_sum_in_coll = wcb.getCollectionCountSum();
+			double pr_w_in_coll = cnt_w_in_coll / cnt_sum_in_coll;
+
+			for (int k = 0; k < docScores.size() && k < num_fb_docs; k++) {
+				int docId = docScores.indexAtLoc(k);
+				double doc_weight = docScores.valueAtLoc(k);
+				double psg_weight = psgScores.valueAlways(docId);
+				psg_weight = Math.exp(psg_weight);
+
+				SparseVector docWordCounts = wcb.getDocWordCounts().rowAlways(docId);
+				SparseVector psgWordCounts = docPsgWordCounts.rowAlways(docId);
+
+				double cnt_w_in_doc = docWordCounts.valueAlways(w);
+				double cnt_sum_in_doc = docWordCounts.sum();
+				double mixture_for_coll = dirichlet_prior / (cnt_sum_in_doc + dirichlet_prior);
+				double pr_w_in_doc = cnt_w_in_doc / cnt_sum_in_doc;
+				pr_w_in_doc = (1 - mixture_for_coll) * pr_w_in_doc + mixture_for_coll * pr_w_in_coll;
+				double doc_prior = 1;
+				double pr_w_in_fb_model = doc_weight * pr_w_in_doc * doc_prior * psg_weight;
+
+				if (pr_w_in_fb_model > 0) {
+					ret.incrementAtLoc(j, w, pr_w_in_fb_model);
+				}
+			}
+		}
+
+		docScores.sortByIndex();
+		ret.keepTopN(num_fb_words);
+		ret.normalize();
+		return ret;
+	}
+
+	public SparseVector getPositionalRelevanceModel(SparseVector qLM, WordCountBox wcb, SparseVector docScores) {
+		double pi = Math.PI;
+		double sigma = 175;
+		double mixture_for_coll = 0.5;
+
+		int fb_type = 1;
+
+		IntCounter fbCounts = new IntCounter();
+
+		for (int i = 0; i < docScores.size(); i++) {
+			int docId = docScores.indexAtLoc(i);
+			double doc_score = docScores.valueAtLoc(i);
+			List<Integer> words = wcb.getDocWords().get(docId);
+			List<IntPair> locWords = PLMUtils.getQueryLocsInDocument(qLM, words);
+
+			double real_doc_len = locWords.size();
+			double len_norm = Math.sqrt(2 * pi) * sigma;
+			double pos_score_sum = 0;
+
+			double[] posScores = new double[words.size()];
+
+			for (int j = 0; j < words.size(); j++) {
+				IntCounter c = new IntCounter();
+
+				for (int qw : qLM.indexes()) {
+					c.incrementCount(qw, 0);
+				}
+
+				for (int k = 0; k < locWords.size(); k++) {
+					int pos = locWords.get(k).getFirst();
+					int w = locWords.get(k).getSecond();
+
+					double dis = (pos - j) / sigma;
+					double pr = Math.exp(-dis * dis / 2.0) / len_norm;
+					c.incrementCount(w, pr);
+				}
+
+				SparseVector plm = VectorUtils.toSparseVector(c);
+
+				for (int k = 0; k < plm.size(); k++) {
+					int w = plm.indexAtLoc(k);
+					double pr_w_in_doc = plm.valueAtLoc(k);
+					double cnt_w_in_coll = wcb.getCollWordCounts().valueAlways(w);
+					double coll_cnt_sum = wcb.getCollectionCountSum();
+					double pr_w_in_coll = cnt_w_in_coll / coll_cnt_sum;
+					pr_w_in_doc = (1 - mixture_for_coll) * pr_w_in_doc + mixture_for_coll * pr_w_in_coll;
+					plm.setAtLoc(k, pr_w_in_doc);
+				}
+				plm.summation();
+
+				double div_sum = 0;
+
+				for (int k = 0; k < qLM.size(); k++) {
+					int w = qLM.indexAtLoc(k);
+					double pr_w_in_query = qLM.valueAtLoc(k);
+					double pr_w_in_doc = plm.valueAlways(w);
+
+					if (pr_w_in_doc > 0) {
+						double div = pr_w_in_query * Math.log(pr_w_in_query / pr_w_in_doc);
+						div_sum += div;
+					}
+				}
+
+				double approx_prob = Math.exp(-div_sum);
+				posScores[j] = approx_prob;
+				pos_score_sum += approx_prob;
+			}
+
+			for (int j = 0; j < posScores.length; j++) {
+				int w = words.get(j);
+				double pos_score = posScores[j];
+
+				if (fb_type == 1) {
+					pos_score /= real_doc_len;
+				} else if (fb_type == 2) {
+					pos_score = pos_score * doc_score / pos_score_sum;
+				}
+
+				if (pos_score > 0) {
+					fbCounts.incrementCount(w, pos_score);
+				}
+			}
+		}
+
+		SparseVector ret = VectorUtils.toSparseVector(fbCounts);
 		ret.keepTopN(num_fb_words);
 		ret.normalize();
 		return ret;

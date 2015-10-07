@@ -196,33 +196,6 @@ public class VectorUtils {
 		return toSparseVector(indexList, valueList, 0);
 	}
 
-	public static SparseVector toSparseVector(StrCounter x, Indexer<String> indexer) {
-		return toSparseVector(x, indexer, false);
-	}
-
-	public static SparseVector toSparseVector(StrCounter x, Indexer<String> indexer, boolean addIfUnseen) {
-		List<Integer> indexList = new ArrayList<Integer>();
-		List<Double> valueList = new ArrayList<Double>();
-
-		for (Entry<String, Double> entry : x.entrySet()) {
-			String key = entry.getKey();
-			double value = entry.getValue();
-			int index = indexer.indexOf(key);
-
-			if (index < 0) {
-				if (addIfUnseen) {
-					index = indexer.getIndex(key);
-				} else {
-					continue;
-				}
-			}
-
-			indexList.add(index);
-			valueList.add(value);
-		}
-		return toSparseVector(indexList, valueList, indexer.size());
-	}
-
 	public static SparseVector toSparseVector(List<Integer> indexList, List<Double> valueList, int dim) {
 		SparseVector ret = new SparseVector(indexList.size());
 		for (int i = 0; i < indexList.size(); i++) {
@@ -252,6 +225,33 @@ public class VectorUtils {
 			ret.incrementCount(index, 1);
 		}
 		return toSparseVector(ret);
+	}
+
+	public static SparseVector toSparseVector(StrCounter x, Indexer<String> indexer) {
+		return toSparseVector(x, indexer, false);
+	}
+
+	public static SparseVector toSparseVector(StrCounter x, Indexer<String> indexer, boolean addIfUnseen) {
+		List<Integer> indexList = new ArrayList<Integer>();
+		List<Double> valueList = new ArrayList<Double>();
+
+		for (Entry<String, Double> entry : x.entrySet()) {
+			String key = entry.getKey();
+			double value = entry.getValue();
+			int index = indexer.indexOf(key);
+
+			if (index < 0) {
+				if (addIfUnseen) {
+					index = indexer.getIndex(key);
+				} else {
+					continue;
+				}
+			}
+
+			indexList.add(index);
+			valueList.add(value);
+		}
+		return toSparseVector(indexList, valueList, indexer.size());
 	}
 
 	public static SparseMatrix toSpasreMatrix(CounterMap<Integer, Integer> counterMap) {
