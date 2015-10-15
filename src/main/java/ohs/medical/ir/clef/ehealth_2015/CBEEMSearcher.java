@@ -474,7 +474,8 @@ public class CBEEMSearcher {
 		StringBuffer sb = new StringBuffer();
 
 		sb.append(String.format("Relevant docs:\t%d", docRelevances.size()));
-		sb.append(String.format("\nRelevant docs at top-%d:\t%d", docScores.size(), getRelevant(docScores, docRelevances, docScores.size())));
+		sb.append(
+				String.format("\nRelevant docs at top-%d:\t%d", docScores.size(), getRelevant(docScores, docRelevances, docScores.size())));
 		sb.append(String.format("\nRelevant docs at top-20:"));
 		sb.append(String.format("\nRanking-1:\t%d", getRelevant(docScores, docRelevances, 20)));
 		sb.append(String.format("\nRanking-2:\t%d", getRelevant(newDocScores, docRelevances, 20)));
@@ -795,7 +796,7 @@ public class CBEEMSearcher {
 				}
 
 				TermsEnum termsEnum = null;
-				termsEnum = termVector.iterator(termsEnum);
+				termsEnum = termVector.iterator();
 
 				BytesRef bytesRef = null;
 				PostingsEnum postingsEnum = null;
@@ -803,7 +804,7 @@ public class CBEEMSearcher {
 				Map<Integer, Integer> words = new TreeMap<Integer, Integer>();
 
 				while ((bytesRef = termsEnum.next()) != null) {
-					postingsEnum = termsEnum.postings(null, postingsEnum, PostingsEnum.ALL);
+					postingsEnum = termsEnum.postings(postingsEnum, PostingsEnum.ALL);
 
 					if (postingsEnum.nextDoc() != 0) {
 						throw new AssertionError();

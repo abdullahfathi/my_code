@@ -40,10 +40,13 @@ public class Word2VecExamples {
 	 * Trains a model and allows user to find similar words demo-word.sh example from the open source C implementation
 	 */
 	public static void demoWord() throws IOException, TException, InterruptedException, UnknownWordException {
-		File f = new File("text8");
-		if (!f.exists())
-			throw new IllegalStateException("Please download and unzip the text8 example from http://mattmahoney.net/dc/text8.zip");
+		// File f = new File("text8");
+		// if (!f.exists())
+		// throw new IllegalStateException("Please download and unzip the text8 example from http://mattmahoney.net/dc/text8.zip");
+
+		File f = new File("../../data/medical_ir/ohsumed/sents.txt");
 		List<String> read = Common.readToList(f);
+
 		List<List<String>> partitioned = Lists.transform(read, new Function<String, List<String>>() {
 			@Override
 			public List<String> apply(String input) {
@@ -51,13 +54,30 @@ public class Word2VecExamples {
 			}
 		});
 
+		// Word2VecModel model =
+		//
+		// Word2VecModel.trainer().setMinVocabFrequency(0).useNumThreads(1).useHierarchicalSoftmax().
+		//
+		// setWindowSize(1).type(NeuralNetworkType.CBOW).setLayerSize(2).useNegativeSamples(25).
+		//
+		// setDownSamplingRate(0).setNumIterations(5).setListener(new TrainingProgressListener() {
+		//
+		// @Override
+		// public void update(Stage stage, double progress) {
+		// System.out.println(String.format("%s is %.2f%% complete", Format.formatEnum(stage), progress * 100));
+		// }
+		//
+		// })
+		//
+		// .train(partitioned);
+
 		Word2VecModel model =
 
-		Word2VecModel.trainer().setMinVocabFrequency(0).useNumThreads(1).useHierarchicalSoftmax().
+		Word2VecModel.trainer().setMinVocabFrequency(5).useNumThreads(40).
 
-		setWindowSize(1).type(NeuralNetworkType.CBOW).setLayerSize(2).useNegativeSamples(25).
+		setWindowSize(1).type(NeuralNetworkType.CBOW).setLayerSize(200).useNegativeSamples(25).
 
-		setDownSamplingRate(0).setNumIterations(5).setListener(new TrainingProgressListener() {
+		setDownSamplingRate(1e-4).setNumIterations(5).setListener(new TrainingProgressListener() {
 
 			@Override
 			public void update(Stage stage, double progress) {
@@ -68,35 +88,18 @@ public class Word2VecExamples {
 
 		.train(partitioned);
 
-		// {
-		// Word2VecModel model =
-		//
-		// Word2VecModel.trainer().setMinVocabFrequency(5).useNumThreads(40).
-		//
-		// setWindowSize(1).type(NeuralNetworkType.CBOW).setLayerSize(200).useNegativeSamples(25).
-		//
-		// setDownSamplingRate(1e-4).setNumIterations(5).setListener(new TrainingProgressListener() {
-		//
-		// @Override
-		// public void update(Stage stage, double progress) {
-		// System.out.println(String.format("%s is %.2f%% complete", Format.formatEnum(stage), progress * 100));
-		// }
-		//
-		// })
-		//
-		// .train(partitioned);
-		// }
-
 		// Writes model to a thrift file
-		try (ProfilingTimer timer = ProfilingTimer.create(LOG, "Writing output to file")) {
-			FileUtils.writeStringToFile(new File("text8.model"), ThriftUtils.serializeJson(model.toThrift()));
-		}
+		// try (ProfilingTimer timer = ProfilingTimer.create(LOG, "Writing output to file")) {
+		// FileUtils.writeStringToFile(new File("text8.model"), ThriftUtils.serializeJson(model.toThrift()));
+		// }
 
 		// Alternatively, you can write the model to a bin file that's compatible with the C
 		// implementation.
-		try (final OutputStream os = Files.newOutputStream(Paths.get("text8.bin"))) {
-			model.toBinFile(os);
-		}
+		// try (final OutputStream os = Files.newOutputStream(Paths.get("text8.bin"))) {
+		// model.toBinFile(os);
+		// }
+
+		model.toTextFile("model.txt");
 
 		interact(model.forSearch());
 	}

@@ -4,6 +4,8 @@ public class IndexFieldName {
 
 	public static final String DOCUMENT_ID = "id";
 
+	public static final String SENTENCE_ID = "sent_id";
+
 	public static final String PARENT_DOCUMENT_ID = "parentId";
 
 	public static final String URL = "url";

@@ -103,13 +103,13 @@ public class HuffmanCoding {
 		int pos1 = numTokens - 1;
 		int pos2 = numTokens;
 
-		Map<Integer, String> map = new HashMap<>();
-		{
-			int id = 0;
-			for (Entry<String> e : vocab.entrySet()) {
-				map.put(id++, e.getElement());
-			}
-		}
+		// Map<Integer, String> map = new HashMap<>();
+		// {
+		// int id = 0;
+		// for (Entry<String> e : vocab.entrySet()) {
+		// map.put(id++, e.getElement());
+		// }
+		// }
 
 		// Construct the Huffman tree by adding one node at a time
 		for (int a = 0; a < numTokens - 1; a++) {
@@ -146,11 +146,11 @@ public class HuffmanCoding {
 			parentNode[min2i] = newNodeIdx;
 			binary[min2i] = 1;
 
-			System.out.printf("Min1:\tpos:%d, id:%d, word:%s, parent:%d, code:%d\n", pos1, min1i, map.get(min1i), parentNode[min1i],
-					(int) binary[min1i]);
-			System.out.printf("Min2:\tpos:%d, id:%d, word:%s, parent:%d, cdoe:%d\n", pos2, min2i, map.get(min2i), parentNode[min2i],
-					(int) binary[min2i]);
-			System.out.println();
+			// System.out.printf("Min1:\tpos:%d, id:%d, word:%s, parent:%d, code:%d\n", pos1, min1i, map.get(min1i), parentNode[min1i],
+			// (int) binary[min1i]);
+			// System.out.printf("Min2:\tpos:%d, id:%d, word:%s, parent:%d, cdoe:%d\n", pos2, min2i, map.get(min2i), parentNode[min2i],
+			// (int) binary[min2i]);
+			// System.out.println();
 
 			if (a % 1_000 == 0) {
 				if (Thread.currentThread().isInterrupted())
@@ -169,13 +169,13 @@ public class HuffmanCoding {
 		// Now assign binary code to each unique token
 		ImmutableMap.Builder<String, HuffmanNode> result = ImmutableMap.builder();
 
-		Map<Integer, String> map = new HashMap<>();
-		{
-			int id = 0;
-			for (Entry<String> e : vocab.entrySet()) {
-				map.put(id++, e.getElement());
-			}
-		}
+//		Map<Integer, String> map = new HashMap<>();
+//		{
+//			int id = 0;
+//			for (Entry<String> e : vocab.entrySet()) {
+//				map.put(id++, e.getElement());
+//			}
+//		}
 
 		int nodeIdx = 0;
 		for (Entry<String> e : vocab.entrySet()) {
@@ -194,11 +194,11 @@ public class HuffmanCoding {
 			final byte[] rawCode = new byte[codeLen];
 			final int[] rawPoints = new int[codeLen + 1];
 
-			System.out.printf("## id:%d, word:%s\n", nodeIdx, map.get(nodeIdx));
-			for (int i = 0; i < codeLen; i++) {
-				System.out.printf("depth:%d, pcode:%d, pid:%d, pword:%s\n", i, (int)code.get(i), points.get(i), map.get(points.get(i)));
-			}
-			System.out.println();
+//			System.out.printf("## id:%d, word:%s\n", nodeIdx, map.get(nodeIdx));
+//			for (int i = 0; i < codeLen; i++) {
+//				System.out.printf("depth:%d, pcode:%d, pid:%d, pword:%s\n", i, (int)code.get(i), points.get(i), map.get(points.get(i)));
+//			}
+//			System.out.println();
 
 			rawPoints[0] = numTokens - 2;
 			for (int i = 0; i < codeLen; i++) {
@@ -206,10 +206,10 @@ public class HuffmanCoding {
 				rawPoints[codeLen - i] = points.get(i) - numTokens;
 			}
 
-			for (int i = 0; i < codeLen; i++) {
-				System.out.printf("depth:%d, pcode:%d, pid:%d, pword:%s\n", i, rawCode[i], rawPoints[i], map.get(rawPoints[i]));
-			}
-			System.out.println();
+			// for (int i = 0; i < codeLen; i++) {
+			// System.out.printf("depth:%d, pcode:%d, pid:%d, pword:%s\n", i, rawCode[i], rawPoints[i], map.get(rawPoints[i]));
+			// }
+			// System.out.println();
 
 			String token = e.getElement();
 			result.put(token, new HuffmanNode(rawCode, rawPoints, nodeIdx, count));

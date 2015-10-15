@@ -135,7 +135,7 @@ public class NumericalWordAnalyzer {
 				}
 
 				TermsEnum termsEnum = null;
-				termsEnum = termVector.iterator(termsEnum);
+				termsEnum = termVector.iterator();
 
 				BytesRef bytesRef = null;
 				PostingsEnum postingsEnum = null;
@@ -143,7 +143,7 @@ public class NumericalWordAnalyzer {
 				Map<Integer, String> temp = new TreeMap<Integer, String>();
 
 				while ((bytesRef = termsEnum.next()) != null) {
-					postingsEnum = termsEnum.postings(null, postingsEnum, PostingsEnum.ALL);
+					postingsEnum = termsEnum.postings(postingsEnum, PostingsEnum.ALL);
 
 					if (postingsEnum.nextDoc() != 0) {
 						throw new AssertionError();

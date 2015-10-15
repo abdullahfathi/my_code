@@ -1,6 +1,7 @@
 package ohs.medical.ir;
 
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.List;
 
 import edu.stanford.nlp.ling.HasWord;
@@ -16,22 +17,22 @@ public class NLPUtils {
 
 	// ptb3Escaping=false,normalizeParentheses=false,normalizeOtherBrackets=false
 
-	public static String tokenize(String text) {
-
+	public static List<String> tokenize(String text) {
 		DocumentPreprocessor documentPreprocessor = new DocumentPreprocessor(new StringReader(text));
 		documentPreprocessor.setTokenizerFactory(tf);
 
-		StringBuffer sb = new StringBuffer();
-		for (List<HasWord> item : documentPreprocessor) {
+		List<String> ret = new ArrayList<String>();
 
+		for (List<HasWord> item : documentPreprocessor) {
+			StringBuffer sb = new StringBuffer();
 			for (int i = 0; i < item.size(); i++) {
 				sb.append(item.get(i).word());
 				if (i != item.size() - 1) {
 					sb.append(" ");
 				}
 			}
-			sb.append("\n");
+			ret.add(sb.toString());
 		}
-		return sb.toString().trim();
+		return ret;
 	}
 }

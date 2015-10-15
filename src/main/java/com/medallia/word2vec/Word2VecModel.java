@@ -1,5 +1,6 @@
 package com.medallia.word2vec;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -22,6 +23,10 @@ import com.google.common.primitives.Doubles;
 import com.medallia.word2vec.thrift.Word2VecModelThrift;
 import com.medallia.word2vec.util.Common;
 import com.medallia.word2vec.util.ProfilingTimer;
+
+import ohs.io.IOUtils;
+import ohs.io.TextFileWriter;
+
 import com.medallia.word2vec.util.AC;
 
 /**
@@ -36,65 +41,7 @@ import com.medallia.word2vec.util.AC;
  * @see {@link #forSearch()}
  */
 public class Word2VecModel {
-	final List<String> vocab;
-	final int layerSize;
-	final DoubleBuffer vectors;
 	private final static long ONE_GB = 1024 * 1024 * 1024;
-
-	Word2VecModel(Iterable<String> vocab, int layerSize, DoubleBuffer vectors) {
-		this.vocab = ImmutableList.copyOf(vocab);
-		this.layerSize = layerSize;
-		this.vectors = vectors;
-	}
-
-	Word2VecModel(Iterable<String> vocab, int layerSize, double[] vectors) {
-		this(vocab, layerSize, DoubleBuffer.wrap(vectors));
-	}
-
-	/**
-	 * @return Vocabulary
-	 */
-	public Iterable<String> getVocab() {
-		return vocab;
-	}
-
-	/**
-	 * @return {@link Searcher} for searching
-	 */
-	public Searcher forSearch() {
-		return new SearcherImpl(this);
-	}
-
-	/**
-	 * @return Serializable thrift representation
-	 */
-	public Word2VecModelThrift toThrift() {
-		double[] vectorsArray;
-		if (vectors.hasArray()) {
-			vectorsArray = vectors.array();
-		} else {
-			vectorsArray = new double[vectors.limit()];
-			vectors.position(0);
-			vectors.get(vectorsArray);
-		}
-
-		return new Word2VecModelThrift().setVocab(vocab).setLayerSize(layerSize).setVectors(Doubles.asList(vectorsArray));
-	}
-
-	/**
-	 * @return {@link Word2VecModel} created from a thrift representation
-	 */
-	public static Word2VecModel fromThrift(Word2VecModelThrift thrift) {
-		return new Word2VecModel(thrift.getVocab(), thrift.getLayerSize(), Doubles.toArray(thrift.getVectors()));
-	}
-
-	/**
-	 * @return {@link Word2VecModel} read from a file in the text output format of the Word2Vec C open source project.
-	 */
-	public static Word2VecModel fromTextFile(File file) throws IOException {
-		List<String> lines = Common.readToList(file);
-		return fromTextFile(file.getAbsolutePath(), lines);
-	}
 
 	/**
 	 * Forwards to {@link #fromBinFile(File, ByteOrder, ProfilingTimer)} with the default ByteOrder.LITTLE_ENDIAN and no ProfilingTimer
@@ -194,30 +141,11 @@ public class Word2VecModel {
 	}
 
 	/**
-	 * Saves the model as a bin file that's compatible with the C version of Word2Vec
+	 * @return {@link Word2VecModel} read from a file in the text output format of the Word2Vec C open source project.
 	 */
-	public void toBinFile(final OutputStream out) throws IOException {
-		final Charset cs = Charset.forName("UTF-8");
-		final String header = String.format("%d %d\n", vocab.size(), layerSize);
-		out.write(header.getBytes(cs));
-
-		final double[] vector = new double[layerSize];
-		final ByteBuffer buffer = ByteBuffer.allocate(4 * layerSize);
-		buffer.order(ByteOrder.LITTLE_ENDIAN); // The C version uses this byte order.
-		for (int i = 0; i < vocab.size(); ++i) {
-			out.write(String.format("%s ", vocab.get(i)).getBytes(cs));
-
-			vectors.position(i * layerSize);
-			vectors.get(vector);
-			buffer.clear();
-			for (int j = 0; j < layerSize; ++j)
-				buffer.putFloat((float) vector[j]);
-			out.write(buffer.array());
-
-			out.write('\n');
-		}
-
-		out.flush();
+	public static Word2VecModel fromTextFile(File file) throws IOException {
+		List<String> lines = Common.readToList(file);
+		return fromTextFile(file.getAbsolutePath(), lines);
 	}
 
 	/**
@@ -252,9 +180,113 @@ public class Word2VecModel {
 	}
 
 	/**
+	 * @return {@link Word2VecModel} created from a thrift representation
+	 */
+	public static Word2VecModel fromThrift(Word2VecModelThrift thrift) {
+		return new Word2VecModel(thrift.getVocab(), thrift.getLayerSize(), Doubles.toArray(thrift.getVectors()));
+	}
+
+	/**
 	 * @return {@link Word2VecTrainerBuilder} for training a model
 	 */
 	public static Word2VecTrainerBuilder trainer() {
 		return new Word2VecTrainerBuilder();
+	}
+
+	final List<String> vocab;
+
+	final int layerSize;
+
+	final DoubleBuffer vectors;
+
+	Word2VecModel(Iterable<String> vocab, int layerSize, double[] vectors) {
+		this(vocab, layerSize, DoubleBuffer.wrap(vectors));
+	}
+
+	Word2VecModel(Iterable<String> vocab, int layerSize, DoubleBuffer vectors) {
+		this.vocab = ImmutableList.copyOf(vocab);
+		this.layerSize = layerSize;
+		this.vectors = vectors;
+	}
+
+	/**
+	 * @return {@link Searcher} for searching
+	 */
+	public Searcher forSearch() {
+		return new SearcherImpl(this);
+	}
+
+	/**
+	 * @return Vocabulary
+	 */
+	public Iterable<String> getVocab() {
+		return vocab;
+	}
+
+	/**
+	 * Saves the model as a bin file that's compatible with the C version of Word2Vec
+	 */
+	public void toBinFile(final OutputStream out) throws IOException {
+		final Charset cs = Charset.forName("UTF-8");
+		final String header = String.format("%d %d\n", vocab.size(), layerSize);
+		out.write(header.getBytes(cs));
+
+		final double[] vector = new double[layerSize];
+		final ByteBuffer buffer = ByteBuffer.allocate(4 * layerSize);
+		buffer.order(ByteOrder.LITTLE_ENDIAN); // The C version uses this byte order.
+		for (int i = 0; i < vocab.size(); ++i) {
+			out.write(String.format("%s ", vocab.get(i)).getBytes(cs));
+
+			vectors.position(i * layerSize);
+			vectors.get(vector);
+			buffer.clear();
+			for (int j = 0; j < layerSize; ++j)
+				buffer.putFloat((float) vector[j]);
+			out.write(buffer.array());
+
+			out.write('\n');
+		}
+
+		out.flush();
+	}
+
+	public void toTextFile(String outputFile) throws IOException {
+		final Charset cs = Charset.forName("UTF-8");
+
+		TextFileWriter writer = new TextFileWriter(outputFile);
+		writer.write(String.format("%d %d\n", vocab.size(), layerSize));
+
+		final double[] vector = new double[layerSize];
+		final ByteBuffer buffer = ByteBuffer.allocate(4 * layerSize);
+		buffer.order(ByteOrder.LITTLE_ENDIAN); // The C version uses this byte order.
+		for (int i = 0; i < vocab.size(); ++i) {
+			writer.write(String.format("%s ", vocab.get(i)));
+
+			vectors.position(i * layerSize);
+			vectors.get(vector);
+
+			for (int j = 0; j < layerSize; ++j) {
+				writer.write(" " + Double.toString(vector[j]));
+			}
+			writer.write("\n");
+		}
+		writer.close();
+
+	}
+
+	/**
+	 * @return Serializable thrift representation
+	 */
+	public Word2VecModelThrift toThrift() {
+		double[] vectorsArray;
+		if (vectors.hasArray()) {
+			vectorsArray = vectors.array();
+		} else {
+			vectorsArray = new double[vectors.limit()];
+			vectors.position(0);
+			vectors.get(vectorsArray);
+		}
+
+		return new Word2VecModelThrift().setVocab(vocab).setLayerSize(layerSize).setVectors(Doubles.asList(vectorsArray));
 	}
 }

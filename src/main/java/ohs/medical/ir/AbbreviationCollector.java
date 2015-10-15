@@ -23,6 +23,7 @@ import ohs.types.common.StrCounter;
 import ohs.types.common.StrCounterMap;
 import ohs.types.common.StrPair;
 import ohs.utils.StopWatch;
+import ohs.utils.StrUtils;
 
 public class AbbreviationCollector {
 
@@ -81,7 +82,7 @@ public class AbbreviationCollector {
 				String content = doc.getField(IndexFieldName.CONTENT).stringValue();
 				// content = content.replaceAll("<NL>", "\n");
 
-				content = NLPUtils.tokenize(content);
+				content = StrUtils.join("\n", NLPUtils.tokenize(content));
 				// content = content.replace("( ", "(").replace(" )", ")");
 				StringBuffer sb = new StringBuffer();
 

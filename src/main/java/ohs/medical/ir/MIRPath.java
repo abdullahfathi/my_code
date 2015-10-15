@@ -38,6 +38,8 @@ public class MIRPath {
 
 	public static final String WIKI_INDEX_DIR = WIKI_DIR + "index/";
 
+	public static final String WIKI_INDEX_SENT_DIR = WIKI_DIR + "index_sent/";
+
 	public static final String WIKI_CATEGORY_INDEX_DIR = WIKI_DIR + "cat_index/";
 
 	public static final String WIKI_REDIRECT_TITLE_FILE = WIKI_DIR + "redirects.txt";
@@ -80,6 +82,8 @@ public class MIRPath {
 
 	public static final String CLEF_EHEALTH_COLLECTION_FILE = CLEF_EHEALTH_DIR + "collection.txt";
 
+	public static final String CLEF_EHEALTH_SENTS_FILE = CLEF_EHEALTH_DIR + "sents.txt";
+
 	public static final String CLEF_EHEALTH_COLLECTION_FILE_2 = CLEF_EHEALTH_DIR + "collection_2.txt";
 
 	public static final String CLEF_EHEALTH_VALID_DOC_NO_FILE = CLEF_EHEALTH_DIR + "cds-docnos.txt";
@@ -87,6 +91,8 @@ public class MIRPath {
 	public static final String CLEF_EHEALTH_QUERY_DIR = CLEF_EHEALTH_DIR + "query/";
 
 	public static final String CLEF_EHEALTH_INDEX_DIR = CLEF_EHEALTH_DIR + "index/";
+
+	public static final String CLEF_EHEALTH_INDEX_SENT_DIR = CLEF_EHEALTH_DIR + "index_sent/";
 
 	public static final String CLEF_EHEALTH_QUERY_2013_FILE = CLEF_EHEALTH_QUERY_DIR + "2013/queries.clef2013ehealth.1-50.test.xml";
 
@@ -145,11 +151,15 @@ public class MIRPath {
 
 	public static final String TREC_CDS_COLLECTION_2_FILE = TREC_CDS_DIR + "collection.txt";
 
+	public static final String TREC_CDS_SENTS_FILE = TREC_CDS_DIR + "sents.txt";
+
 	public static final String TREC_CDS_COLLECTION_LOG_FILE = TREC_CDS_DIR + "collection_log.txt";
 
 	public static final String TREC_CDS_QUERY_DIR = TREC_CDS_DIR + "query/";
 
 	public static final String TREC_CDS_INDEX_DIR = TREC_CDS_DIR + "index/";
+
+	public static final String TREC_CDS_INDEX_SENT_DIR = TREC_CDS_DIR + "index_sent/";
 
 	public static final String TREC_CDS_DUPLICATION_FILE_1 = TREC_CDS_DIR + "collection/duplicates-1.txt";
 
@@ -217,9 +227,13 @@ public class MIRPath {
 
 	public static final String TREC_GENOMICS_COLLECTION_FILE = TREC_GENOMICS_DIR + "collection.txt";
 
+	public static final String TREC_GENOMICS_SENTS_FILE = TREC_GENOMICS_DIR + "sents.txt";
+
 	public static final String TREC_GENOMICS_QUERY_DIR = TREC_GENOMICS_DIR + "query/";
 
 	public static final String TREC_GENOMICS_INDEX_DIR = TREC_GENOMICS_DIR + "index/";
+
+	public static final String TREC_GENOMICS_INDEX_SENT_DIR = TREC_GENOMICS_DIR + "index_sent/";
 
 	public static final String TREC_GENOMICS_QUERY_2007_DIR = TREC_GENOMICS_QUERY_DIR + "2007/";
 
@@ -253,9 +267,13 @@ public class MIRPath {
 
 	public static final String OHSUMED_COLLECTION_FILE = OHSUMED_DIR + "collection.txt";
 
+	public static final String OHSUMED_SENTS_FILE = OHSUMED_DIR + "sents.txt";
+
 	public static final String OHSUMED_QUERY_DIR = OHSUMED_DIR + "query/";
 
 	public static final String OHSUMED_INDEX_DIR = OHSUMED_DIR + "index/";
+
+	public static final String OHSUMED_INDEX_SENT_DIR = OHSUMED_DIR + "index_sent/";
 
 	public static final String OHSUMED_QUERY_FILE = OHSUMED_QUERY_DIR + "queries.txt";
 

@@ -64,7 +64,7 @@ public class WordCountBox {
 			}
 
 			TermsEnum termsEnum = null;
-			termsEnum = termVector.iterator(termsEnum);
+			termsEnum = termVector.iterator();
 
 			BytesRef bytesRef = null;
 			PostingsEnum postingsEnum = null;
@@ -72,7 +72,7 @@ public class WordCountBox {
 			Map<Integer, Integer> locWords = new HashMap<Integer, Integer>();
 
 			while ((bytesRef = termsEnum.next()) != null) {
-				postingsEnum = termsEnum.postings(null, postingsEnum, PostingsEnum.ALL);
+				postingsEnum = termsEnum.postings(postingsEnum, PostingsEnum.ALL);
 
 				if (postingsEnum.nextDoc() != 0) {
 					throw new AssertionError();

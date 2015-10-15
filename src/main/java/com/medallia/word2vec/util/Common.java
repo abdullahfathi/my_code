@@ -25,7 +25,8 @@ import java.util.zip.GZIPInputStream;
  */
 public class Common {
 	/**
-	 * @param distance use 1 for our caller, 2 for their caller, etc...
+	 * @param distance
+	 *            use 1 for our caller, 2 for their caller, etc...
 	 * @return the stack trace element from where the calling method was invoked
 	 */
 	public static StackTraceElement myCaller(int distance) {
@@ -34,10 +35,11 @@ public class Common {
 		try {
 			StackTraceElement st[] = new Throwable().getStackTrace();
 			// hack: skip synthetic caster methods
-			if (st[index].getLineNumber() == 1) return st[index + 1];
+			if (st[index].getLineNumber() == 1)
+				return st[index + 1];
 			return st[index];
 		} catch (Throwable t) {
-			return new StackTraceElement("[unknown]","-","-",0);
+			return new StackTraceElement("[unknown]", "-", "-", 0);
 		}
 	}
 
@@ -54,7 +56,9 @@ public class Common {
 
 	/**
 	 * Read the file line for line and return the result in a list
-	 * @throws IOException upon failure in reading, note that we wrap the underlying IOException with the file name
+	 * 
+	 * @throws IOException
+	 *             upon failure in reading, note that we wrap the underlying IOException with the file name
 	 */
 	public static List<String> readToList(File f) throws IOException {
 		try (final Reader reader = asReaderUTF8Lenient(new FileInputStream(f))) {
@@ -63,13 +67,20 @@ public class Common {
 			throw new IllegalStateException(String.format("Failed to read %s: %s", f.getAbsolutePath(), ioe), ioe);
 		}
 	}
+
 	/** Read the Reader line for line and return the result in a list */
 	public static List<String> readToList(Reader r) throws IOException {
-		try ( BufferedReader in = new BufferedReader(r) ) {
+		try (BufferedReader in = new BufferedReader(r)) {
 			List<String> l = new ArrayList<>();
 			String line = null;
-			while ((line = in.readLine()) != null)
+			while ((line = in.readLine()) != null) {
+				line = line.toLowerCase();
 				l.add(line);
+
+				if (l.size() == 1000) {
+					break;
+				}
+			}
 			return Collections.unmodifiableList(l);
 		}
 	}
@@ -86,13 +97,25 @@ public class Common {
 		return sw.toString();
 	}
 
-	/** @return true if i is an even number */
-	public static boolean isEven(int i) { return (i&1)==0; }
-	/** @return true if i is an odd number */
-	public static boolean isOdd(int i) { return !isEven(i); }
+	/**
+	 * @return true if i is an even number
+	 */
+	public static boolean isEven(int i) {
+		return (i & 1) == 0;
+	}
 
-	/** Read the lines (as UTF8) of the resource file fn from the package of the given class into a (unmodifiable) list of strings
-	 * @throws IOException */
+	/**
+	 * @return true if i is an odd number
+	 */
+	public static boolean isOdd(int i) {
+		return !isEven(i);
+	}
+
+	/**
+	 * Read the lines (as UTF8) of the resource file fn from the package of the given class into a (unmodifiable) list of strings
+	 * 
+	 * @throws IOException
+	 */
 	public static List<String> readResource(Class<?> clazz, String fn) throws IOException {
 		try (final Reader reader = asReaderUTF8Lenient(getResourceAsStream(clazz, fn))) {
 			return readToList(reader);
@@ -107,28 +130,29 @@ public class Common {
 		}
 		return unpackStream(stream, fn);
 	}
-	
+
 	/** Get a file to read the raw contents of the given resource :) */
-  public static File getResourceAsFile(Class<?> clazz, String fn) throws IOException {
-    URL url = clazz.getResource(fn);
-    if (url == null || url.getFile() == null) {
-      throw new IOException("resource \"" + fn + "\" relative to " + clazz + " not found.");
-    }
-    return new File(url.getFile());
-  }
+	public static File getResourceAsFile(Class<?> clazz, String fn) throws IOException {
+		URL url = clazz.getResource(fn);
+		if (url == null || url.getFile() == null) {
+			throw new IOException("resource \"" + fn + "\" relative to " + clazz + " not found.");
+		}
+		return new File(url.getFile());
+	}
 
 	/**
-	 * @throws IOException if {@code is} is null or if an {@link IOException} is thrown when reading from {@code is}
+	 * @throws IOException
+	 *             if {@code is} is null or if an {@link IOException} is thrown when reading from {@code is}
 	 */
 	public static InputStream unpackStream(InputStream is, String fn) throws IOException {
 		if (is == null)
 			throw new FileNotFoundException("InputStream is null for " + fn);
 
 		switch (FilenameUtils.getExtension(fn).toLowerCase()) {
-			case "gz":
-				return new GZIPInputStream(is);
-			default:
-				return is;
+		case "gz":
+			return new GZIPInputStream(is);
+		default:
+			return is;
 		}
 	}
 
