@@ -12,19 +12,15 @@ import java.util.TreeMap;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import ohs.io.IOUtils;
-import ohs.io.TextFileReader;
-import ohs.lucene.common.AnalyzerUtils;
-import ohs.lucene.common.MedicalEnglishAnalyzer;
-import ohs.medical.ir.MIRPath;
-import ohs.types.Counter;
-import ohs.types.CounterMap;
-import ohs.types.common.StrCounterMap;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
+
+import ohs.io.IOUtils;
+import ohs.io.TextFileReader;
+import ohs.medical.ir.MIRPath;
+import ohs.types.CounterMap;
 
 public class QueryReader {
 

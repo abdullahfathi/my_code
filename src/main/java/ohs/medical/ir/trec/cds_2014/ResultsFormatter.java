@@ -3,11 +3,8 @@ package ohs.medical.ir.trec.cds_2014;
 import java.io.File;
 import java.util.List;
 
-import edu.stanford.nlp.ling.CoreAnnotations.DocIDAnnotation;
 import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
-import ohs.io.TextFileWriter;
-import ohs.types.BidMap;
 
 public class ResultsFormatter {
 

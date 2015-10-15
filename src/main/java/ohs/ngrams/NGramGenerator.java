@@ -15,16 +15,6 @@ import java.util.zip.ZipInputStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import ohs.io.IOUtils;
-import ohs.io.TextFileReader;
-import ohs.io.TextFileWriter;
-import ohs.math.ArrayUtils;
-import ohs.types.Counter;
-import ohs.types.CounterMap;
-import ohs.types.Indexer;
-import ohs.types.common.StrCounter;
-import ohs.utils.StrUtils;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -32,8 +22,14 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import com.google.common.collect.Lists;
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils.IO;
+import ohs.io.IOUtils;
+import ohs.io.TextFileReader;
+import ohs.io.TextFileWriter;
+import ohs.types.Counter;
+import ohs.types.CounterMap;
+import ohs.types.Indexer;
+import ohs.types.common.StrCounter;
+import ohs.utils.StrUtils;
 
 public class NGramGenerator {
 

@@ -1,8 +1,8 @@
 package ohs.medical.ir;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
+
+import org.apache.lucene.analysis.Analyzer;
 
 import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
@@ -13,8 +13,6 @@ import ohs.types.CounterMap;
 import ohs.types.common.StrCounter;
 import ohs.types.common.StrCounterMap;
 import ohs.utils.StrUtils;
-
-import org.apache.lucene.analysis.Analyzer;
 
 public class AbbreviationExpander {
 

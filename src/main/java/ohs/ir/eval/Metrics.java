@@ -1,13 +1,9 @@
 package ohs.ir.eval;
 
-import java.util.Arrays;
 import java.util.List;
 
-import ohs.math.ArrayMath;
 import ohs.math.ArrayUtils;
-import ohs.matrix.SparseVector;
 import ohs.types.Counter;
-import ohs.types.CounterMap;
 
 public class Metrics {
 

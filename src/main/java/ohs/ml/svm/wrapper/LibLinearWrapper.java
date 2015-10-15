@@ -6,6 +6,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.bwaldvogel.liblinear.Feature;
+import de.bwaldvogel.liblinear.FeatureNode;
+import de.bwaldvogel.liblinear.Linear;
+import de.bwaldvogel.liblinear.Model;
+import de.bwaldvogel.liblinear.SolverType;
 import ohs.io.IOUtils;
 import ohs.math.ArrayUtils;
 import ohs.math.VectorMath;
@@ -13,11 +18,6 @@ import ohs.math.VectorUtils;
 import ohs.matrix.SparseVector;
 import ohs.types.Counter;
 import ohs.types.Indexer;
-import de.bwaldvogel.liblinear.Feature;
-import de.bwaldvogel.liblinear.FeatureNode;
-import de.bwaldvogel.liblinear.Linear;
-import de.bwaldvogel.liblinear.Model;
-import de.bwaldvogel.liblinear.SolverType;
 
 public class LibLinearWrapper implements Serializable {
 

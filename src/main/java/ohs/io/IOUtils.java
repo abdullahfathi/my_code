@@ -27,15 +27,15 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipInputStream;
 
+import org.apache.commons.compress.compressors.CompressorInputStream;
+import org.apache.commons.compress.compressors.CompressorOutputStream;
+import org.apache.commons.compress.compressors.CompressorStreamFactory;
+
 import ohs.math.ArrayUtils;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.utils.ByteSize;
-
-import org.apache.commons.compress.compressors.CompressorInputStream;
-import org.apache.commons.compress.compressors.CompressorOutputStream;
-import org.apache.commons.compress.compressors.CompressorStreamFactory;
 
 /**
  * @author Heung-Seon Oh

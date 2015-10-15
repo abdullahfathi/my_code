@@ -5,7 +5,6 @@ import java.util.List;
 
 import ohs.math.ArrayMath;
 import ohs.math.ArrayUtils;
-import ohs.matrix.DenseMatrix;
 import ohs.matrix.SparseVector;
 
 public class MultiLayerPerceptron {

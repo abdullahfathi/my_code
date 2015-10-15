@@ -3,7 +3,6 @@ package ohs.utils;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
-import ohs.types.common.IntCounter;
 
 public class CounterUtils {
 

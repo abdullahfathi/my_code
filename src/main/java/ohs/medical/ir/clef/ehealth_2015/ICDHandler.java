@@ -10,19 +10,6 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import ohs.io.IOUtils;
-import ohs.io.TextFileReader;
-import ohs.io.TextFileWriter;
-import ohs.lucene.common.IndexFieldName;
-import ohs.lucene.common.MedicalEnglishAnalyzer;
-import ohs.medical.ir.DocumentSearcher;
-import ohs.medical.ir.MIRPath;
-import ohs.types.ListMap;
-import ohs.types.DeepMap;
-import ohs.types.common.IntArrayList;
-import ohs.types.common.StrArrayList;
-import ohs.utils.StrUtils;
-
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
@@ -41,6 +28,18 @@ import de.tudarmstadt.ukp.wikipedia.parser.ParsedPage;
 import de.tudarmstadt.ukp.wikipedia.parser.Section;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParser;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParserFactory;
+import ohs.io.IOUtils;
+import ohs.io.TextFileReader;
+import ohs.io.TextFileWriter;
+import ohs.lucene.common.IndexFieldName;
+import ohs.lucene.common.MedicalEnglishAnalyzer;
+import ohs.medical.ir.DocumentSearcher;
+import ohs.medical.ir.MIRPath;
+import ohs.types.DeepMap;
+import ohs.types.ListMap;
+import ohs.types.common.IntArrayList;
+import ohs.types.common.StrArrayList;
+import ohs.utils.StrUtils;
 
 /**
  * 

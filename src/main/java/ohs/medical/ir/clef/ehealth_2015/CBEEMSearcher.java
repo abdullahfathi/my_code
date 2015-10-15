@@ -10,6 +10,19 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.PostingsEnum;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.index.Terms;
+import org.apache.lucene.index.TermsEnum;
+import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.util.BytesRef;
+
 import ohs.io.IOUtils;
 import ohs.io.TextFileWriter;
 import ohs.lucene.common.IndexFieldName;
@@ -25,31 +38,12 @@ import ohs.medical.ir.WordCountBox;
 import ohs.medical.ir.query.BaseQuery;
 import ohs.medical.ir.query.QueryReader;
 import ohs.types.Counter;
-import ohs.types.CounterMap;
 import ohs.types.DeepMap;
 import ohs.types.Indexer;
 import ohs.types.common.IntArrayList;
 import ohs.types.common.IntCounter;
 import ohs.types.common.IntCounterMap;
 import ohs.types.common.IntHashSet;
-import ohs.types.common.IntIndexedList;
-import ohs.types.common.IntTreeMap;
-
-import org.apache.lucene.document.Document;
-import org.apache.lucene.index.DocsAndPositionsEnum;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.PostingsEnum;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.index.Terms;
-import org.apache.lucene.index.TermsEnum;
-import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.util.BytesRef;
-
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils.IO;
 
 /**
  * 

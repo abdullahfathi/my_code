@@ -1,15 +1,15 @@
 package ohs.medical.ir.trec.cds_2014;
 
-import ohs.io.TextFileReader;
-import ohs.lucene.common.IndexFieldName;
-import ohs.medical.ir.DocumentIndexer;
-
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexWriter;
+
+import ohs.io.TextFileReader;
+import ohs.lucene.common.IndexFieldName;
+import ohs.medical.ir.DocumentIndexer;
 
 /**
  * Construct an inverted index with source document collection.

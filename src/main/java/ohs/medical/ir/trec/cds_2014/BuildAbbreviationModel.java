@@ -3,6 +3,10 @@ package ohs.medical.ir.trec.cds_2014;
 import java.io.File;
 import java.util.List;
 
+import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.apache.lucene.search.IndexSearcher;
+
 import ohs.io.TextFileReader;
 import ohs.lucene.common.IndexFieldName;
 import ohs.lucene.common.MedicalEnglishAnalyzer;
@@ -12,12 +16,6 @@ import ohs.medical.ir.DocumentSearcher;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
-
-import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.store.FSDirectory;
 
 public class BuildAbbreviationModel {
 

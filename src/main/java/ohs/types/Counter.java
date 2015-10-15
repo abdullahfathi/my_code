@@ -1,6 +1,5 @@
 package ohs.types;
 
-import java.io.File;
 import java.io.Serializable;
 import java.text.NumberFormat;
 import java.util.ArrayList;

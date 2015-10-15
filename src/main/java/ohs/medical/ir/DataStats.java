@@ -4,14 +4,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import ohs.lucene.common.AnalyzerUtils;
-import ohs.lucene.common.IndexFieldName;
-import ohs.lucene.common.MedicalEnglishAnalyzer;
-import ohs.medical.ir.query.BaseQuery;
-import ohs.medical.ir.query.QueryReader;
-import ohs.medical.ir.query.RelevanceReader;
-import ohs.types.CounterMap;
-
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.Fields;
 import org.apache.lucene.index.IndexReader;
@@ -19,6 +11,14 @@ import org.apache.lucene.index.MultiFields;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
+
+import ohs.lucene.common.AnalyzerUtils;
+import ohs.lucene.common.IndexFieldName;
+import ohs.lucene.common.MedicalEnglishAnalyzer;
+import ohs.medical.ir.query.BaseQuery;
+import ohs.medical.ir.query.QueryReader;
+import ohs.medical.ir.query.RelevanceReader;
+import ohs.types.CounterMap;
 
 public class DataStats {
 

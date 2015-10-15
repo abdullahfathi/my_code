@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import ohs.ling.struct.Token;
 import ohs.math.ArrayMath;
 import ohs.types.common.IntPair;
 

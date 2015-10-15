@@ -2,6 +2,7 @@ package spud.searching;
 
 import java.io.IOException;
 import java.util.logging.Logger;
+
 import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.queries.CustomScoreProvider;
 import org.apache.lucene.search.similarities.SPUDLMSimilarity;

@@ -1,29 +1,21 @@
 package ohs.medical.ir.dump;
 
 import java.io.File;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
 import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.medical.ir.MIRPath;
 import ohs.utils.StrUtils;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-
-import edu.stanford.nlp.ling.HasWord;
-import edu.stanford.nlp.process.CoreLabelTokenFactory;
-import edu.stanford.nlp.process.DocumentPreprocessor;
-import edu.stanford.nlp.process.PTBTokenizer;
-import edu.stanford.nlp.process.TokenizerFactory;
 
 public class ClefEHealthDataProcessor {
 

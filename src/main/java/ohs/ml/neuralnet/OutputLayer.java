@@ -1,7 +1,5 @@
 package ohs.ml.neuralnet;
 
-import java.util.ArrayList;
-
 import ohs.matrix.DenseVector;
 
 public class OutputLayer extends Layer {

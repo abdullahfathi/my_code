@@ -8,6 +8,10 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.search.IndexSearcher;
+
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.ling.struct.Span;
@@ -19,10 +23,6 @@ import ohs.types.common.StrCounter;
 import ohs.types.common.StrCounterMap;
 import ohs.types.common.StrPair;
 import ohs.utils.StopWatch;
-
-import org.apache.lucene.document.Document;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.search.IndexSearcher;
 
 public class AbbreviationCollector {
 

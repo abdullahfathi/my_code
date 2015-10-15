@@ -2,8 +2,6 @@ package ohs.string.sim.func;
 
 import java.text.NumberFormat;
 
-import ohs.ling.struct.Token;
-import ohs.math.ArrayUtils;
 import ohs.types.common.IntPair;
 
 /**

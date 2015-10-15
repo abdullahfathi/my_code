@@ -7,6 +7,11 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.lucene.document.Document;
+import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
+
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.lucene.common.IndexFieldName;
@@ -18,11 +23,6 @@ import ohs.medical.ir.query.RelevanceReader;
 import ohs.types.common.StrBidMap;
 import ohs.types.common.StrCounterMap;
 import ohs.utils.StrUtils;
-
-import org.apache.lucene.document.Document;
-import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
 
 public class SearchLogAnalyzer {
 

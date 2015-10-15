@@ -1,9 +1,7 @@
 package ohs.ling.struct;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 public class Token extends Span {
 

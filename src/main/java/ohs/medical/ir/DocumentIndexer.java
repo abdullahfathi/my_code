@@ -9,14 +9,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import ohs.io.IOUtils;
-import ohs.io.TextFileReader;
-import ohs.io.TextFileWriter;
-import ohs.lucene.common.IndexFieldName;
-import ohs.lucene.common.MedicalEnglishAnalyzer;
-import ohs.lucene.common.MyTextField;
-import ohs.utils.StrUtils;
-
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
@@ -37,6 +29,13 @@ import de.tudarmstadt.ukp.wikipedia.parser.Section;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.FlushTemplates;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParser;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParserFactory;
+import ohs.io.IOUtils;
+import ohs.io.TextFileReader;
+import ohs.io.TextFileWriter;
+import ohs.lucene.common.IndexFieldName;
+import ohs.lucene.common.MedicalEnglishAnalyzer;
+import ohs.lucene.common.MyTextField;
+import ohs.utils.StrUtils;
 
 /**
  * Construct an inverted index with source document collection.

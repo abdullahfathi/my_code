@@ -11,12 +11,6 @@ import java.util.zip.GZIPInputStream;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import ohs.io.IOUtils;
-import ohs.io.TextFileReader;
-import ohs.io.TextFileWriter;
-import ohs.medical.ir.MIRPath;
-import ohs.utils.StrUtils;
-
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.w3c.dom.Document;
@@ -25,6 +19,12 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
+import ohs.io.IOUtils;
+import ohs.io.TextFileReader;
+import ohs.io.TextFileWriter;
+import ohs.medical.ir.MIRPath;
+import ohs.utils.StrUtils;
 
 public class TrecCdsDataProcessor {
 

@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.commons.math.MathException;
 import org.apache.commons.math.stat.inference.TTestImpl;
 
 import ohs.io.IOUtils;

@@ -7,12 +7,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import ohs.io.IOUtils;
-import ohs.lucene.common.IndexFieldName;
-import ohs.types.Counter;
-import ohs.types.CounterMap;
-import ohs.types.common.IntCounter;
-
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.PostingsEnum;
@@ -20,6 +14,12 @@ import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.util.BytesRef;
+
+import ohs.io.IOUtils;
+import ohs.lucene.common.IndexFieldName;
+import ohs.types.Counter;
+import ohs.types.CounterMap;
+import ohs.types.common.IntCounter;
 
 public class NumericalWordAnalyzer {
 

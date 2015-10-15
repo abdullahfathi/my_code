@@ -9,12 +9,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import ohs.io.IOUtils;
-import ohs.io.TextFileReader;
-import ohs.io.TextFileWriter;
-import ohs.types.Counter;
-import ohs.utils.StrUtils;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
@@ -23,6 +17,11 @@ import edu.stanford.nlp.process.CoreLabelTokenFactory;
 import edu.stanford.nlp.process.DocumentPreprocessor;
 import edu.stanford.nlp.process.PTBTokenizer;
 import edu.stanford.nlp.process.TokenizerFactory;
+import ohs.io.IOUtils;
+import ohs.io.TextFileReader;
+import ohs.io.TextFileWriter;
+import ohs.types.Counter;
+import ohs.utils.StrUtils;
 
 public class DataHandler {
 

@@ -3,6 +3,10 @@ package ohs.medical.ir.clef.ehealth_2015;
 import java.io.File;
 import java.util.List;
 
+import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
+
 import ohs.io.IOUtils;
 import ohs.io.TextFileWriter;
 import ohs.matrix.SparseVector;
@@ -10,14 +14,6 @@ import ohs.medical.ir.DocumentSearcher;
 import ohs.medical.ir.MIRPath;
 import ohs.medical.ir.query.BaseQuery;
 import ohs.medical.ir.query.QueryReader;
-
-import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils.IO;
-
-import edu.stanford.nlp.ling.CoreAnnotations.DocSourceTypeAnnotation;
 
 /**
  * 

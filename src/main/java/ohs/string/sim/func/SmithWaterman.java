@@ -3,14 +3,11 @@ package ohs.string.sim.func;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.hamcrest.core.Is;
-
 import ohs.entity.DataReader;
 import ohs.entity.ENTPath;
 import ohs.entity.data.struct.BilingualText;
 import ohs.math.ArrayMath;
 import ohs.types.Counter;
-import ohs.utils.KoreanUtils;
 
 public class SmithWaterman {
 

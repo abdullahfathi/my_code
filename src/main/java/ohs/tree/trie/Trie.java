@@ -8,11 +8,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 import ohs.tree.trie.Node.Type;
-import ohs.types.DeepMap;
 
 public class Trie<K> {
 

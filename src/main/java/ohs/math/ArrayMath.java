@@ -4,9 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.apache.commons.math.MathException;
 import org.apache.commons.math.stat.inference.TTestImpl;
-import org.hibernate.mapping.Array;
 
 /**
  * @author Heung-Seon Oh
@@ -98,17 +96,6 @@ public class ArrayMath {
 		}
 	}
 
-	public static double addAfterScale(double[] a, double[] coefs) {
-		if (!ArrayChecker.isSameDimension(a, coefs)) {
-			throw new IllegalArgumentException();
-		}
-		double ret = 0;
-		for (int i = 0; i < a.length; i++) {
-			ret += a[i] * coefs[i];
-		}
-		return ret;
-	}
-
 	/**
 	 * @param a
 	 * @param b
@@ -124,41 +111,6 @@ public class ArrayMath {
 
 		for (int i = 0; i < a.length; i++) {
 			c[i] = coef_a * a[i] + coef_b * b[i];
-		}
-	}
-
-	/**
-	 * @param a
-	 * @param b
-	 * @param coef_a
-	 * @param coef_b
-	 * @param c
-	 *            output
-	 */
-	public static void addAfterScaleAtRows(double[][] a, double b, double coef_a, double coef_b, double[][] c) {
-		if (!ArrayChecker.isSameDimensions(a, c)) {
-			throw new IllegalArgumentException();
-		}
-
-		for (int i = 0; i < a.length; i++) {
-			addAfterScale(a[i], b, coef_a, coef_b, c[i]);
-		}
-	}
-
-	/**
-	 * @param a
-	 * @param b
-	 * @param coef_a
-	 * @param coef_b
-	 * @param c
-	 */
-	public static void addAfterScaleAtRows(double[][] a, double[][] b, double coef_a, double coef_b, double[][] c) {
-		if (!ArrayChecker.isSameDimensions(a, b, c)) {
-			throw new IllegalArgumentException();
-		}
-
-		for (int i = 0; i < a.length; i++) {
-			addAfterScale(a[i], b[i], coef_a, coef_b, c[i]);
 		}
 	}
 
@@ -541,7 +493,7 @@ public class ArrayMath {
 	}
 
 	public static double jensenShannonDivergence(double[] a, double[] b) {
-		assert (a.length == b.length);
+		assert(a.length == b.length);
 		double[] average = new double[a.length];
 		for (int i = 0; i < a.length; ++i) {
 			average[i] += (a[i] + b[i]) / 2;
@@ -978,6 +930,20 @@ public class ArrayMath {
 				c[i][j] = a[i][j] * b[i][j];
 			}
 		}
+	}
+
+	public static void multiplyColumn(double[][] a, int col, double[] b, double[] c) {
+		int[] dims = ArrayUtils.dimensions(a);
+		int row_dim = dims[0];
+		int col_dim = dims[1];
+
+		for (int i = 0; i < row_dim; i++) {
+			c[i] = a[i][col] * b[i];
+		}
+	}
+
+	public static void multiplyRow(double[][] a, int row, double[] b, double[] c) {
+		multiply(a[row], b, c);
 	}
 
 	/**

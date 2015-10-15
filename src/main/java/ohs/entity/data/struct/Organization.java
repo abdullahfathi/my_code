@@ -6,8 +6,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.sun.org.apache.xpath.internal.operations.Or;
-
 import ohs.io.TextFileReader;
 
 public class Organization implements Serializable {

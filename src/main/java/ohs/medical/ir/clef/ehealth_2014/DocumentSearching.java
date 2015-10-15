@@ -9,24 +9,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
-import ohs.io.IOUtils;
-import ohs.io.TextFileWriter;
-import ohs.ir.eval.PerformanceEvaluator;
-import ohs.lucene.common.IndexFieldName;
-import ohs.lucene.common.MedicalEnglishAnalyzer;
-import ohs.math.VectorUtils;
-import ohs.matrix.SparseVector;
-import ohs.medical.ir.DocumentSearcher;
-import ohs.types.Counter;
-import ohs.types.CounterMap;
-import ohs.types.common.StrCounterMap;
-import ohs.utils.StrUtils;
-
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
@@ -44,7 +30,19 @@ import org.apache.lucene.search.similarities.DefaultSimilarity;
 import org.apache.lucene.search.similarities.LMDirichletSimilarity;
 import org.apache.lucene.search.similarities.NormalizationH1;
 import org.apache.lucene.search.similarities.Similarity;
-import org.apache.lucene.store.FSDirectory;
+
+import ohs.io.IOUtils;
+import ohs.io.TextFileWriter;
+import ohs.ir.eval.PerformanceEvaluator;
+import ohs.lucene.common.IndexFieldName;
+import ohs.lucene.common.MedicalEnglishAnalyzer;
+import ohs.math.VectorUtils;
+import ohs.matrix.SparseVector;
+import ohs.medical.ir.DocumentSearcher;
+import ohs.types.Counter;
+import ohs.types.CounterMap;
+import ohs.types.common.StrCounterMap;
+import ohs.utils.StrUtils;
 
 /**
  * 

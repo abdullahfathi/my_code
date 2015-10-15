@@ -3,6 +3,8 @@ package ohs.medical.ir.esa;
 import java.io.BufferedReader;
 import java.util.List;
 
+import org.apache.lucene.analysis.Analyzer;
+
 import ohs.io.IOUtils;
 import ohs.lucene.common.AnalyzerUtils;
 import ohs.lucene.common.MedicalEnglishAnalyzer;
@@ -18,8 +20,6 @@ import ohs.types.common.IntCounter;
 import ohs.types.common.IntCounterMap;
 import ohs.types.common.StrIndexer;
 import ohs.utils.StrUtils;
-
-import org.apache.lucene.analysis.Analyzer;
 
 public class ESA {
 

@@ -1,26 +1,11 @@
 package ohs.medical.ir.query;
 
-import java.io.File;
-import java.io.StringReader;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import ohs.io.IOUtils;
-import ohs.matrix.SparseVector;
-import ohs.medical.ir.MIRPath;
-import ohs.types.CounterMap;
-import ohs.types.common.IntHashMap;
 
 import org.apache.lucene.search.Query;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
+
+import ohs.matrix.SparseVector;
+import ohs.medical.ir.MIRPath;
 
 public class TrecCdsQuery implements BaseQuery {
 

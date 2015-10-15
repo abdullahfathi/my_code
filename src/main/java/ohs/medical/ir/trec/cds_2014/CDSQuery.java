@@ -1,6 +1,5 @@
 package ohs.medical.ir.trec.cds_2014;
 
-import java.io.File;
 import java.io.StringReader;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -9,12 +8,12 @@ import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import ohs.io.IOUtils;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
+
+import ohs.io.IOUtils;
 
 public class CDSQuery {
 

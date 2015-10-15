@@ -1,26 +1,11 @@
 package ohs.medical.ir.query;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.StringReader;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import ohs.io.IOUtils;
-import ohs.matrix.SparseVector;
-import ohs.medical.ir.MIRPath;
-import ohs.types.common.IntHashMap;
 
 import org.apache.lucene.search.Query;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
+
+import ohs.matrix.SparseVector;
+import ohs.medical.ir.MIRPath;
 
 public class ClefEHealthQuery implements BaseQuery {
 

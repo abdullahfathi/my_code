@@ -6,7 +6,6 @@ import java.util.TreeSet;
 
 import ohs.types.Counter;
 import ohs.types.CounterMap;
-import ohs.types.common.StrCounterMap;
 
 public class Performance {
 	private int total_relevant_in_ret;

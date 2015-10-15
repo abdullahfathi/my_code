@@ -1,6 +1,5 @@
 package ohs.medical.ir.wiki;
 
-import java.io.File;
 import java.io.StringReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -8,17 +7,8 @@ import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import ohs.io.TextFileReader;
-import ohs.io.TextFileWriter;
-import ohs.lucene.common.IndexFieldName;
-import ohs.medical.ir.DocumentSearcher;
-import ohs.medical.ir.MIRPath;
-import ohs.utils.StopWatch;
-
-import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.store.FSDirectory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -26,6 +16,11 @@ import org.xml.sax.InputSource;
 
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParser;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParserFactory;
+import ohs.io.TextFileReader;
+import ohs.io.TextFileWriter;
+import ohs.lucene.common.IndexFieldName;
+import ohs.medical.ir.DocumentSearcher;
+import ohs.medical.ir.MIRPath;
 
 /**
  * @author ohs

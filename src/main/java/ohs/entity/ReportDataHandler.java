@@ -1,8 +1,5 @@
 package ohs.entity;
 
-import java.io.File;
-
-import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
 import ohs.types.BidMap;
 import ohs.types.Counter;

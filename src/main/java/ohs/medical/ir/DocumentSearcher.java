@@ -4,6 +4,15 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.similarities.LMDirichletSimilarity;
+import org.apache.lucene.store.FSDirectory;
+
 import ohs.io.TextFileWriter;
 import ohs.lucene.common.AnalyzerUtils;
 import ohs.lucene.common.IndexFieldName;
@@ -15,15 +24,6 @@ import ohs.medical.ir.query.QueryReader;
 import ohs.types.Indexer;
 import ohs.types.common.StrCounter;
 import ohs.types.common.StrCounterMap;
-
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.similarities.LMDirichletSimilarity;
-import org.apache.lucene.store.FSDirectory;
 
 /**
  * 

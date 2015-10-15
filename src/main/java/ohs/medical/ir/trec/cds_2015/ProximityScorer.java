@@ -1,22 +1,14 @@
 package ohs.medical.ir.trec.cds_2015;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.codec.language.bm.Languages.SomeLanguages;
 
 import ohs.math.ArrayMath;
 import ohs.math.ArrayUtils;
-import ohs.math.FuncMath;
-import ohs.math.VectorUtils;
 import ohs.matrix.SparseMatrix;
 import ohs.matrix.SparseVector;
 import ohs.medical.ir.WordCountBox;
-import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.DeepListMap;
 import ohs.types.Indexer;

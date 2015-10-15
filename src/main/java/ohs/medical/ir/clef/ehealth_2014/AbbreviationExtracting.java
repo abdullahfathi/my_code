@@ -9,6 +9,10 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.search.IndexSearcher;
+
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.ling.struct.Span;
@@ -18,12 +22,6 @@ import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.common.StrPair;
 import ohs.utils.StopWatch;
-
-import org.apache.lucene.document.Document;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.store.FSDirectory;
 
 public class AbbreviationExtracting {
 

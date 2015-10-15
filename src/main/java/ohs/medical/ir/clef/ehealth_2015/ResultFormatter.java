@@ -14,7 +14,6 @@ import ohs.ir.eval.PerformanceEvaluator;
 import ohs.medical.ir.DocumentIdMapper;
 import ohs.medical.ir.MIRPath;
 import ohs.types.Counter;
-import ohs.types.CounterMap;
 import ohs.types.common.StrBidMap;
 import ohs.types.common.StrCounterMap;
 

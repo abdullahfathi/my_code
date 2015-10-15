@@ -1,38 +1,21 @@
 package ohs.medical.ir.trec.cds_2015;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import ohs.io.TextFileWriter;
-import ohs.lucene.common.AnalyzerUtils;
-import ohs.lucene.common.IndexFieldName;
-import ohs.lucene.common.MedicalEnglishAnalyzer;
-import ohs.math.VectorMath;
-import ohs.math.VectorUtils;
-import ohs.matrix.SparseVector;
-import ohs.medical.ir.DocumentIdMapper;
-import ohs.medical.ir.DocumentIndexer;
-import ohs.medical.ir.DocumentSearcher;
-import ohs.medical.ir.KLDivergenceScorer;
-import ohs.medical.ir.MIRPath;
-import ohs.medical.ir.RelevanceModelBuilder;
-import ohs.medical.ir.WordCountBox;
-import ohs.medical.ir.query.BaseQuery;
-import ohs.medical.ir.query.QueryReader;
-import ohs.medical.ir.query.RelevanceReader;
-import ohs.types.BidMap;
-import ohs.types.Counter;
-import ohs.types.Indexer;
-import ohs.types.ListMap;
-import ohs.types.common.StrBidMap;
-import ohs.types.common.StrCounter;
-import ohs.types.common.StrCounterMap;
-import ohs.utils.StrUtils;
-
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
+
+import ohs.io.TextFileWriter;
+import ohs.lucene.common.AnalyzerUtils;
+import ohs.lucene.common.IndexFieldName;
+import ohs.math.VectorMath;
+import ohs.math.VectorUtils;
+import ohs.matrix.SparseVector;
+import ohs.medical.ir.DocumentSearcher;
+import ohs.medical.ir.RelevanceModelBuilder;
+import ohs.medical.ir.WordCountBox;
+import ohs.types.Counter;
+import ohs.types.Indexer;
 
 /**
  * 

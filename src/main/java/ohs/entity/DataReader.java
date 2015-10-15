@@ -2,13 +2,9 @@ package ohs.entity;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
-
-import org.apache.uima.resource.MQMessagingSpecifier;
 
 import ohs.entity.data.struct.BilingualText;
 import ohs.entity.data.struct.Organization;

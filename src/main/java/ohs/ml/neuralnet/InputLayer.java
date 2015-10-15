@@ -1,8 +1,5 @@
 package ohs.ml.neuralnet;
 
-import java.util.ArrayList;
-
-import ohs.matrix.DenseMatrix;
 import ohs.matrix.DenseVector;
 import ohs.matrix.SparseVector;
 

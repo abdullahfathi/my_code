@@ -1,17 +1,12 @@
 package ohs.medical.ir.trec.cds_2014;
 
-import java.io.File;
-
 import ohs.io.IOUtils;
-import ohs.io.TextFileReader;
 import ohs.math.VectorMath;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseMatrix;
 import ohs.matrix.SparseVector;
 import ohs.types.Counter;
-import ohs.types.CounterMap;
 import ohs.types.Indexer;
-import ohs.utils.StrUtils;
 
 public class ExplicitSemanticModel {
 

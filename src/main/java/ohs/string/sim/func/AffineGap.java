@@ -1,7 +1,6 @@
 package ohs.string.sim.func;
 
 import ohs.math.ArrayMath;
-import ohs.types.common.IntPair;
 
 /**
  * @author Heung-Seon Oh

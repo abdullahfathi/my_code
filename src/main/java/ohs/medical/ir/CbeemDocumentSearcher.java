@@ -4,6 +4,12 @@ import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.List;
 
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
+
 import ohs.io.TextFileWriter;
 import ohs.ir.eval.RankComparator;
 import ohs.lucene.common.AnalyzerUtils;
@@ -15,15 +21,8 @@ import ohs.matrix.SparseMatrix;
 import ohs.matrix.SparseVector;
 import ohs.matrix.Vector;
 import ohs.medical.ir.query.BaseQuery;
-import ohs.types.Counter;
 import ohs.types.Indexer;
 import ohs.types.common.StrCounter;
-
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
 
 /**
  * 

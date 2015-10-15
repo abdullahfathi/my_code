@@ -6,15 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ohs.io.IOUtils;
-import ohs.io.TextFileReader;
-import ohs.io.TextFileWriter;
-import ohs.lucene.common.IndexFieldName;
-import ohs.types.Counter;
-import ohs.types.CounterMap;
-import ohs.types.Indexer;
-import ohs.utils.StrUtils;
-
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Fields;
 import org.apache.lucene.index.IndexReader;
@@ -24,6 +15,15 @@ import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.util.BytesRef;
+
+import ohs.io.IOUtils;
+import ohs.io.TextFileReader;
+import ohs.io.TextFileWriter;
+import ohs.lucene.common.IndexFieldName;
+import ohs.types.Counter;
+import ohs.types.CounterMap;
+import ohs.types.Indexer;
+import ohs.utils.StrUtils;
 
 public class WordDataHandler {
 

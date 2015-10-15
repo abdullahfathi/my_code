@@ -1,9 +1,6 @@
 package ohs.string.sim.func;
 
-import ohs.ling.struct.Token;
 import ohs.math.ArrayMath;
-import ohs.math.ArrayUtils;
-import ohs.types.common.IntPair;
 
 public class EditDistance {
 	private class ScoreMatrix extends MemoMatrix {

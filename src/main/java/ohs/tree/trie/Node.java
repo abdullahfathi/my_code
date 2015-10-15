@@ -10,8 +10,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import com.sun.glass.ui.Robot;
-
 public class Node<K> implements Serializable {
 
 	public static enum Type {

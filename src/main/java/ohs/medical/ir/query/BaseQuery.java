@@ -2,9 +2,6 @@ package ohs.medical.ir.query;
 
 import java.util.List;
 
-import ohs.matrix.SparseVector;
-import ohs.types.common.IntHashMap;
-
 import org.apache.lucene.search.Query;
 
 public interface BaseQuery {

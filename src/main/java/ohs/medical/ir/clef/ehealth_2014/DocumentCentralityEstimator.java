@@ -9,7 +9,6 @@ import ohs.math.ArrayUtils;
 import ohs.matrix.SparseMatrix;
 import ohs.matrix.SparseVector;
 import ohs.types.Counter;
-import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.types.common.IntCounterMap;
 

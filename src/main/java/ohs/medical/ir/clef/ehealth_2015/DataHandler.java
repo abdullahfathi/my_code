@@ -5,6 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.lucene.document.Document;
+import org.apache.lucene.search.IndexSearcher;
+
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.lucene.common.IndexFieldName;
@@ -19,9 +22,6 @@ import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.common.StrBidMap;
 import ohs.types.common.StrCounterMap;
-
-import org.apache.lucene.document.Document;
-import org.apache.lucene.search.IndexSearcher;
 
 public class DataHandler {
 

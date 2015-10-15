@@ -10,7 +10,6 @@ import org.jsoup.nodes.Document;
 
 import ohs.io.TextFileWriter;
 import ohs.medical.ir.MIRPath;
-import sun.management.snmp.util.MibLogger;
 
 public class TrecGenomicsDataProcessor {
 

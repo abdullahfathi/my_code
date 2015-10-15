@@ -3,7 +3,6 @@ package ohs.string.sim.search.ppss;
 import java.io.Serializable;
 
 import ohs.math.ArrayMath;
-import ohs.math.ArrayUtils;
 import ohs.string.sim.search.ppss.Gram.Type;
 
 /**

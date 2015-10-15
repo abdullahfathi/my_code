@@ -5,7 +5,6 @@ import java.io.BufferedWriter;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -18,16 +17,12 @@ import ohs.entity.data.struct.BilingualText;
 import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
-import ohs.string.sim.func.AffineGap;
-import ohs.string.sim.func.EditDistance;
 import ohs.string.sim.func.SmithWaterman;
 import ohs.string.sim.search.ppss.Gram.Type;
-import ohs.types.BidMap;
 import ohs.types.Counter;
 import ohs.types.DeepMap;
 import ohs.types.ListMap;
 import ohs.types.Pair;
-import ohs.types.common.StrCounter;
 import ohs.utils.StrUtils;
 
 /**

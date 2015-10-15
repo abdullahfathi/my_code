@@ -1,11 +1,7 @@
 package ohs.medical.ir.clef.ehealth_2015;
 
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TreeSet;
-
-import org.apache.poi.util.IntList;
 
 import ohs.math.ArrayMath;
 import ohs.math.ArrayUtils;
@@ -13,13 +9,8 @@ import ohs.math.VectorMath;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseMatrix;
 import ohs.matrix.SparseVector;
-import ohs.matrix.Vector;
-import ohs.types.Counter;
-import ohs.types.CounterMap;
-import ohs.types.Indexer;
 import ohs.types.common.IntArrayList;
 import ohs.types.common.IntCounter;
-import ohs.types.common.IntCounterMap;
 import ohs.types.common.StrIndexer;
 
 /**

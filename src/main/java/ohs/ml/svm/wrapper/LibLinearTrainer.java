@@ -2,8 +2,6 @@ package ohs.ml.svm.wrapper;
 
 import java.util.List;
 
-import ohs.matrix.SparseVector;
-import ohs.types.Indexer;
 import de.bwaldvogel.liblinear.Feature;
 import de.bwaldvogel.liblinear.FeatureNode;
 import de.bwaldvogel.liblinear.Linear;
@@ -11,6 +9,8 @@ import de.bwaldvogel.liblinear.Model;
 import de.bwaldvogel.liblinear.Parameter;
 import de.bwaldvogel.liblinear.Problem;
 import de.bwaldvogel.liblinear.SolverType;
+import ohs.matrix.SparseVector;
+import ohs.types.Indexer;
 
 public class LibLinearTrainer {
 

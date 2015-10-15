@@ -1,6 +1,7 @@
 package org.apache.lucene.search.similarities;
 
 import java.util.Locale;
+
 import org.apache.lucene.search.CollectionStatistics;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.TermStatistics;

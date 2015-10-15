@@ -1,8 +1,6 @@
 package ohs.entity;
 
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-
+import jdk.nashorn.internal.parser.JSONParser;
 import ohs.io.IOUtils;
 
 public class TestJSON {

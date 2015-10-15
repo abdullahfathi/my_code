@@ -4,6 +4,11 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.IndexSearcher;
+
 import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
@@ -31,11 +36,6 @@ import ohs.types.common.IntPair;
 import ohs.types.common.StrBidMap;
 import ohs.types.common.StrCounter;
 import ohs.types.common.StrCounterMap;
-
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.IndexSearcher;
 
 /**
  * 

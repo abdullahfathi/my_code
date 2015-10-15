@@ -2,6 +2,8 @@ package ohs.medical.ir.trec.cds_2015;
 
 import java.util.List;
 
+import org.apache.lucene.analysis.Analyzer;
+
 import ohs.io.TextFileReader;
 import ohs.lucene.common.AnalyzerUtils;
 import ohs.lucene.common.MedicalEnglishAnalyzer;
@@ -10,8 +12,6 @@ import ohs.medical.ir.query.BaseQuery;
 import ohs.medical.ir.query.QueryReader;
 import ohs.types.Counter;
 import ohs.types.common.StrCounterMap;
-
-import org.apache.lucene.analysis.Analyzer;
 
 public class AbbrQueryExpander {
 

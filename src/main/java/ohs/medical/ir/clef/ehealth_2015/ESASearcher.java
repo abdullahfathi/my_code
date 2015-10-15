@@ -7,6 +7,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.DocsAndPositionsEnum;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.index.Terms;
+import org.apache.lucene.index.TermsEnum;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.util.BytesRef;
+
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.ir.eval.PerformanceEvaluator;
@@ -16,35 +25,16 @@ import ohs.math.VectorMath;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseMatrix;
 import ohs.matrix.SparseVector;
-import ohs.medical.ir.JBICBEEMDocumentSearcher;
 import ohs.medical.ir.DocumentSearcher;
 import ohs.medical.ir.MIRPath;
-import ohs.medical.ir.query.BaseQuery;
-import ohs.medical.ir.query.QueryReader;
-import ohs.tree.trie.Node;
-import ohs.tree.trie.Trie;
 import ohs.types.Counter;
 import ohs.types.common.IntCounter;
 import ohs.types.common.IntCounterMap;
-import ohs.types.common.IntIndexedList;
-import ohs.types.common.StrArrayList;
-import ohs.types.common.StrCounter;
 import ohs.types.common.StrCounterMap;
 import ohs.types.common.StrIndexer;
 import ohs.utils.CounterUtils;
 import ohs.utils.StopWatch;
 import ohs.utils.StrUtils;
-
-import org.apache.lucene.document.Document;
-import org.apache.lucene.index.DocsAndPositionsEnum;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.index.Terms;
-import org.apache.lucene.index.TermsEnum;
-import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.util.BytesRef;
 
 public class ESASearcher {
 

@@ -1,7 +1,5 @@
 package ohs.entity;
 
-import edu.stanford.nlp.patterns.Data;
-
 public class ENTPath {
 	public static final String DATA_DIR = "../../data/entity_iden/";
 

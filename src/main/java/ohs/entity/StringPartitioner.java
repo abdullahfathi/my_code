@@ -1,12 +1,7 @@
 package ohs.entity;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import ohs.ling.struct.Span;
 import ohs.string.sim.search.ppss.Gram;
 import ohs.string.sim.search.ppss.Gram.Type;
-import ohs.utils.StrUtils;
 
 /**
  * @author Heung-Seon Oh

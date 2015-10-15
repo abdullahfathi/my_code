@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.apache.commons.math.stat.inference.TTestImpl;
+
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.ir.eval.MetricType;
@@ -22,8 +24,6 @@ import ohs.types.ListMap;
 import ohs.types.common.StrBidMap;
 import ohs.types.common.StrCounterMap;
 import ohs.utils.StrUtils;
-
-import org.apache.commons.math.stat.inference.TTestImpl;
 
 public class SearchResultEvaluator {
 

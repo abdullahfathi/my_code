@@ -9,6 +9,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.PostingsEnum;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.index.Terms;
+import org.apache.lucene.index.TermsEnum;
+import org.apache.lucene.util.BytesRef;
+
 import ohs.lucene.common.IndexFieldName;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseMatrix;
@@ -19,14 +27,6 @@ import ohs.types.Indexer;
 import ohs.types.ListMap;
 import ohs.types.common.IntCounterMap;
 import ohs.types.common.StrCounter;
-
-import org.apache.lucene.document.Document;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.PostingsEnum;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.index.Terms;
-import org.apache.lucene.index.TermsEnum;
-import org.apache.lucene.util.BytesRef;
 
 public class WordCountBox {
 

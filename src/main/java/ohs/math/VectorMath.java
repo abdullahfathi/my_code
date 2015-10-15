@@ -1,6 +1,5 @@
 package ohs.math;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -11,7 +10,6 @@ import ohs.matrix.SparseMatrix;
 import ohs.matrix.SparseVector;
 import ohs.matrix.Vector;
 import ohs.types.Counter;
-import ohs.types.common.StrCounter;
 
 /**
  * @author Heung-Seon Oh

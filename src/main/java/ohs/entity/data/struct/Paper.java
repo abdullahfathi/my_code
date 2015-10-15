@@ -5,10 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import ohs.entity.PaperAttr;
-import ohs.types.BidMap;
-import ohs.types.common.StrBidMap;
-
 public class Paper implements Serializable {
 
 	private String sid;

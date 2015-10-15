@@ -1,14 +1,12 @@
 package ohs.medical.ir.query;
 
-import java.io.File;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.lucene.search.Query;
+
 import ohs.matrix.SparseVector;
 import ohs.medical.ir.MIRPath;
-import ohs.types.common.IntHashMap;
-
-import org.apache.lucene.search.Query;
 
 public class OhsumedQuery implements BaseQuery {
 

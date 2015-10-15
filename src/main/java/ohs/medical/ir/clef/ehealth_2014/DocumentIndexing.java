@@ -2,17 +2,17 @@ package ohs.medical.ir.clef.ehealth_2014;
 
 import java.util.List;
 
-import ohs.io.TextFileReader;
-import ohs.lucene.common.IndexFieldName;
-import ohs.medical.ir.DocumentIndexer;
-import ohs.utils.StopWatch;
-
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexWriter;
+
+import ohs.io.TextFileReader;
+import ohs.lucene.common.IndexFieldName;
+import ohs.medical.ir.DocumentIndexer;
+import ohs.utils.StopWatch;
 
 /**
  * Construct an inverted index with source document collection.

@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.mysql.jdbc.ResultSetMetaData;
+
 import ohs.entity.ENTPath;
 import ohs.entity.PaperAttr;
 import ohs.entity.PaperDataFileIterator;
@@ -17,8 +19,6 @@ import ohs.io.IOUtils;
 import ohs.io.TextFileWriter;
 import ohs.utils.StopWatch;
 import ohs.utils.StrUtils;
-
-import com.mysql.jdbc.ResultSetMetaData;
 
 public class MySqlDataLoader {
 

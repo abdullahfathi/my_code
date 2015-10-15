@@ -1,25 +1,8 @@
 package ohs.math;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.PriorityQueue;
-import java.util.Set;
-
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
-
 import ohs.matrix.Matrix;
 import ohs.matrix.SparseMatrix;
-import ohs.matrix.SparseVector;
 import ohs.matrix.Vector;
-import ohs.types.Counter;
-import ohs.types.Indexer;
-import ohs.types.Pair;
-import ohs.types.Triple;
-import ohs.types.common.IntPair;
 
 /**
  * @author Heung-Seon Oh

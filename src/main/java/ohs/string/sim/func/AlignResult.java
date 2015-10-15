@@ -2,8 +2,6 @@ package ohs.string.sim.func;
 
 import java.util.List;
 
-import ohs.ling.struct.Token;
-
 public class AlignResult {
 
 	private MemoMatrix scoreMatrix;

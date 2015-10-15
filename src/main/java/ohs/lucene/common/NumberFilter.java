@@ -1,20 +1,13 @@
 package ohs.lucene.common;
 
 import java.io.IOException;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.text.ParseException;
-import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import ohs.utils.StrUtils;
 
 import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.util.CharacterUtils;
-import org.apache.lucene.util.Version;
 
 public final class NumberFilter extends TokenFilter {
 	private static final Pattern p = Pattern.compile("\\d+[\\d,\\.]*");

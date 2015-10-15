@@ -1,31 +1,24 @@
 package ohs.medical.ir.clef.ehealth_2015;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-
-import ohs.io.TextFileReader;
-import ohs.lucene.common.IndexFieldName;
-import ohs.lucene.common.MyTextField;
-import ohs.medical.ir.DocumentIndexer;
-import ohs.medical.ir.MIRPath;
-import ohs.utils.StrUtils;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexWriter;
-import org.netlib.util.intW;
 
 import de.tudarmstadt.ukp.wikipedia.api.WikiConstants.Language;
-import de.tudarmstadt.ukp.wikipedia.parser.Content;
 import de.tudarmstadt.ukp.wikipedia.parser.Link;
 import de.tudarmstadt.ukp.wikipedia.parser.ParsedPage;
-import de.tudarmstadt.ukp.wikipedia.parser.Section;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.FlushTemplates;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParser;
 import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParserFactory;
+import ohs.io.TextFileReader;
+import ohs.lucene.common.IndexFieldName;
+import ohs.medical.ir.DocumentIndexer;
+import ohs.medical.ir.MIRPath;
 
 public class WikiIndexer4ICD {
 

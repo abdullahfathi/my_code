@@ -2,8 +2,6 @@ package ohs.medical.ir.trec.cds_2014;
 
 import java.text.DecimalFormat;
 
-import ohs.matrix.SparseVector;
-
 public class Test {
 
 	public static void main(String[] args) {

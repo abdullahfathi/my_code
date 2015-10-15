@@ -1,13 +1,7 @@
 package ohs.math;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import ohs.math.LA.SolutionType;
 import ohs.math.LA.VariableType;
-import ohs.matrix.Matrix;
-import ohs.matrix.SparseVector;
-import ohs.matrix.Vector;
 
 public class ArrayChecker {
 
@@ -21,23 +15,20 @@ public class ArrayChecker {
 	 * 
 	 * 3. infinitely many solutions.
 	 * 
-	 * A system of linear equations is said to be consistent if it has either
-	 * one solution or infinitely many solutions.
+	 * A system of linear equations is said to be consistent if it has either one solution or infinitely many solutions.
 	 * 
 	 * A system is inconsistent if it has no solution.
 	 * 
 	 * 
 	 * [ Theorem 1.2 - Existence and Uniqueness Theorem ]
 	 * 
-	 * A linear system is consistent iff the rightmost column of the augmented
-	 * matrix is not a pivot column- that is, iff an echelon form of the
-	 * augmented matrix has no row of the form
+	 * A linear system is consistent iff the rightmost column of the augmented matrix is not a pivot column- that is, iff an echelon form of
+	 * the augmented matrix has no row of the form
 	 * 
 	 * [0 ... 0 b] with nonzero
 	 * 
-	 * If a linear system is consistent, then the solution set contains either
-	 * (i) a unique solution, when there are no free variables, or (ii)
-	 * infinitely many solutions, when there is at least one free variables.
+	 * If a linear system is consistent, then the solution set contains either (i) a unique solution, when there are no free variables, or
+	 * (ii) infinitely many solutions, when there is at least one free variables.
 	 * 
 	 * @param a
 	 * @return
@@ -70,23 +61,20 @@ public class ArrayChecker {
 	 * 
 	 * 3. infinitely many solutions.
 	 * 
-	 * A system of linear equations is said to be consistent if it has either
-	 * one solution or infinitely many solutions.
+	 * A system of linear equations is said to be consistent if it has either one solution or infinitely many solutions.
 	 * 
 	 * A system is inconsistent if it has no solution.
 	 * 
 	 * 
 	 * [ Theorem 1.2 - Existence and Uniqueness Theorem ]
 	 * 
-	 * A linear system is consistent iff the rightmost column of the augmented
-	 * matrix is not a pivot column- that is, iff an echelon form of the
-	 * augmented matrix has no row of the form
+	 * A linear system is consistent iff the rightmost column of the augmented matrix is not a pivot column- that is, iff an echelon form of
+	 * the augmented matrix has no row of the form
 	 * 
 	 * [0 ... 0 b] with nonzero
 	 * 
-	 * If a linear system is consistent, then the solution set contains either
-	 * (i) a unique solution, when there are no free variables, or (ii)
-	 * infinitley many solutions, when there is at least one free variables.
+	 * If a linear system is consistent, then the solution set contains either (i) a unique solution, when there are no free variables, or
+	 * (ii) infinitley many solutions, when there is at least one free variables.
 	 * 
 	 * 
 	 * @param a
@@ -188,8 +176,7 @@ public class ArrayChecker {
 	 * 
 	 * * [Theorem 2.16]
 	 * 
-	 * Let A be an n x n matrix. Then, the following statements are each
-	 * equivalent to the statement that A is an invertible matrix.
+	 * Let A be an n x n matrix. Then, the following statements are each equivalent to the statement that A is an invertible matrix.
 	 * 
 	 * m. The columns of A form a basis of R^n
 	 * 
@@ -220,8 +207,7 @@ public class ArrayChecker {
 	 * 
 	 * [Theorem - The Invertible Matrix Theorem]
 	 * 
-	 * Let A be an n x n matrix. Then the following statements are each
-	 * equivalent to the statement that A is an invertible matrix.
+	 * Let A be an n x n matrix. Then the following statements are each equivalent to the statement that A is an invertible matrix.
 	 * 
 	 * u. (Col A) orthogonal = {0}.
 	 * 
@@ -242,47 +228,40 @@ public class ArrayChecker {
 	 * 
 	 * [Definition]
 	 * 
-	 * An indexed set of vectors {v_1,..,v_p}, in R^n is said to be linearly
-	 * independent if the vector equation
+	 * An indexed set of vectors {v_1,..,v_p}, in R^n is said to be linearly independent if the vector equation
 	 * 
 	 * x_1v_1 + x_2v_2 + ... + x_pv_p = 0
 	 * 
-	 * has only trivial solution. The set {v_1,...,v_p} is said to be linearly
-	 * dependent if there exist weights c_1,...,c_p, not all zero, such that
+	 * has only trivial solution. The set {v_1,...,v_p} is said to be linearly dependent if there exist weights c_1,...,c_p, not all zero,
+	 * such that
 	 * 
 	 * c_1v_1 + c_2v_2 + ... + c_pv_p = 0
 	 * 
 	 * 
 	 * [Concept]
 	 * 
-	 * The columns of a matrix A are linearly independent iff the equation Ax =
-	 * 0 has only the trivial solution.
+	 * The columns of a matrix A are linearly independent iff the equation Ax = 0 has only the trivial solution.
 	 * 
 	 * [Concept]
 	 * 
-	 * A set of two vectors {v_1,v_2} is linearly dependent if at least one of
-	 * the vectors is a multiple of the other. The set is linearly independent
-	 * iff neither of the vectors is a multiple of the other.
+	 * A set of two vectors {v_1,v_2} is linearly dependent if at least one of the vectors is a multiple of the other. The set is linearly
+	 * independent iff neither of the vectors is a multiple of the other.
 	 * 
 	 * 
 	 * [Theorem 1.7 - Characterization of Linearly Dependent Sets]
 	 * 
-	 * An indexed set S = {v_1,...,v_p} of two or more vectors is linearly
-	 * dependent iff at least one of the vectors in S is a linear combination of
-	 * the others. In fact, if S is linearly dependent and v_1 != 0, then some
-	 * v_j (with j > 1) is a linear combination of the preceding vectors,
-	 * v_1,...,v_(j-1)
+	 * An indexed set S = {v_1,...,v_p} of two or more vectors is linearly dependent iff at least one of the vectors in S is a linear
+	 * combination of the others. In fact, if S is linearly dependent and v_1 != 0, then some v_j (with j > 1) is a linear combination of
+	 * the preceding vectors, v_1,...,v_(j-1)
 	 * 
 	 * [Theorem 1.8]
 	 * 
-	 * If a set contains more vectors than there are entries in each vector,
-	 * then the set is linearly dependent. That is, any set {v_1,...,v_p} in R3
-	 * is linearly dependent if p > n.
+	 * If a set contains more vectors than there are entries in each vector, then the set is linearly dependent. That is, any set
+	 * {v_1,...,v_p} in R3 is linearly dependent if p > n.
 	 * 
 	 * [Theorem 1.9]
 	 * 
-	 * If a set S = {v_1,...,v_p} in R^n contains the zero vector, then the set
-	 * is linearly dependent.\
+	 * If a set S = {v_1,...,v_p} in R^n contains the zero vector, then the set is linearly dependent.\
 	 * 
 	 * [Definition]
 	 * 
@@ -392,8 +371,7 @@ public class ArrayChecker {
 	 * 
 	 * [Definition]
 	 * 
-	 * Two vectors u and v in R^n are orthogonal (to each other) if
-	 * InnerProduct(u,v) = 0.
+	 * Two vectors u and v in R^n are orthogonal (to each other) if InnerProduct(u,v) = 0.
 	 * 
 	 * 
 	 * @param a
@@ -530,8 +508,7 @@ public class ArrayChecker {
 	 * 
 	 * 1 . It is in row echelon form.
 	 * 
-	 * 2. Every leading coefficient is 1 and is the only nonzero entry in its
-	 * column
+	 * 2. Every leading coefficient is 1 and is the only nonzero entry in its column
 	 * 
 	 * http://en.wikipedia.org/wiki/Row_echelon_form
 	 * 
@@ -591,17 +568,13 @@ public class ArrayChecker {
 	 * 
 	 * [Definition]
 	 * 
-	 * 1. All nonzero rows (rows with at least one nonzero element) are above
-	 * any rows of all zeroes (all zero rows, if any, belong at the bottom of
-	 * the matrix).
+	 * 1. All nonzero rows (rows with at least one nonzero element) are above any rows of all zeroes (all zero rows, if any, belong at the
+	 * bottom of the matrix).
 	 * 
-	 * 2. The leading coefficient (the first nonzero number from the left, also
-	 * called the pivot) of a nonzero row is always strictly to the right of the
-	 * leading coefficient of the row above it (some texts add the condition
-	 * that the leading coefficient must be 1.[1]).
+	 * 2. The leading coefficient (the first nonzero number from the left, also called the pivot) of a nonzero row is always strictly to the
+	 * right of the leading coefficient of the row above it (some texts add the condition that the leading coefficient must be 1.[1]).
 	 * 
-	 * 3. All entries in a column below a leading entry are zeroes (implied by
-	 * the first two criteria)
+	 * 3. All entries in a column below a leading entry are zeroes (implied by the first two criteria)
 	 * 
 	 * 
 	 * http://en.wikipedia.org/wiki/Row_echelon_form
@@ -724,8 +697,7 @@ public class ArrayChecker {
 	}
 
 	/**
-	 * A matrix that is not invertible is sometimes called a singular matrix,
-	 * and an invertible matrix is called a nonsingular matrix.
+	 * A matrix that is not invertible is sometimes called a singular matrix, and an invertible matrix is called a nonsingular matrix.
 	 * 
 	 * @param a
 	 * @return
@@ -748,12 +720,9 @@ public class ArrayChecker {
 	// }
 
 	/**
-	 * In mathematics, and in particular linear algebra, a skew-symmetric (or
-	 * antisymmetric or antimetric[1]) matrix is a square matrix A whose
-	 * transpose is also its negative; that is, it satisfies the condition -A =
-	 * AT. If the entry in the i th row and j th column is aij, i.e. A = (aij)
-	 * then the skew symmetric condition is aij = −aji. For example, the
-	 * following matrix is skew-symmetric:
+	 * In mathematics, and in particular linear algebra, a skew-symmetric (or antisymmetric or antimetric[1]) matrix is a square matrix A
+	 * whose transpose is also its negative; that is, it satisfies the condition -A = AT. If the entry in the i th row and j th column is
+	 * aij, i.e. A = (aij) then the skew symmetric condition is aij = −aji. For example, the following matrix is skew-symmetric:
 	 * 
 	 * 
 	 * http://en.wikipedia.org/wiki/Skew-symmetric_matrix
@@ -814,15 +783,13 @@ public class ArrayChecker {
 	/**
 	 * 
 	 * 
-	 * In linear algebra, a symmetric matrix is a square matrix, A, that is
-	 * equal to its transpose
+	 * In linear algebra, a symmetric matrix is a square matrix, A, that is equal to its transpose
 	 * 
 	 * A = A^T.
 	 * 
 	 * [Theorem 7.1]
 	 * 
-	 * If A is symmetric, then any two eigenvectors from different eigenspaces
-	 * are orthogonal.
+	 * If A is symmetric, then any two eigenvectors from different eigenspaces are orthogonal.
 	 * 
 	 * [Reference]
 	 * 
@@ -886,7 +853,7 @@ public class ArrayChecker {
 		return true;
 	}
 
-	public static boolean isValidProbabilityMassFunction(double[] a) {
+	public static boolean isValidProbs(double[] a) {
 		boolean ret = true;
 		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
@@ -895,6 +862,7 @@ public class ArrayChecker {
 			} else {
 				return false;
 			}
+			sum = a[i];
 		}
 
 		if (sum != 1) {
@@ -947,7 +915,7 @@ public class ArrayChecker {
 		{
 			double[][] a = { { 1, 6, 2, -5, -2, -4 },
 
-			{ 0, 0, 2, -8, -1, 3 }, { 0, 0, 0, 0, 1, 7 } };
+					{ 0, 0, 2, -8, -1, 3 }, { 0, 0, 0, 0, 1, 7 } };
 
 			System.out.println(hasSolution(a));
 		}

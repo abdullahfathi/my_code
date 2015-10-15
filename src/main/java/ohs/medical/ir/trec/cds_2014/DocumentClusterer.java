@@ -12,8 +12,8 @@ import ohs.math.VectorMath;
 import ohs.matrix.SparseMatrix;
 import ohs.matrix.SparseVector;
 import ohs.types.Counter;
-import ohs.types.SetMap;
 import ohs.types.Indexer;
+import ohs.types.SetMap;
 
 public class DocumentClusterer {
 

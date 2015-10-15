@@ -1,5 +1,14 @@
 package ohs.medical.ir;
 
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.DocsAndPositionsEnum;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.index.Terms;
+import org.apache.lucene.index.TermsEnum;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.util.BytesRef;
+
 import ohs.io.TextFileWriter;
 import ohs.lucene.common.IndexFieldName;
 import ohs.math.ArrayMath;
@@ -9,15 +18,6 @@ import ohs.matrix.SparseVector;
 import ohs.types.Counter;
 import ohs.types.Indexer;
 import ohs.utils.StopWatch;
-
-import org.apache.lucene.document.Document;
-import org.apache.lucene.index.DocsAndPositionsEnum;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.index.Terms;
-import org.apache.lucene.index.TermsEnum;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.util.BytesRef;
 
 /**
  * 

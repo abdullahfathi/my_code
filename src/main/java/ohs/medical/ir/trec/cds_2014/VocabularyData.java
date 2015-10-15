@@ -1,19 +1,6 @@
 package ohs.medical.ir.trec.cds_2014;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
-import ohs.io.IOUtils;
-import ohs.io.TextFileReader;
-import ohs.io.TextFileWriter;
-import ohs.lucene.common.IndexFieldName;
-import ohs.math.VectorUtils;
-import ohs.matrix.SparseVector;
-import ohs.types.Counter;
-import ohs.types.Indexer;
 
 import org.apache.lucene.index.Fields;
 import org.apache.lucene.index.IndexReader;
@@ -21,9 +8,13 @@ import org.apache.lucene.index.MultiFields;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.util.BytesRef;
-import org.apache.maven.shared.utils.io.IOUtil;
 
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils.IO;
+import ohs.io.IOUtils;
+import ohs.lucene.common.IndexFieldName;
+import ohs.math.VectorUtils;
+import ohs.matrix.SparseVector;
+import ohs.types.Counter;
+import ohs.types.Indexer;
 
 public class VocabularyData {
 

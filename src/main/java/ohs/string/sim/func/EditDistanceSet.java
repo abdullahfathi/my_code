@@ -3,11 +3,8 @@ package ohs.string.sim.func;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.codec.language.bm.Languages.SomeLanguages;
-
 import ohs.math.ArrayMath;
 import ohs.math.ArrayUtils;
-import ohs.math.FuncMath;
 
 public class EditDistanceSet {
 

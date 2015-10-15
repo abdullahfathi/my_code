@@ -4,11 +4,11 @@ import java.io.IOException;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.apache.lucene.index.FieldInvertState;
 import org.apache.lucene.index.LeafReader;
 import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.search.Explanation;
-import org.apache.lucene.search.similarities.BasicStats;
 import org.apache.lucene.util.BytesRef;
 
 /*

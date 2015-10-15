@@ -1,7 +1,5 @@
 package ohs.types;
 
-import java.io.File;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.AbstractList;
@@ -10,8 +8,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import ohs.io.IOUtils;
 
 /**
  * Maintains a two-way map between a set of objects and contiguous integers from

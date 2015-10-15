@@ -3,9 +3,6 @@ package ohs.lucene.common;
 import java.util.ArrayList;
 import java.util.List;
 
-import ohs.types.Indexer;
-import ohs.types.common.StrCounter;
-
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
@@ -13,6 +10,9 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.TermQuery;
+
+import ohs.types.Indexer;
+import ohs.types.common.StrCounter;
 
 public class AnalyzerUtils {
 

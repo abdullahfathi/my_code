@@ -1,21 +1,11 @@
 package ohs.entity;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
 
 import ohs.entity.data.struct.BilingualText;
 import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
-import ohs.io.TextFileWriter;
-import ohs.types.BidMap;
-import ohs.types.Counter;
 import ohs.types.CounterMap;
-import ohs.types.ListMap;
-import ohs.utils.StrUtils;
 
 public class PatentDataHandler {
 
