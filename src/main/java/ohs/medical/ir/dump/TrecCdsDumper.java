@@ -24,94 +24,40 @@ import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.medical.ir.MIRPath;
+import ohs.utils.StopWatch;
 import ohs.utils.StrUtils;
 
-public class TrecCdsDumper {
+public class TrecCdsDumper extends TextDumper {
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
-		TrecCdsDumper dh = new TrecCdsDumper();
-		dh.makeRawTextDump();
-		dh.makeTextDump();
+		TrecCdsDumper dh = new TrecCdsDumper(MIRPath.TREC_CDS_COLLECTION_DIR, MIRPath.TREC_CDS_COLLECTION_FILE);
+		dh.readValidDocIDs(MIRPath.TREC_CDS_VALID_DOC_ID_FILE);
+		dh.setIntermediateFileName(MIRPath.TREC_CDS_COLLECTION_XML_FILE);
+		dh.dump();
+
+		// dh.makeSingleFile();
+		// dh.extractText();
 		System.out.println("process ends.");
 	}
 
-	public static Set<String> readValidDocIDs() {
-		Set<String> ret = new TreeSet<String>();
-		TextFileReader reader = new TextFileReader(MIRPath.TREC_CDS_VALID_DOC_ID_FILE);
-		while (reader.hasNext()) {
-			String line = reader.next();
-			ret.add(line.trim());
-		}
-		reader.close();
-		return ret;
+	private Set<String> validDocIds;
+
+	private String xmlFileName;
+
+	public TrecCdsDumper(String inputDir, String outputFileName) {
+		super(inputDir, outputFileName);
 	}
 
-	public void makeRawTextDump() throws Exception {
-
-		TextFileWriter writer = new TextFileWriter(MIRPath.TREC_CDS_COLLECTION_FILE);
-		File[] files = new File(MIRPath.TREC_CDS_COLLECTION_DIR).listFiles();
-		int num_docs_in_coll = 0;
-
-		for (int i = 0, kk = 0; i < files.length; i++) {
-			File file = files[i];
-
-			if (!file.getName().endsWith(".tar.gz")) {
-				continue;
-			}
-
-			TarArchiveInputStream tis = new TarArchiveInputStream(new GZIPInputStream(new FileInputStream(file)));
-			TarArchiveEntry tae = null;
-
-			int num_docs_in_file = 0;
-			// read every single entry in TAR file
-			while ((tae = tis.getNextTarEntry()) != null) {
-				// the following two lines remove the .tar.gz extension for the folder name
-				// System.out.println(entry.getName());
-
-				// if (num_docs_in_coll > 40000) {
-				// break;
-				// }
-
-				if (tae.isDirectory()) {
-					continue;
-				}
-
-				if (num_docs_in_coll % 2000 == 0) {
-					System.out.printf("read [%d] docs so far.\n", num_docs_in_coll);
-				}
-
-				num_docs_in_file++;
-				num_docs_in_coll++;
-
-				String fileName = tae.getName();
-				StringBuffer sb = new StringBuffer();
-
-				int c;
-
-				while ((c = tis.read()) != -1) {
-					sb.append((char) c);
-				}
-
-				if (sb.length() > 0) {
-					String outoput = fileName + "\t" + sb.toString().trim().replace("\t", " ").replace("\n", "<NL>");
-					writer.write(outoput + "\n");
-				}
-			}
-			tis.close();
-
-			System.out.printf("read [%d] docs from [%s]\n", num_docs_in_file, file.getName());
-		}
-		writer.close();
-
-		System.out.printf("read [%d] docs from [%s]\n", num_docs_in_coll, MIRPath.TREC_CDS_COLLECTION_DIR);
+	@Override
+	public void dump() throws Exception {
+		System.out.printf("dump from [%s]\n", inputDirName);
+		
+		makeSingleFile();
+		extractText();
 	}
 
-	public void makeTextDump() throws Exception {
-		System.out.println("make text dump from TREC CDS.");
-
-		Set<String> validDocIds = readValidDocIDs();
-
+	public void extractText() throws Exception {
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		dbf.setValidating(false);
 
@@ -127,8 +73,8 @@ public class TrecCdsDumper {
 			}
 		});
 
-		TextFileReader reader = new TextFileReader(MIRPath.TREC_CDS_COLLECTION_FILE);
-		TextFileWriter writer = new TextFileWriter(MIRPath.TREC_CDS_COLLECTION_2_FILE);
+		TextFileReader reader = new TextFileReader(xmlFileName);
+		TextFileWriter writer = new TextFileWriter(outputFileName);
 
 		reader.setPrintNexts(false);
 
@@ -143,19 +89,21 @@ public class TrecCdsDumper {
 			reader.print(10000);
 			String line = reader.next();
 
-			if (reader.getNumLines() < 37573) {
-				continue;
-			}
+			// if (reader.getNumLines() < 37573) {
+			// continue;
+			// }
 
 			String[] parts = line.split("\t");
 			String fileName = parts[0];
 			String xmlText = parts[1];
 
+			// System.out.println(line);
+
 			fileName = fileName.split("/")[2];
 
 			String docId = IOUtils.removeExtension(fileName);
 
-			if (!validDocIds.contains(docId)) {
+			if (validDocIds != null && !validDocIds.contains(docId)) {
 				continue;
 			}
 
@@ -260,5 +208,82 @@ public class TrecCdsDumper {
 
 		writer.close();
 
+	}
+
+	public void makeSingleFile() throws Exception {
+
+		TextFileWriter writer = new TextFileWriter(outputFileName);
+		File[] files = new File(inputDirName).listFiles();
+		int num_docs_in_coll = 0;
+
+		StopWatch stopWatch = new StopWatch();
+		stopWatch.start();
+
+		for (int i = 0, kk = 0; i < files.length; i++) {
+			File file = files[i];
+
+			if (!file.getName().endsWith(".tar.gz")) {
+				continue;
+			}
+
+			TarArchiveInputStream tis = new TarArchiveInputStream(new GZIPInputStream(new FileInputStream(file)));
+			TarArchiveEntry tae = null;
+
+			int num_docs_in_file = 0;
+			// read every single entry in TAR file
+			while ((tae = tis.getNextTarEntry()) != null) {
+				// the following two lines remove the .tar.gz extension for the folder name
+				// System.out.println(entry.getName());
+
+				if (num_docs_in_coll == 40000) {
+					break;
+				}
+
+				if (tae.isDirectory()) {
+					continue;
+				}
+
+				if (num_docs_in_coll % 5000 == 0) {
+					System.out.printf("read [%d] docs so far in time [%s].\n", num_docs_in_coll, stopWatch.stop());
+				}
+
+				num_docs_in_file++;
+				num_docs_in_coll++;
+
+				String fileName = tae.getName();
+				StringBuffer sb = new StringBuffer();
+
+				int c;
+
+				while ((c = tis.read()) != -1) {
+					sb.append((char) c);
+				}
+
+				if (sb.length() > 0) {
+					String outoput = fileName + "\t" + sb.toString().trim().replace("\t", " ").replace("\n", "<NL>");
+					writer.write(outoput + "\n");
+				}
+			}
+			tis.close();
+
+			System.out.printf("read [%d] docs from [%s] in time [%s]\n", num_docs_in_file, file.getName(), stopWatch.stop());
+		}
+		writer.close();
+
+		System.out.printf("read [%d] docs from [%s] in time [%s]\n", num_docs_in_coll, xmlFileName, stopWatch.stop());
+	}
+
+	public void readValidDocIDs(String fileName) {
+		validDocIds = new TreeSet<String>();
+		TextFileReader reader = new TextFileReader(fileName);
+		while (reader.hasNext()) {
+			String line = reader.next();
+			validDocIds.add(line.trim());
+		}
+		reader.close();
+	}
+
+	public void setIntermediateFileName(String xmlFileName) {
+		this.xmlFileName = xmlFileName;
 	}
 }

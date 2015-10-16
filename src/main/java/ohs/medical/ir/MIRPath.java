@@ -149,9 +149,9 @@ public class MIRPath {
 
 	public static final String TREC_CDS_COLLECTION_FILE = TREC_CDS_DIR + "collection.txt.gz";
 
-	public static final String TREC_CDS_COLLECTION_2_FILE = TREC_CDS_DIR + "collection_2.txt.gz";
+	public static final String TREC_CDS_COLLECTION_XML_FILE = TREC_CDS_DIR + "collection_xml.txt.gz";
 
-	public static final String TREC_CDS_SENTS_FILE = TREC_CDS_DIR + "sents.txt";
+	public static final String TREC_CDS_SENTS_FILE = TREC_CDS_DIR + "sents.txt.gz";
 
 	public static final String TREC_CDS_COLLECTION_LOG_FILE = TREC_CDS_DIR + "collection_log.txt";
 

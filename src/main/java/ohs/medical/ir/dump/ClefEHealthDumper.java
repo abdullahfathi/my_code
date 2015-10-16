@@ -3,7 +3,6 @@ package ohs.medical.ir.dump;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -23,7 +22,7 @@ import ohs.io.TextFileWriter;
 import ohs.medical.ir.MIRPath;
 import ohs.utils.StrUtils;
 
-public class ClefEHealthDumper {
+public class ClefEHealthDumper extends TextDumper {
 
 	public static Set<String> getStopFileExtensions() {
 		Set<String> ret = new HashSet<String>();
@@ -41,38 +40,37 @@ public class ClefEHealthDumper {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 
-		ClefEHealthDumper dh = new ClefEHealthDumper();
-		dh.makeTextDump();
+		ClefEHealthDumper dh = new ClefEHealthDumper(MIRPath.CLEF_EHEALTH_COLLECTION_DIR, MIRPath.CLEF_EHEALTH_COLLECTION_FILE);
+		dh.readVisitedDocs(MIRPath.CLEF_EHEALTH_DIR + "doc_ids.txt");
+		dh.dump();
 
 		System.out.println("process ends.");
 	}
 
-	public void makeTextDump() throws IOException {
-		System.out.println("make text dump from CLEF eHealth.");
+	private Set<String> docIdSet;
 
-		File logFile = new File(MIRPath.CLEF_EHEALTH_DIR + "doc_ids.txt");
+	public ClefEHealthDumper(String inputDir, String outputFileName) {
+		super(inputDir, outputFileName);
+	}
 
-		Set<String> docIdSet = new HashSet<String>();
+	@Override
+	public void dump() throws Exception {
+		System.out.printf("dump from [%s]\n", inputDirName);
 
-		if (logFile.exists()) {
-			TextFileReader reader = new TextFileReader(logFile.getPath());
-			while (reader.hasNext()) {
-				docIdSet.add(reader.next());
-			}
-			reader.close();
-		}
-
-		TextFileWriter writer = new TextFileWriter(MIRPath.CLEF_EHEALTH_COLLECTION_FILE, IOUtils.UTF_8, true);
+		TextFileWriter writer = new TextFileWriter(outputFileName, IOUtils.UTF_8, true);
 
 		int num_docs_in_coll = 0;
 
 		Set<String> stopExpSet = getStopFileExtensions();
 
-		File[] files = new File(MIRPath.CLEF_EHEALTH_COLLECTION_DIR).listFiles();
+		File[] files = new File(inputDirName).listFiles();
 
 		for (int i = 0, numFiles = 0; i < files.length; i++) {
 			File file = files[i];
-			System.out.printf("read [%s]\n", file.getName());
+
+			if (file.isDirectory()) {
+				continue;
+			}
 
 			ZipInputStream zio = new ZipInputStream(new FileInputStream(file));
 			BufferedReader br = new BufferedReader(new InputStreamReader(zio));
@@ -100,9 +98,9 @@ public class ClefEHealthDumper {
 						String url = lines.get(2);
 						String html = StrUtils.join("\n", lines, 4, lines.size() - 1);
 
-						if (!uid.startsWith("#UID") || !date.startsWith("#DATE")
+						if (!uid.startsWith("#UID") || !date.startsWith("#DATE") || !url.startsWith("#URL")
+								|| !lines.get(3).startsWith("#CONTENT")) {
 
-								|| !url.startsWith("#URL") || !lines.get(3).startsWith("#CONTENT")) {
 							lines = new ArrayList<String>();
 							continue;
 						}
@@ -111,7 +109,7 @@ public class ClefEHealthDumper {
 						date = date.substring(6);
 						url = url.substring(5);
 
-						if (docIdSet.contains(uid)) {
+						if (docIdSet != null && docIdSet.contains(uid)) {
 							lines = new ArrayList<String>();
 							continue;
 						}
@@ -130,8 +128,8 @@ public class ClefEHealthDumper {
 
 						Document doc = Jsoup.parse(html);
 						String content = doc.text();
-						// content = tokenize(content);
 						String output = String.format("%s\t%s\t%s\t%s", uid, date, url, content.replaceAll("\n", "<NL>"));
+
 						writer.write(output + "\n");
 
 						lines = new ArrayList<String>();
@@ -149,7 +147,19 @@ public class ClefEHealthDumper {
 
 		writer.close();
 
-		System.out.printf("read [%d] docs from [%s]\n", num_docs_in_coll, MIRPath.CLEF_EHEALTH_COLLECTION_DIR);
+		System.out.printf("read [%d] docs from [%s]\n", num_docs_in_coll, inputDirName);
+	}
+
+	public void readVisitedDocs(String fileName) {
+		docIdSet = new HashSet<String>();
+		File file = new File(fileName);
+		if (file.exists()) {
+			TextFileReader reader = new TextFileReader(file);
+			while (reader.hasNext()) {
+				docIdSet.add(reader.next());
+			}
+			reader.close();
+		}
 	}
 
 }

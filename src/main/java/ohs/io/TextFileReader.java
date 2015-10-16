@@ -34,7 +34,7 @@ public class TextFileReader {
 	private StopWatch stopWatch;
 
 	public TextFileReader(File file) {
-		this(file.getName(), IOUtils.UTF_8);
+		this(file.getPath(), IOUtils.UTF_8);
 	}
 
 	public TextFileReader(String fileName) {

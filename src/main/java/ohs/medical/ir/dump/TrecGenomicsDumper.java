@@ -11,19 +11,26 @@ import org.jsoup.nodes.Document;
 import ohs.io.TextFileWriter;
 import ohs.medical.ir.MIRPath;
 
-public class TrecGenomicsDumper {
+public class TrecGenomicsDumper extends TextDumper {
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
-		TrecGenomicsDumper d = new TrecGenomicsDumper();
-		d.makeTextDump();
+		TrecGenomicsDumper d = new TrecGenomicsDumper(MIRPath.TREC_GENOMICS_COLLECTION_DIR, MIRPath.TREC_GENOMICS_COLLECTION_FILE);
+		d.dump();
 		System.out.println("process ends.");
 	}
 
-	public void makeTextDump() throws Exception {
-		TextFileWriter writer = new TextFileWriter(MIRPath.TREC_GENOMICS_COLLECTION_FILE);
+	public TrecGenomicsDumper(String inputDir, String outputFileName) {
+		super(inputDir, outputFileName);
+	}
 
-		File[] files = new File(MIRPath.TREC_GENOMICS_COLLECTION_DIR).listFiles();
+	@Override
+	public void dump() throws Exception {
+		System.out.printf("dump from [%s]\n", inputDirName);
+		
+		TextFileWriter writer = new TextFileWriter(outputFileName);
+
+		File[] files = new File(inputDirName).listFiles();
 		int num_docs_in_coll = 0;
 
 		for (int i = 0; i < files.length; i++) {
@@ -75,6 +82,7 @@ public class TrecGenomicsDumper {
 			System.out.printf("read [%d] docs from [%s]\n", num_docs_in_file, file.getName());
 		}
 		writer.close();
-		System.out.printf("read [%d] docs from [%s]\n", num_docs_in_coll, MIRPath.TREC_GENOMICS_COLLECTION_FILE);
+
+		System.out.printf("read [%d] docs from [%s]\n", num_docs_in_coll, inputDirName);
 	}
 }

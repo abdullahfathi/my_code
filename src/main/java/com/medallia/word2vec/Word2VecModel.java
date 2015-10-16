@@ -1,6 +1,5 @@
 package com.medallia.word2vec;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -21,13 +20,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Doubles;
 import com.medallia.word2vec.thrift.Word2VecModelThrift;
+import com.medallia.word2vec.util.AC;
 import com.medallia.word2vec.util.Common;
 import com.medallia.word2vec.util.ProfilingTimer;
 
-import ohs.io.IOUtils;
 import ohs.io.TextFileWriter;
-
-import com.medallia.word2vec.util.AC;
 
 /**
  * Represents the Word2Vec model, containing vectors for each word
@@ -255,10 +252,7 @@ public class Word2VecModel {
 
 		TextFileWriter writer = new TextFileWriter(outputFile);
 		writer.write(String.format("%d %d\n", vocab.size(), layerSize));
-
 		final double[] vector = new double[layerSize];
-		final ByteBuffer buffer = ByteBuffer.allocate(4 * layerSize);
-		buffer.order(ByteOrder.LITTLE_ENDIAN); // The C version uses this byte order.
 		for (int i = 0; i < vocab.size(); ++i) {
 			writer.write(String.format("%s ", vocab.get(i)));
 
@@ -271,7 +265,6 @@ public class Word2VecModel {
 			writer.write("\n");
 		}
 		writer.close();
-
 	}
 
 	/**

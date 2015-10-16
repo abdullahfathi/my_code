@@ -31,12 +31,12 @@ class CBOWModelTrainer extends NeuralNetworkTrainer {
 		void trainSentence(List<String> sent) {
 			int senLen = sent.size();
 
-			Map<Integer, String> map = new HashMap<>();
-
-			for (String word : huffmanNodes.keySet()) {
-				HuffmanNode hn = huffmanNodes.get(word);
-				map.put(hn.idx, word);
-			}
+			// Map<Integer, String> map = new HashMap<>();
+			//
+			// for (String word : huffmanNodes.keySet()) {
+			// HuffmanNode hn = huffmanNodes.get(word);
+			// map.put(hn.idx, word);
+			// }
 
 			for (int sentPos = 0; sentPos < senLen; sentPos++) {
 				String word = sent.get(sentPos);

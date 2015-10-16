@@ -9,14 +9,19 @@ import ohs.io.TextFileWriter;
 import ohs.medical.ir.MIRPath;
 import ohs.utils.StopWatch;
 
-public class OhsumedDumper {
+public class OhsumedDumper extends TextDumper {
+
+	public OhsumedDumper(String inputDir, String outputFileName) {
+		super(inputDir, outputFileName);
+		// TODO Auto-generated constructor stub
+	}
 
 	public static final String[] TAGS = { ".I", ".U", ".M", ".T", ".P", ".W", ".A", ".S" };
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
-		OhsumedDumper dh = new OhsumedDumper();
-		// dh.makeTextDump();
+		OhsumedDumper dh = new OhsumedDumper(MIRPath.OHSUMED_COLLECTION_DIR, MIRPath.OHSUMED_COLLECTION_FILE);
+		dh.dump();
 		System.out.println("process ends.");
 	}
 
@@ -37,18 +42,19 @@ public class OhsumedDumper {
 	}
 
 	public void makeTextDump() throws Exception {
-		System.out.println("make text dump from OHSUMED.");
 
-		File inputDir = new File(MIRPath.OHSUMED_COLLECTION_DIR);
-		File outputFile = new File(MIRPath.OHSUMED_COLLECTION_FILE);
-		System.out.println(outputFile.getCanonicalPath());
+	}
 
-		TextFileWriter writer = new TextFileWriter(outputFile);
+	@Override
+	public void dump() throws Exception {
+		System.out.printf("dump from [%s]\n", inputDirName);
+
+		TextFileWriter writer = new TextFileWriter(outputFileName);
 
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
 
-		File[] files = inputDir.listFiles();
+		File[] files = new File(inputDirName).listFiles();
 
 		/*
 		 * .I sequential identifier
@@ -104,6 +110,6 @@ public class OhsumedDumper {
 		}
 		writer.close();
 
-		System.out.printf("[%d] docs\n", numDocs);
+		System.out.printf("read [%d] docs from [%s]\n", numDocs, inputDirName);
 	}
 }

@@ -179,7 +179,7 @@ public class DocumentIndexer {
 		System.out.println("index TREC CDS.");
 
 		IndexWriter writer = getIndexWriter(MIRPath.TREC_CDS_INDEX_DIR);
-		TextFileReader reader = new TextFileReader(MIRPath.TREC_CDS_COLLECTION_2_FILE);
+		TextFileReader reader = new TextFileReader(MIRPath.TREC_CDS_COLLECTION_FILE);
 		reader.setPrintNexts(false);
 
 		while (reader.hasNext()) {

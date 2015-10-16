@@ -68,10 +68,10 @@ public class SentenceGenerator {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 		SentenceGenerator di = new SentenceGenerator();
-		di.generateForTrecCds();
-		di.generateForClefEHealth();
+		// di.generateForTrecCds();
+		// di.generateForClefEHealth();
 		di.generateForOhsumed();
-		di.generateForTrecGenomics();
+		// di.generateForTrecGenomics();
 
 		System.out.println("process ends.");
 	}
@@ -103,7 +103,8 @@ public class SentenceGenerator {
 			sents.addAll(NLPUtils.tokenize(content));
 
 			for (int i = 0; i < sents.size(); i++) {
-				writer.write(sents.get(i) + "\n");
+				String output = String.format("%s\t%d\t%s", uid, i, sents.get(i));
+				writer.write(output + "\n");
 			}
 		}
 		reader.printLast();
@@ -148,7 +149,8 @@ public class SentenceGenerator {
 			List<String> sents = NLPUtils.tokenize(abs);
 
 			for (int i = 0; i < sents.size(); i++) {
-				writer.write(sents.get(i) + "\n");
+				String output = String.format("%s\t%d\t%s", seqId, i, sents.get(i));
+				writer.write(output + "\n");
 			}
 
 			num_sents += sents.size();
@@ -164,7 +166,7 @@ public class SentenceGenerator {
 
 		TextFileWriter writer = new TextFileWriter(MIRPath.TREC_CDS_SENTS_FILE);
 
-		TextFileReader reader = new TextFileReader(MIRPath.TREC_CDS_COLLECTION_2_FILE);
+		TextFileReader reader = new TextFileReader(MIRPath.TREC_CDS_COLLECTION_FILE);
 		reader.setPrintNexts(false);
 
 		while (reader.hasNext()) {
@@ -193,7 +195,8 @@ public class SentenceGenerator {
 			sents.addAll(NLPUtils.tokenize(content.replace("<NL>", "\n")));
 
 			for (int i = 0; i < sents.size(); i++) {
-				writer.write(sents.get(i) + "\n");
+				String output = String.format("%s\t%d\t%s", pmcId, i, sents.get(i));
+				writer.write(output + "\n");
 			}
 		}
 		reader.printLast();
@@ -226,7 +229,8 @@ public class SentenceGenerator {
 			sents.addAll(NLPUtils.tokenize(content));
 
 			for (int i = 0; i < sents.size(); i++) {
-				writer.write(sents.get(i) + "\n");
+				String output = String.format("%s\t%d\t%s", id, i, sents.get(i));
+				writer.write(output + "\n");
 			}
 		}
 		reader.close();

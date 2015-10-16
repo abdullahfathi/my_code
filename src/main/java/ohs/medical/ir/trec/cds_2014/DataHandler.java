@@ -107,7 +107,7 @@ public class DataHandler {
 
 	public void makeTextDump() throws Exception {
 
-		// File inputDir = new File(CDSPath.RAW_COLLECTION_DIR, "pmc-text-00");
+		// File inputDirName = new File(CDSPath.RAW_COLLECTION_DIR, "pmc-text-00");
 		// File outputFile = new File(CDSPath.DATA_DIR, "sample.txt");
 
 		Set<String> duplicationSet = readDuplications();
