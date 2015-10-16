@@ -42,7 +42,7 @@ public class ClefEHealthDumper {
 		System.out.println("process begins.");
 
 		ClefEHealthDumper dh = new ClefEHealthDumper();
-		dh.makeTextDump();
+		// dh.makeTextDump();
 
 		System.out.println("process ends.");
 	}
@@ -102,7 +102,7 @@ public class ClefEHealthDumper {
 
 						if (!uid.startsWith("#UID") || !date.startsWith("#DATE")
 
-						|| !url.startsWith("#URL") || !lines.get(3).startsWith("#CONTENT")) {
+								|| !url.startsWith("#URL") || !lines.get(3).startsWith("#CONTENT")) {
 							lines = new ArrayList<String>();
 							continue;
 						}

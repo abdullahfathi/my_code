@@ -16,7 +16,7 @@ public class OhsumedDumper {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 		OhsumedDumper dh = new OhsumedDumper();
-		dh.makeTextDump();
+		// dh.makeTextDump();
 		System.out.println("process ends.");
 	}
 
