@@ -13,6 +13,9 @@ import com.medallia.word2vec.util.Format;
 import com.medallia.word2vec.util.ProfilingTimer;
 import com.medallia.word2vec.util.Strings;
 import com.medallia.word2vec.util.ThriftUtils;
+
+import ohs.io.TextFileReader;
+
 import org.apache.commons.logging.Log;
 import org.apache.thrift.TException;
 import org.apache.commons.io.FileUtils;
@@ -24,6 +27,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -45,7 +49,13 @@ public class Word2VecExamples {
 		// throw new IllegalStateException("Please download and unzip the text8 example from http://mattmahoney.net/dc/text8.zip");
 
 		File f = new File("../../data/medical_ir/ohsumed/sents.txt");
-		List<String> read = Common.readToList(f);
+		List<String> read = new ArrayList<String>();
+
+		TextFileReader reader = new TextFileReader(f);
+		while (reader.hasNext()) {
+			read.add(reader.next());
+		}
+		reader.close();
 
 		List<List<String>> partitioned = Lists.transform(read, new Function<String, List<String>>() {
 			@Override
@@ -86,7 +96,7 @@ public class Word2VecExamples {
 
 		})
 
-		.train(partitioned);
+				.train(partitioned);
 
 		// Writes model to a thrift file
 		// try (ProfilingTimer timer = ProfilingTimer.create(LOG, "Writing output to file")) {

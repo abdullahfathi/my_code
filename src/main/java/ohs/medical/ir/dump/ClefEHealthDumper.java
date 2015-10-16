@@ -42,7 +42,7 @@ public class ClefEHealthDumper {
 		System.out.println("process begins.");
 
 		ClefEHealthDumper dh = new ClefEHealthDumper();
-		// dh.makeTextDump();
+		dh.makeTextDump();
 
 		System.out.println("process ends.");
 	}

@@ -32,7 +32,7 @@ public class TrecCdsDumper {
 		System.out.println("process begins.");
 		TrecCdsDumper dh = new TrecCdsDumper();
 		dh.makeRawTextDump();
-		// dh.makeTextDump();
+		dh.makeTextDump();
 		System.out.println("process ends.");
 	}
 
@@ -48,13 +48,12 @@ public class TrecCdsDumper {
 	}
 
 	public void makeRawTextDump() throws Exception {
-		String[] fileNames = { "pmc-text-00.tar.gz", "pmc-text-01.tar.gz", "pmc-text-02.tar.gz", "pmc-text-03.tar.gz" };
+
 		TextFileWriter writer = new TextFileWriter(MIRPath.TREC_CDS_COLLECTION_FILE);
+		File[] files = new File(MIRPath.TREC_CDS_COLLECTION_DIR).listFiles();
 		int num_docs_in_coll = 0;
 
-		File[] files = new File(MIRPath.TREC_CDS_COLLECTION_DIR).listFiles();
-
-		for (int i = 0; i < fileNames.length; i++) {
+		for (int i = 0, kk = 0; i < files.length; i++) {
 			File file = files[i];
 
 			if (!file.getName().endsWith(".tar.gz")) {
@@ -70,11 +69,20 @@ public class TrecCdsDumper {
 				// the following two lines remove the .tar.gz extension for the folder name
 				// System.out.println(entry.getName());
 
+				// if (num_docs_in_coll > 40000) {
+				// break;
+				// }
+
 				if (tae.isDirectory()) {
 					continue;
 				}
 
+				if (num_docs_in_coll % 2000 == 0) {
+					System.out.printf("read [%d] docs so far.\n", num_docs_in_coll);
+				}
+
 				num_docs_in_file++;
+				num_docs_in_coll++;
 
 				String fileName = tae.getName();
 				StringBuffer sb = new StringBuffer();
@@ -91,8 +99,6 @@ public class TrecCdsDumper {
 				}
 			}
 			tis.close();
-
-			num_docs_in_coll += num_docs_in_file;
 
 			System.out.printf("read [%d] docs from [%s]\n", num_docs_in_file, file.getName());
 		}
@@ -136,6 +142,11 @@ public class TrecCdsDumper {
 		while (reader.hasNext()) {
 			reader.print(10000);
 			String line = reader.next();
+
+			if (reader.getNumLines() < 37573) {
+				continue;
+			}
+
 			String[] parts = line.split("\t");
 			String fileName = parts[0];
 			String xmlText = parts[1];
@@ -213,27 +224,27 @@ public class TrecCdsDumper {
 			if (pmcId.length() == 0) {
 				num_miss_pmcid++;
 				missPmcId = true;
-				pmcId = "empty";
+				pmcId = "null";
 			}
 
 			if (title.length() == 0) {
 				nuim_miss_title++;
 				missTitle = true;
-				title = "empty";
+				title = "null";
 			}
 
 			if (abs.length() == 0) {
 				num_miss_abstracts++;
 				missAbs = true;
 
-				abs = "empty";
+				abs = "null";
 			}
 
 			if (body.length() == 0) {
 				num_miss_bodies++;
 				missBody = true;
 
-				body = "empty";
+				body = "null";
 			}
 
 			int num_miss = num_miss_pmcid + nuim_miss_title + num_miss_abstracts + num_miss_bodies;
@@ -245,6 +256,8 @@ public class TrecCdsDumper {
 			}
 		}
 		reader.printLast();
+		reader.close();
+
 		writer.close();
 
 	}

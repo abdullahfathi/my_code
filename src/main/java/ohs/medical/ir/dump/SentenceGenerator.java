@@ -68,10 +68,10 @@ public class SentenceGenerator {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 		SentenceGenerator di = new SentenceGenerator();
-		// di.indexTrecCds();
-		// di.indexClefEHealth();
+		di.generateForTrecCds();
+		di.generateForClefEHealth();
 		di.generateForOhsumed();
-		// di.indexTrecGenomics();
+		di.generateForTrecGenomics();
 
 		System.out.println("process ends.");
 	}
@@ -119,7 +119,7 @@ public class SentenceGenerator {
 
 		TextFileReader reader = new TextFileReader(MIRPath.OHSUMED_COLLECTION_FILE);
 		reader.setPrintNexts(false);
-		
+
 		long num_sents = 0;
 
 		while (reader.hasNext()) {
@@ -148,12 +148,9 @@ public class SentenceGenerator {
 			List<String> sents = NLPUtils.tokenize(abs);
 
 			for (int i = 0; i < sents.size(); i++) {
-				if (sents.get(i).equals("null")) {
-					System.out.println();
-				}
 				writer.write(sents.get(i) + "\n");
 			}
-			
+
 			num_sents += sents.size();
 		}
 		reader.printLast();
@@ -181,7 +178,7 @@ public class SentenceGenerator {
 
 			for (int i = 0; i < parts.length; i++) {
 				String s = parts[i];
-				if (s.equals("empty")) {
+				if (s.equals("null")) {
 					parts[i] = "";
 				}
 			}
