@@ -25,7 +25,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.compress.compressors.CompressorInputStream;
 import org.apache.commons.compress.compressors.CompressorOutputStream;
@@ -233,28 +235,38 @@ public class IOUtils {
 		return openBufferedReader(fileName, UTF_8);
 	}
 
+	public static void main(String[] args) throws Exception {
+		String text = readText("text8");
+		System.out.println(text + "\n");
+
+		BufferedWriter bw = openBufferedWriter("text8.gz");
+		bw.write(text);
+		bw.close();
+
+		String text2 = readText("text8.gz");
+
+		System.out.println(text2);
+	}
+
 	public static BufferedReader openBufferedReader(String fileName, String encoding) throws Exception {
-		BufferedReader ret = null;
 		File file = new File(fileName);
+		FileInputStream fis = new FileInputStream(file);
+		InputStreamReader isr = null;
 
 		if (file.getName().endsWith(".gz")) {
-			FileInputStream fis = new FileInputStream(file);
-			ret = new BufferedReader(new InputStreamReader(new GZIPInputStream(fis), encoding));
+			CompressorInputStream cis = new CompressorStreamFactory().createCompressorInputStream(CompressorStreamFactory.GZIP, fis);
+			isr = new InputStreamReader(cis, encoding);
 		} else if (file.getName().endsWith(".bz2")) {
-			FileInputStream fis = new FileInputStream(file);
 			// byte[] ignoreBytes = new byte[2];
 			// fis.read(ignoreBytes); // "B", "Z" bytes from commandline tools
 			// ret = new BufferedReader(new InputStreamReader(new
 			// CBZip2InputStream(fis)));
 			CompressorInputStream cis = new CompressorStreamFactory().createCompressorInputStream(CompressorStreamFactory.BZIP2, fis);
-			ret = new BufferedReader(new InputStreamReader(cis, encoding));
-		} else if (file.getName().endsWith(".zip")) {
-			FileInputStream fs = new FileInputStream(file);
-			ret = new BufferedReader(new InputStreamReader(new ZipInputStream(fs), encoding));
+			isr = new InputStreamReader(cis, encoding);
 		} else {
-			ret = new BufferedReader(new InputStreamReader(new FileInputStream(file), encoding));
+			isr = new InputStreamReader(fis, encoding);
 		}
-		return ret;
+		return new BufferedReader(isr);
 	}
 
 	public static BufferedWriter openBufferedWriter(String fileName) throws Exception {
@@ -281,18 +293,20 @@ public class IOUtils {
 			append = false;
 		}
 
+		FileOutputStream fos = new FileOutputStream(file, append);
 		OutputStreamWriter osw = null;
 
 		if (file.getName().endsWith(".gz")) {
-			osw = new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(file, append)), encoding);
+			// osw = new OutputStreamWriter(new GZIPOutputStream(new FileOutputStream(file, append)), encoding);
+			CompressorOutputStream cos = new CompressorStreamFactory().createCompressorOutputStream(CompressorStreamFactory.GZIP, fos);
+			osw = new OutputStreamWriter(cos, encoding);
 		} else if (file.getName().endsWith(".bz2")) {
 			// osw = new OutputStreamWriter(new CBZip2OutputStream(new
 			// FileOutputStream(file, append)), encoding);
-			FileOutputStream fis = new FileOutputStream(file);
-			CompressorOutputStream cos = new CompressorStreamFactory().createCompressorOutputStream(CompressorStreamFactory.BZIP2, fis);
+			CompressorOutputStream cos = new CompressorStreamFactory().createCompressorOutputStream(CompressorStreamFactory.BZIP2, fos);
 			osw = new OutputStreamWriter(cos, encoding);
 		} else {
-			osw = new OutputStreamWriter(new FileOutputStream(file, append), encoding);
+			osw = new OutputStreamWriter(fos, encoding);
 		}
 
 		return new BufferedWriter(osw);

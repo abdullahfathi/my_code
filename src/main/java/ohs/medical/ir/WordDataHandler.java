@@ -78,14 +78,14 @@ public class WordDataHandler {
 			}
 
 			TermsEnum termsEnum = null;
-			termsEnum = termVector.iterator(termsEnum);
+//			termsEnum = termVector.iterator();
 
 			BytesRef bytesRef = null;
 			PostingsEnum postingsEnum = null;
 			Map<Integer, String> wordLocs = new HashMap<Integer, String>();
 
 			while ((bytesRef = termsEnum.next()) != null) {
-				postingsEnum = termsEnum.postings(null, postingsEnum, PostingsEnum.ALL);
+				postingsEnum = termsEnum.postings(postingsEnum, PostingsEnum.ALL);
 
 				if (postingsEnum.nextDoc() != 0) {
 					throw new AssertionError();
@@ -166,7 +166,7 @@ public class WordDataHandler {
 
 		Counter<String> c = new Counter<String>();
 
-		TermsEnum termsEnum = terms.iterator(null);
+		TermsEnum termsEnum = terms.iterator();
 		BytesRef bytesRef = null;
 
 		while ((bytesRef = termsEnum.next()) != null) {

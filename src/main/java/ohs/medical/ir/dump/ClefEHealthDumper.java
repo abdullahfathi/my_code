@@ -1,12 +1,18 @@
 package ohs.medical.ir.dump;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -17,7 +23,7 @@ import ohs.io.TextFileWriter;
 import ohs.medical.ir.MIRPath;
 import ohs.utils.StrUtils;
 
-public class ClefEHealthDataProcessor {
+public class ClefEHealthDumper {
 
 	public static Set<String> getStopFileExtensions() {
 		Set<String> ret = new HashSet<String>();
@@ -35,13 +41,13 @@ public class ClefEHealthDataProcessor {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 
-		ClefEHealthDataProcessor dh = new ClefEHealthDataProcessor();
+		ClefEHealthDumper dh = new ClefEHealthDumper();
 		dh.makeTextDump();
 
 		System.out.println("process ends.");
 	}
 
-	public void makeTextDump() {
+	public void makeTextDump() throws IOException {
 		System.out.println("make text dump from CLEF eHealth.");
 
 		File logFile = new File(MIRPath.CLEF_EHEALTH_DIR + "doc_ids.txt");
@@ -58,7 +64,7 @@ public class ClefEHealthDataProcessor {
 
 		TextFileWriter writer = new TextFileWriter(MIRPath.CLEF_EHEALTH_COLLECTION_FILE, IOUtils.UTF_8, true);
 
-		int numDocsInCollection = 0;
+		int num_docs_in_coll = 0;
 
 		Set<String> stopExpSet = getStopFileExtensions();
 
@@ -66,23 +72,22 @@ public class ClefEHealthDataProcessor {
 
 		for (int i = 0, numFiles = 0; i < files.length; i++) {
 			File file = files[i];
-			if (!file.isDirectory()) {
-				continue;
-			}
+			System.out.printf("read [%s]\n", file.getName());
 
-			List<File> inputFiles = IOUtils.getFilesUnder(file);
+			ZipInputStream zio = new ZipInputStream(new FileInputStream(file));
+			BufferedReader br = new BufferedReader(new InputStreamReader(zio));
+			ZipEntry ze = null;
 
-			for (int j = 0; j < inputFiles.size(); j++) {
-				File inputFile = inputFiles.get(j);
-				numFiles++;
+			while ((ze = zio.getNextEntry()) != null) {
+				if (ze.isDirectory()) {
+					continue;
+				}
 
-				TextFileReader reader = new TextFileReader(inputFile.getPath());
 				List<String> lines = new ArrayList<String>();
-				int numDocsInFile = 0;
+				int num_docs_in_file = 0;
+				String line = null;
 
-				while (reader.hasNext()) {
-					String line = reader.next().trim();
-
+				while ((line = br.readLine()) != null) {
 					if (line.equals("")) {
 						continue;
 					}
@@ -130,19 +135,21 @@ public class ClefEHealthDataProcessor {
 						writer.write(output + "\n");
 
 						lines = new ArrayList<String>();
-						numDocsInFile++;
+						num_docs_in_file++;
 					}
 				}
-				reader.close();
-				numDocsInCollection += numDocsInFile;
 
-				System.out.printf("%d: [%d] documents in [%s]\n", numFiles, numDocsInFile, inputFile.getName());
+				num_docs_in_coll += num_docs_in_file;
+
+				System.out.printf("read [%d] docs from [%s]\n", num_docs_in_file, ze.getName());
 			}
+
+			br.close();
 		}
 
 		writer.close();
 
-		System.out.printf("Total documents: %d\n", numDocsInCollection);
+		System.out.printf("read [%d] docs from [%s]\n", num_docs_in_coll, MIRPath.CLEF_EHEALTH_COLLECTION_DIR);
 	}
 
 }

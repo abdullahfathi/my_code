@@ -78,11 +78,11 @@ public class MIRPath {
 
 	public static final String CLEF_EHEALTH_DIR = DATA_DIR + "clef_ehealth/";
 
-	public static final String CLEF_EHEALTH_COLLECTION_DIR = CLEF_EHEALTH_DIR + "collection/docs";
+	public static final String CLEF_EHEALTH_COLLECTION_DIR = CLEF_EHEALTH_DIR + "collection";
 
-	public static final String CLEF_EHEALTH_COLLECTION_FILE = CLEF_EHEALTH_DIR + "collection.txt";
+	public static final String CLEF_EHEALTH_COLLECTION_FILE = CLEF_EHEALTH_DIR + "collection.txt.gz";
 
-	public static final String CLEF_EHEALTH_SENTS_FILE = CLEF_EHEALTH_DIR + "sents.txt";
+	public static final String CLEF_EHEALTH_SENTS_FILE = CLEF_EHEALTH_DIR + "sents.txt.gz";
 
 	public static final String CLEF_EHEALTH_COLLECTION_FILE_2 = CLEF_EHEALTH_DIR + "collection_2.txt";
 
@@ -147,9 +147,9 @@ public class MIRPath {
 
 	public static final String TREC_CDS_COLLECTION_DIR = TREC_CDS_DIR + "collection/";
 
-	public static final String TREC_CDS_COLLECTION_FILE = TREC_CDS_DIR + "collection.gz";
+	public static final String TREC_CDS_COLLECTION_FILE = TREC_CDS_DIR + "collection.txt.gz";
 
-	public static final String TREC_CDS_COLLECTION_2_FILE = TREC_CDS_DIR + "collection.txt";
+	public static final String TREC_CDS_COLLECTION_2_FILE = TREC_CDS_DIR + "collection_2.txt.gz";
 
 	public static final String TREC_CDS_SENTS_FILE = TREC_CDS_DIR + "sents.txt";
 
@@ -225,9 +225,9 @@ public class MIRPath {
 
 	public static final String TREC_GENOMICS_COLLECTION_DIR = TREC_GENOMICS_DIR + "collection/";
 
-	public static final String TREC_GENOMICS_COLLECTION_FILE = TREC_GENOMICS_DIR + "collection.txt";
+	public static final String TREC_GENOMICS_COLLECTION_FILE = TREC_GENOMICS_DIR + "collection.txt.gz";
 
-	public static final String TREC_GENOMICS_SENTS_FILE = TREC_GENOMICS_DIR + "sents.txt";
+	public static final String TREC_GENOMICS_SENTS_FILE = TREC_GENOMICS_DIR + "sents.txt.gz";
 
 	public static final String TREC_GENOMICS_QUERY_DIR = TREC_GENOMICS_DIR + "query/";
 
@@ -265,9 +265,9 @@ public class MIRPath {
 
 	public static final String OHSUMED_COLLECTION_DIR = OHSUMED_DIR + "collection/";
 
-	public static final String OHSUMED_COLLECTION_FILE = OHSUMED_DIR + "collection.txt";
+	public static final String OHSUMED_COLLECTION_FILE = OHSUMED_DIR + "collection.txt.gz";
 
-	public static final String OHSUMED_SENTS_FILE = OHSUMED_DIR + "sents.txt";
+	public static final String OHSUMED_SENTS_FILE = OHSUMED_DIR + "sents.txt.gz";
 
 	public static final String OHSUMED_QUERY_DIR = OHSUMED_DIR + "query/";
 

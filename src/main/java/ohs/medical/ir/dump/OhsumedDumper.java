@@ -9,13 +9,13 @@ import ohs.io.TextFileWriter;
 import ohs.medical.ir.MIRPath;
 import ohs.utils.StopWatch;
 
-public class OhsumedDataProcessor {
+public class OhsumedDumper {
 
 	public static final String[] TAGS = { ".I", ".U", ".M", ".T", ".P", ".W", ".A", ".S" };
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
-		OhsumedDataProcessor dh = new OhsumedDataProcessor();
+		OhsumedDumper dh = new OhsumedDumper();
 		dh.makeTextDump();
 		System.out.println("process ends.");
 	}
@@ -72,7 +72,7 @@ public class OhsumedDataProcessor {
 
 		for (int i = 0; i < files.length; i++) {
 			Map<String, String> map = new HashMap<String, String>();
-			TextFileReader reader = new TextFileReader(files[i]);
+			TextFileReader reader = new TextFileReader(files[i].getPath());
 
 			while (reader.hasNext()) {
 				String line = reader.next();

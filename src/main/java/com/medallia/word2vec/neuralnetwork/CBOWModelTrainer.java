@@ -42,10 +42,10 @@ class CBOWModelTrainer extends NeuralNetworkTrainer {
 				String word = sent.get(sentPos);
 				HuffmanNode huffmanNode = huffmanNodes.get(word);
 
-				for (int c = 0; c < layer1_size; c++)
+				for (int c = 0; c < layer1_size; c++) {
 					neu1[c] = 0;
-				for (int c = 0; c < layer1_size; c++)
 					neu1e[c] = 0;
+				}
 
 				// ArrayUtils.setAll(neu1, 0);
 				// ArrayUtils.setAll(neu1e, 0);
@@ -118,7 +118,6 @@ class CBOWModelTrainer extends NeuralNetworkTrainer {
 						// ArrayMath.addAfterScale(syn1[l2], neu1, 1, g, syn1[l2]);
 
 					}
-
 				}
 
 				handleNegativeSampling(huffmanNode);

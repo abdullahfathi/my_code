@@ -26,13 +26,13 @@ import ohs.io.TextFileWriter;
 import ohs.medical.ir.MIRPath;
 import ohs.utils.StrUtils;
 
-public class TrecCdsDataProcessor {
+public class TrecCdsDumper {
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
-		TrecCdsDataProcessor dh = new TrecCdsDataProcessor();
+		TrecCdsDumper dh = new TrecCdsDumper();
 		dh.makeRawTextDump();
-		dh.makeTextDump();
+		// dh.makeTextDump();
 		System.out.println("process ends.");
 	}
 
@@ -50,48 +50,55 @@ public class TrecCdsDataProcessor {
 	public void makeRawTextDump() throws Exception {
 		String[] fileNames = { "pmc-text-00.tar.gz", "pmc-text-01.tar.gz", "pmc-text-02.tar.gz", "pmc-text-03.tar.gz" };
 		TextFileWriter writer = new TextFileWriter(MIRPath.TREC_CDS_COLLECTION_FILE);
-		int num_files = 0;
+		int num_docs_in_coll = 0;
+
+		File[] files = new File(MIRPath.TREC_CDS_COLLECTION_DIR).listFiles();
 
 		for (int i = 0; i < fileNames.length; i++) {
-			String tarFileName = MIRPath.TREC_CDS_COLLECTION_DIR + fileNames[i];
-			File tarFile = new File(tarFileName);
-			TarArchiveInputStream is = new TarArchiveInputStream(new GZIPInputStream(new FileInputStream(tarFile)));
-			TarArchiveEntry entry = null;
+			File file = files[i];
+
+			if (!file.getName().endsWith(".tar.gz")) {
+				continue;
+			}
+
+			TarArchiveInputStream tis = new TarArchiveInputStream(new GZIPInputStream(new FileInputStream(file)));
+			TarArchiveEntry tae = null;
+
+			int num_docs_in_file = 0;
 			// read every single entry in TAR file
-			while ((entry = is.getNextTarEntry()) != null) {
+			while ((tae = tis.getNextTarEntry()) != null) {
 				// the following two lines remove the .tar.gz extension for the folder name
 				// System.out.println(entry.getName());
 
-				if (entry.isFile()) {
-					num_files++;
+				if (tae.isDirectory()) {
+					continue;
+				}
 
-					if (num_files > 1000) {
-						break;
-					}
+				num_docs_in_file++;
 
-					if (num_files % 10000 == 0) {
-						System.out.println(num_files);
-					}
+				String fileName = tae.getName();
+				StringBuffer sb = new StringBuffer();
 
-					String fileName = entry.getName();
-					StringBuffer sb = new StringBuffer();
+				int c;
 
-					int c;
+				while ((c = tis.read()) != -1) {
+					sb.append((char) c);
+				}
 
-					while ((c = is.read()) != -1) {
-						sb.append((char) c);
-					}
-
-					if (sb.length() > 0) {
-						String outoput = fileName + "\t" + sb.toString().trim().replace("\t", " ").replace("\n", "<NL>");
-						writer.write(outoput + "\n");
-					}
+				if (sb.length() > 0) {
+					String outoput = fileName + "\t" + sb.toString().trim().replace("\t", " ").replace("\n", "<NL>");
+					writer.write(outoput + "\n");
 				}
 			}
-			is.close();
+			tis.close();
+
+			num_docs_in_coll += num_docs_in_file;
+
+			System.out.printf("read [%d] docs from [%s]\n", num_docs_in_file, file.getName());
 		}
 		writer.close();
-		System.out.println(num_files);
+
+		System.out.printf("read [%d] docs from [%s]\n", num_docs_in_coll, MIRPath.TREC_CDS_COLLECTION_DIR);
 	}
 
 	public void makeTextDump() throws Exception {
@@ -177,7 +184,6 @@ public class TrecCdsDataProcessor {
 			Element titleElem = (Element) xmlDoc.getElementsByTagName("article-title").item(0);
 			Element absElem = (Element) xmlDoc.getElementsByTagName("abstract").item(0);
 			Element bodyElem = (Element) xmlDoc.getElementsByTagName("body").item(0);
-	
 
 			if (titleElem != null) {
 				title = titleElem.getTextContent().trim();

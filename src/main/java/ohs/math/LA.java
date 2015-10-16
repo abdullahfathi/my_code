@@ -672,7 +672,7 @@ public class LA {
 				ArrayUtils.copyColumn(b, j, uj);
 				projectionAonB(vk, uj, temp);
 
-				ArrayMath.add(temp, uk);
+				ArrayMath.add(temp, uk, uk);
 			}
 			ArrayMath.substract(vk, uk, uk);
 			ArrayUtils.copyColumn(uk, b, k);

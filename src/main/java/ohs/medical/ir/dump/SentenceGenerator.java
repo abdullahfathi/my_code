@@ -70,7 +70,7 @@ public class SentenceGenerator {
 		SentenceGenerator di = new SentenceGenerator();
 		// di.indexTrecCds();
 		// di.indexClefEHealth();
-		di.indexOhsumed();
+		di.generateForOhsumed();
 		// di.indexTrecGenomics();
 
 		System.out.println("process ends.");
@@ -80,8 +80,8 @@ public class SentenceGenerator {
 
 	}
 
-	public void indexClefEHealth() throws Exception {
-		System.out.println("index CLEF eHealth.");
+	public void generateForClefEHealth() throws Exception {
+		System.out.println("generate for CLEF eHealth.");
 
 		TextFileWriter writer = new TextFileWriter(MIRPath.CLEF_EHEALTH_SENTS_FILE);
 
@@ -112,13 +112,15 @@ public class SentenceGenerator {
 		writer.close();
 	}
 
-	public void indexOhsumed() throws Exception {
-		System.out.println("index OHSUMED.");
+	public void generateForOhsumed() throws Exception {
+		System.out.println("generate for OHSUMED.");
 
 		TextFileWriter writer = new TextFileWriter(MIRPath.OHSUMED_SENTS_FILE);
 
 		TextFileReader reader = new TextFileReader(MIRPath.OHSUMED_COLLECTION_FILE);
 		reader.setPrintNexts(false);
+		
+		long num_sents = 0;
 
 		while (reader.hasNext()) {
 			reader.print(100000);
@@ -151,6 +153,8 @@ public class SentenceGenerator {
 				}
 				writer.write(sents.get(i) + "\n");
 			}
+			
+			num_sents += sents.size();
 		}
 		reader.printLast();
 		reader.close();
@@ -158,8 +162,8 @@ public class SentenceGenerator {
 		writer.close();
 	}
 
-	public void indexTrecCds() throws Exception {
-		System.out.println("index TREC CDS.");
+	public void generateForTrecCds() throws Exception {
+		System.out.println("generate for TREC CDS.");
 
 		TextFileWriter writer = new TextFileWriter(MIRPath.TREC_CDS_SENTS_FILE);
 
@@ -199,7 +203,7 @@ public class SentenceGenerator {
 		writer.close();
 	}
 
-	public void indexTrecGenomics() throws Exception {
+	public void generateForTrecGenomics() throws Exception {
 		TextFileWriter writer = new TextFileWriter(MIRPath.TREC_GENOMICS_SENTS_FILE);
 
 		TextFileReader reader = new TextFileReader(MIRPath.TREC_GENOMICS_COLLECTION_FILE);

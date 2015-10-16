@@ -19,45 +19,16 @@ public class ArrayMath {
 	 *            input
 	 * @param b
 	 *            input
-	 * @return
-	 */
-	public static double[] add(double[] a, double b) {
-		double[] ret = new double[a.length];
-		add(a, b, ret);
-		return ret;
-	}
-
-	/**
-	 * @param a
-	 *            input
-	 * @param increment
-	 *            input
 	 * @param c
 	 *            output
 	 */
-	public static void add(double[] a, double increment, double[] c) {
+	public static void add(double[] a, double b, double[] c) {
 		if (!ArrayChecker.isSameDimension(a, c)) {
 			throw new IllegalArgumentException();
 		}
 
 		for (int i = 0; i < a.length; i++) {
-			c[i] = a[i] + increment;
-		}
-	}
-
-	/**
-	 * @param a
-	 *            input
-	 * @param b
-	 *            output
-	 */
-	public static void add(double[] a, double[] b) {
-		if (!ArrayChecker.isSameDimension(a, b)) {
-			throw new IllegalArgumentException();
-		}
-
-		for (int i = 0; i < a.length; i++) {
-			b[i] += a[i];
+			c[i] = a[i] + b;
 		}
 	}
 
@@ -73,7 +44,7 @@ public class ArrayMath {
 		if (!ArrayChecker.isSameDimension(a, b, c)) {
 			throw new IllegalArgumentException();
 		}
-
+		
 		for (int i = 0; i < a.length; i++) {
 			c[i] = a[i] + b[i];
 		}
@@ -930,20 +901,6 @@ public class ArrayMath {
 				c[i][j] = a[i][j] * b[i][j];
 			}
 		}
-	}
-
-	public static void multiplyColumn(double[][] a, int col, double[] b, double[] c) {
-		int[] dims = ArrayUtils.dimensions(a);
-		int row_dim = dims[0];
-		int col_dim = dims[1];
-
-		for (int i = 0; i < row_dim; i++) {
-			c[i] = a[i][col] * b[i];
-		}
-	}
-
-	public static void multiplyRow(double[][] a, int row, double[] b, double[] c) {
-		multiply(a[row], b, c);
 	}
 
 	/**
