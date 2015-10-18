@@ -496,7 +496,7 @@ public class DocumentScorer {
 			Terms termVector = indexReaders.get(0).getTermVector(indexId, IndexFieldName.CONTENT);
 
 			TermsEnum reuse = null;
-			TermsEnum iterator = termVector.iterator(reuse);
+			TermsEnum iterator = termVector.iterator();
 			BytesRef ref = null;
 			DocsAndPositionsEnum docsAndPositions = null;
 
@@ -693,7 +693,7 @@ public class DocumentScorer {
 				}
 
 				TermsEnum reuse = null;
-				TermsEnum iterator = termVector.iterator(reuse);
+				TermsEnum iterator = termVector.iterator();
 				BytesRef ref = null;
 				DocsAndPositionsEnum docsAndPositions = null;
 				Counter<Integer> counter = new Counter<Integer>();
@@ -757,7 +757,7 @@ public class DocumentScorer {
 			Fields fields = MultiFields.getFields(indexReader);
 			Terms terms = fields.terms(IndexFieldName.CONTENT);
 
-			TermsEnum iterator = terms.iterator(null);
+			TermsEnum iterator = terms.iterator();
 			BytesRef byteRef = null;
 
 			while ((byteRef = iterator.next()) != null) {

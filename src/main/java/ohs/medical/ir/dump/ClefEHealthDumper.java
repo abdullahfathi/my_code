@@ -41,7 +41,7 @@ public class ClefEHealthDumper extends TextDumper {
 		System.out.println("process begins.");
 
 		ClefEHealthDumper dh = new ClefEHealthDumper(MIRPath.CLEF_EHEALTH_COLLECTION_DIR, MIRPath.CLEF_EHEALTH_COLLECTION_FILE);
-		dh.readVisitedDocs(MIRPath.CLEF_EHEALTH_DIR + "doc_ids.txt");
+		// dh.readVisitedDocs(MIRPath.CLEF_EHEALTH_DIR + "doc_ids.txt");
 		dh.dump();
 
 		System.out.println("process ends.");
@@ -57,7 +57,7 @@ public class ClefEHealthDumper extends TextDumper {
 	public void dump() throws Exception {
 		System.out.printf("dump from [%s]\n", inputDirName);
 
-		TextFileWriter writer = new TextFileWriter(outputFileName, IOUtils.UTF_8, true);
+		TextFileWriter writer = new TextFileWriter(outputFileName);
 
 		int num_docs_in_coll = 0;
 
@@ -65,7 +65,7 @@ public class ClefEHealthDumper extends TextDumper {
 
 		File[] files = new File(inputDirName).listFiles();
 
-		for (int i = 0, numFiles = 0; i < files.length; i++) {
+		for (int i = 0, num_files = 0; i < files.length; i++) {
 			File file = files[i];
 
 			if (file.isDirectory()) {
@@ -134,10 +134,9 @@ public class ClefEHealthDumper extends TextDumper {
 
 						lines = new ArrayList<String>();
 						num_docs_in_file++;
+						num_docs_in_coll++;
 					}
 				}
-
-				num_docs_in_coll += num_docs_in_file;
 
 				System.out.printf("read [%d] docs from [%s]\n", num_docs_in_file, ze.getName());
 			}

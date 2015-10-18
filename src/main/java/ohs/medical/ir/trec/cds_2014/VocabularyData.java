@@ -28,7 +28,7 @@ public class VocabularyData {
 		Fields fields = MultiFields.getFields(indexReader);
 		Terms terms = fields.terms(IndexFieldName.CONTENT);
 
-		TermsEnum iterator = terms.iterator(null);
+		TermsEnum iterator = terms.iterator();
 		BytesRef byteRef = null;
 
 		while ((byteRef = iterator.next()) != null) {

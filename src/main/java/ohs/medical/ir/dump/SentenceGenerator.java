@@ -68,9 +68,9 @@ public class SentenceGenerator {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 		SentenceGenerator di = new SentenceGenerator();
-		// di.generateForTrecCds();
+		di.generateForTrecCds();
 		// di.generateForClefEHealth();
-		di.generateForOhsumed();
+		// di.generateForOhsumed();
 		// di.generateForTrecGenomics();
 
 		System.out.println("process ends.");

@@ -22,6 +22,7 @@ import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.common.StrBidMap;
 import ohs.types.common.StrCounterMap;
+import ohs.utils.StrUtils;
 
 public class DataHandler {
 
@@ -80,7 +81,7 @@ public class DataHandler {
 					Document doc = indexSearcher.doc(Integer.parseInt(docId));
 					String title = doc.get(IndexFieldName.TITLE);
 					String content = doc.get(IndexFieldName.CONTENT);
-					content = NLPUtils.tokenize(content);
+					content = StrUtils.join("\n", NLPUtils.tokenize(content));
 
 					if (dataFileName.contains("WIKI")) {
 						content = "";
@@ -125,7 +126,7 @@ public class DataHandler {
 				Document doc = indexSearcher.doc(Integer.parseInt(newDocId));
 				String title = doc.get(IndexFieldName.TITLE);
 				String content = doc.get(IndexFieldName.CONTENT);
-				content = NLPUtils.tokenize(content);
+				content = StrUtils.join("\n", NLPUtils.tokenize(content));
 				sb.append(String.format("Document-%d: %f\n%s\n%s\n", k + 1, docRelevances.getCount(docId), title, content));
 			}
 

@@ -188,7 +188,7 @@ public class ESASearcher {
 			}
 
 			TermsEnum reuse = null;
-			TermsEnum iterator = termVector.iterator(reuse);
+			TermsEnum iterator = termVector.iterator();
 			BytesRef ref = null;
 			DocsAndPositionsEnum docsAndPositions = null;
 			IntCounter wordCounts = new IntCounter();

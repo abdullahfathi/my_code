@@ -52,7 +52,7 @@ public class TrecCdsDumper extends TextDumper {
 	@Override
 	public void dump() throws Exception {
 		System.out.printf("dump from [%s]\n", inputDirName);
-		
+
 		makeSingleFile();
 		extractText();
 	}
@@ -72,6 +72,8 @@ public class TrecCdsDumper extends TextDumper {
 				return null;
 			}
 		});
+		
+		
 
 		TextFileReader reader = new TextFileReader(xmlFileName);
 		TextFileWriter writer = new TextFileWriter(outputFileName);
@@ -212,7 +214,7 @@ public class TrecCdsDumper extends TextDumper {
 
 	public void makeSingleFile() throws Exception {
 
-		TextFileWriter writer = new TextFileWriter(outputFileName);
+		TextFileWriter writer = new TextFileWriter(xmlFileName);
 		File[] files = new File(inputDirName).listFiles();
 		int num_docs_in_coll = 0;
 
@@ -235,9 +237,9 @@ public class TrecCdsDumper extends TextDumper {
 				// the following two lines remove the .tar.gz extension for the folder name
 				// System.out.println(entry.getName());
 
-				if (num_docs_in_coll == 40000) {
-					break;
-				}
+				// if (num_docs_in_coll == 40000) {
+				// break;
+				// }
 
 				if (tae.isDirectory()) {
 					continue;

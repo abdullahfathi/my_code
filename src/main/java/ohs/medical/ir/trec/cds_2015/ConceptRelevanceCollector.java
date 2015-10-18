@@ -108,14 +108,14 @@ public class ConceptRelevanceCollector {
 						continue;
 					}
 
-					TermsEnum termsEnum = terms.iterator(null);
+					TermsEnum termsEnum = terms.iterator();
 
 					BytesRef bytesRef = null;
 					PostingsEnum postingsEnum = null;
 					StrCounter cc = new StrCounter();
 
 					while ((bytesRef = termsEnum.next()) != null) {
-						postingsEnum = termsEnum.postings(null, postingsEnum, PostingsEnum.ALL);
+						postingsEnum = termsEnum.postings(postingsEnum, PostingsEnum.ALL);
 
 						if (postingsEnum.nextDoc() != 0) {
 							throw new AssertionError();

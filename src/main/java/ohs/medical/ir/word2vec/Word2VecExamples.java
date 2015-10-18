@@ -48,15 +48,15 @@ public class Word2VecExamples {
 		// if (!f.exists())
 		// throw new IllegalStateException("Please download and unzip the text8 example from http://mattmahoney.net/dc/text8.zip");
 
-		File f = new File(MIRPath.OHSUMED_SENTS_FILE);
+		File f = new File(MIRPath.CLEF_EHEALTH_SENTS_FILE);
 		List<String> sents = new ArrayList<String>();
 
 		TextFileReader reader = new TextFileReader(f);
 		while (reader.hasNext()) {
 
-			if (sents.size() == 100000) {
-				break;
-			}
+			// if (sents.size() == 10000) {
+			// break;
+			// }
 
 			String line = reader.next();
 			String[] parts = line.split("\t");
@@ -92,7 +92,7 @@ public class Word2VecExamples {
 
 		Word2VecModel model =
 
-		Word2VecModel.trainer().setMinVocabFrequency(5).useNumThreads(40).
+		Word2VecModel.trainer().setMinVocabFrequency(5).useNumThreads(200).
 
 		setWindowSize(8).type(NeuralNetworkType.CBOW).setLayerSize(200).useNegativeSamples(25).
 
@@ -112,7 +112,7 @@ public class Word2VecExamples {
 		// FileUtils.writeStringToFile(new File("text8.model"), ThriftUtils.serializeJson(model.toThrift()));
 		// }
 
-		model.toTextFile(MIRPath.OHSUMED_DIR + "/word2vec_model.txt.gz");
+		model.toTextFile(MIRPath.CLEF_EHEALTH_COLLECTION_DIR + "/word2vec_model.txt.gz");
 
 		// Alternatively, you can write the model to a bin file that's compatible with the C
 		// implementation.
