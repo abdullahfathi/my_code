@@ -1,35 +1,27 @@
 package com.medallia.word2vec.neuralnetwork;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.collect.Multiset;
 import com.medallia.word2vec.Word2VecTrainerBuilder.TrainingProgressListener;
 import com.medallia.word2vec.huffman.HuffmanCoding.HuffmanNode;
 
-import ohs.math.ArrayMath;
-import ohs.math.ArrayUtils;
+import ohs.types.Vocabulary;
 
 /**
  * Trainer for neural network using continuous bag of words
  */
 class CBOWModelTrainer extends NeuralNetworkTrainer {
 
-	CBOWModelTrainer(NeuralNetworkConfig config, Multiset<String> counts, Map<String, HuffmanNode> huffmanNodes,
-			TrainingProgressListener listener) {
-		super(config, counts, huffmanNodes, listener);
-	}
-
 	/** {@link Worker} for {@link CBOWModelTrainer} */
 	private class CBOWWorker extends Worker {
-		private CBOWWorker(int randomSeed, int iter, Iterable<List<String>> batch) {
+		private CBOWWorker(int randomSeed, int iter, List<Integer[]> batch) {
 			super(randomSeed, iter, batch);
 		}
 
 		@Override
-		void trainSentence(List<String> sent) {
-			int senLen = sent.size();
+		void trainSentence(Integer[] sent) {
+			int senLen = sent.length;
 
 			// Map<Integer, String> map = new HashMap<>();
 			//
@@ -39,7 +31,7 @@ class CBOWModelTrainer extends NeuralNetworkTrainer {
 			// }
 
 			for (int sentPos = 0; sentPos < senLen; sentPos++) {
-				String word = sent.get(sentPos);
+				int word = sent[sentPos];
 				HuffmanNode huffmanNode = huffmanNodes.get(word);
 
 				for (int c = 0; c < layer1_size; c++) {
@@ -62,7 +54,7 @@ class CBOWModelTrainer extends NeuralNetworkTrainer {
 					int c = sentPos - window + a;
 					if (c < 0 || c >= senLen)
 						continue;
-					int idx = huffmanNodes.get(sent.get(c)).idx;
+					int idx = huffmanNodes.get(sent[c]).idx;
 
 					for (int d = 0; d < layer1_size; d++) {
 						neu1[d] += syn0[idx][d];
@@ -129,7 +121,7 @@ class CBOWModelTrainer extends NeuralNetworkTrainer {
 					int c = sentPos - window + a;
 					if (c < 0 || c >= senLen)
 						continue;
-					int idx = huffmanNodes.get(sent.get(c)).idx;
+					int idx = huffmanNodes.get(sent[c]).idx;
 					for (int d = 0; d < layer1_size; d++)
 						syn0[idx][d] += neu1e[d];
 
@@ -139,8 +131,13 @@ class CBOWModelTrainer extends NeuralNetworkTrainer {
 		}
 	}
 
+	CBOWModelTrainer(NeuralNetworkConfig config, Vocabulary counts, Map<Integer, HuffmanNode> huffmanNodes,
+			TrainingProgressListener listener) {
+		super(config, counts, huffmanNodes, listener);
+	}
+
 	@Override
-	Worker createWorker(int randomSeed, int iter, Iterable<List<String>> batch) {
+	Worker createWorker(int randomSeed, int iter, List<Integer[]> batch) {
 		return new CBOWWorker(randomSeed, iter, batch);
 	}
 }

@@ -6,14 +6,6 @@
  */
 package com.medallia.word2vec.thrift;
 
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.thrift.EncodingUtils;
-import org.apache.thrift.protocol.TTupleProtocol;
-import org.apache.thrift.scheme.IScheme;
-import org.apache.thrift.scheme.SchemeFactory;
-import org.apache.thrift.scheme.StandardScheme;
-import org.apache.thrift.scheme.TupleScheme;
-
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
@@ -23,23 +15,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.thrift.EncodingUtils;
+import org.apache.thrift.protocol.TTupleProtocol;
+import org.apache.thrift.scheme.IScheme;
+import org.apache.thrift.scheme.SchemeFactory;
+import org.apache.thrift.scheme.StandardScheme;
+import org.apache.thrift.scheme.TupleScheme;
+
 public class Word2VecModelThrift implements org.apache.thrift.TBase<Word2VecModelThrift, Word2VecModelThrift._Fields>, java.io.Serializable, Cloneable, Comparable<Word2VecModelThrift> {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Word2VecModelThrift");
-
-  private static final org.apache.thrift.protocol.TField VOCAB_FIELD_DESC = new org.apache.thrift.protocol.TField("vocab", org.apache.thrift.protocol.TType.LIST, (short)1);
-  private static final org.apache.thrift.protocol.TField LAYER_SIZE_FIELD_DESC = new org.apache.thrift.protocol.TField("layerSize", org.apache.thrift.protocol.TType.I32, (short)2);
-  private static final org.apache.thrift.protocol.TField VECTORS_FIELD_DESC = new org.apache.thrift.protocol.TField("vectors", org.apache.thrift.protocol.TType.LIST, (short)3);
-
-  private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
-  static {
-    schemes.put(StandardScheme.class, new Word2VecModelThriftStandardSchemeFactory());
-    schemes.put(TupleScheme.class, new Word2VecModelThriftTupleSchemeFactory());
-  }
-
-  private List<String> vocab; // optional
-  private int layerSize; // optional
-  private List<Double> vectors; // optional
-
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     VOCAB((short)1, "vocab"),
@@ -52,6 +36,13 @@ public class Word2VecModelThrift implements org.apache.thrift.TBase<Word2VecMode
       for (_Fields field : EnumSet.allOf(_Fields.class)) {
         byName.put(field.getFieldName(), field);
       }
+    }
+
+    /**
+     * Find the _Fields constant that matches name, or null if its not found.
+     */
+    public static _Fields findByName(String name) {
+      return byName.get(name);
     }
 
     /**
@@ -80,13 +71,6 @@ public class Word2VecModelThrift implements org.apache.thrift.TBase<Word2VecMode
       return fields;
     }
 
-    /**
-     * Find the _Fields constant that matches name, or null if its not found.
-     */
-    public static _Fields findByName(String name) {
-      return byName.get(name);
-    }
-
     private final short _thriftId;
     private final String _fieldName;
 
@@ -95,405 +79,12 @@ public class Word2VecModelThrift implements org.apache.thrift.TBase<Word2VecMode
       _fieldName = fieldName;
     }
 
-    public short getThriftFieldId() {
-      return _thriftId;
-    }
-
     public String getFieldName() {
       return _fieldName;
     }
-  }
 
-  // isset id assignments
-  private static final int __LAYERSIZE_ISSET_ID = 0;
-  private byte __isset_bitfield = 0;
-  private static _Fields optionals[] = {_Fields.VOCAB, _Fields.LAYER_SIZE, _Fields.VECTORS};
-  public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
-  static {
-    Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.VOCAB, new org.apache.thrift.meta_data.FieldMetaData("vocab", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
-    tmpMap.put(_Fields.LAYER_SIZE, new org.apache.thrift.meta_data.FieldMetaData("layerSize", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
-    tmpMap.put(_Fields.VECTORS, new org.apache.thrift.meta_data.FieldMetaData("vectors", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.DOUBLE))));
-    metaDataMap = Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Word2VecModelThrift.class, metaDataMap);
-  }
-
-  public Word2VecModelThrift() {
-  }
-
-  /**
-   * Performs a deep copy on <i>other</i>.
-   */
-  public Word2VecModelThrift(Word2VecModelThrift other) {
-    __isset_bitfield = other.__isset_bitfield;
-    if (other.isSetVocab()) {
-      List<String> __this__vocab = new ArrayList<String>(other.vocab);
-      this.vocab = __this__vocab;
-    }
-    this.layerSize = other.layerSize;
-    if (other.isSetVectors()) {
-      List<Double> __this__vectors = new ArrayList<Double>(other.vectors);
-      this.vectors = __this__vectors;
-    }
-  }
-
-  public Word2VecModelThrift deepCopy() {
-    return new Word2VecModelThrift(this);
-  }
-
-  @Override
-  public void clear() {
-    this.vocab = null;
-    setLayerSizeIsSet(false);
-    this.layerSize = 0;
-    this.vectors = null;
-  }
-
-  public int getVocabSize() {
-    return (this.vocab == null) ? 0 : this.vocab.size();
-  }
-
-  public java.util.Iterator<String> getVocabIterator() {
-    return (this.vocab == null) ? null : this.vocab.iterator();
-  }
-
-  public void addToVocab(String elem) {
-    if (this.vocab == null) {
-      this.vocab = new ArrayList<String>();
-    }
-    this.vocab.add(elem);
-  }
-
-  public List<String> getVocab() {
-    return this.vocab;
-  }
-
-  public Word2VecModelThrift setVocab(List<String> vocab) {
-    this.vocab = vocab;
-    return this;
-  }
-
-  public void unsetVocab() {
-    this.vocab = null;
-  }
-
-  /** Returns true if field vocab is set (has been assigned a value) and false otherwise */
-  public boolean isSetVocab() {
-    return this.vocab != null;
-  }
-
-  public void setVocabIsSet(boolean value) {
-    if (!value) {
-      this.vocab = null;
-    }
-  }
-
-  public int getLayerSize() {
-    return this.layerSize;
-  }
-
-  public Word2VecModelThrift setLayerSize(int layerSize) {
-    this.layerSize = layerSize;
-    setLayerSizeIsSet(true);
-    return this;
-  }
-
-  public void unsetLayerSize() {
-    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __LAYERSIZE_ISSET_ID);
-  }
-
-  /** Returns true if field layerSize is set (has been assigned a value) and false otherwise */
-  public boolean isSetLayerSize() {
-    return EncodingUtils.testBit(__isset_bitfield, __LAYERSIZE_ISSET_ID);
-  }
-
-  public void setLayerSizeIsSet(boolean value) {
-    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __LAYERSIZE_ISSET_ID, value);
-  }
-
-  public int getVectorsSize() {
-    return (this.vectors == null) ? 0 : this.vectors.size();
-  }
-
-  public java.util.Iterator<Double> getVectorsIterator() {
-    return (this.vectors == null) ? null : this.vectors.iterator();
-  }
-
-  public void addToVectors(double elem) {
-    if (this.vectors == null) {
-      this.vectors = new ArrayList<Double>();
-    }
-    this.vectors.add(elem);
-  }
-
-  public List<Double> getVectors() {
-    return this.vectors;
-  }
-
-  public Word2VecModelThrift setVectors(List<Double> vectors) {
-    this.vectors = vectors;
-    return this;
-  }
-
-  public void unsetVectors() {
-    this.vectors = null;
-  }
-
-  /** Returns true if field vectors is set (has been assigned a value) and false otherwise */
-  public boolean isSetVectors() {
-    return this.vectors != null;
-  }
-
-  public void setVectorsIsSet(boolean value) {
-    if (!value) {
-      this.vectors = null;
-    }
-  }
-
-  public void setFieldValue(_Fields field, Object value) {
-    switch (field) {
-    case VOCAB:
-      if (value == null) {
-        unsetVocab();
-      } else {
-        setVocab((List<String>)value);
-      }
-      break;
-
-    case LAYER_SIZE:
-      if (value == null) {
-        unsetLayerSize();
-      } else {
-        setLayerSize((Integer)value);
-      }
-      break;
-
-    case VECTORS:
-      if (value == null) {
-        unsetVectors();
-      } else {
-        setVectors((List<Double>)value);
-      }
-      break;
-
-    }
-  }
-
-  public Object getFieldValue(_Fields field) {
-    switch (field) {
-    case VOCAB:
-      return getVocab();
-
-    case LAYER_SIZE:
-      return Integer.valueOf(getLayerSize());
-
-    case VECTORS:
-      return getVectors();
-
-    }
-    throw new IllegalStateException();
-  }
-
-  /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
-  public boolean isSet(_Fields field) {
-    if (field == null) {
-      throw new IllegalArgumentException();
-    }
-
-    switch (field) {
-    case VOCAB:
-      return isSetVocab();
-    case LAYER_SIZE:
-      return isSetLayerSize();
-    case VECTORS:
-      return isSetVectors();
-    }
-    throw new IllegalStateException();
-  }
-
-  @Override
-  public boolean equals(Object that) {
-    if (that == null)
-      return false;
-    if (that instanceof Word2VecModelThrift)
-      return this.equals((Word2VecModelThrift)that);
-    return false;
-  }
-
-  public boolean equals(Word2VecModelThrift that) {
-    if (that == null)
-      return false;
-
-    boolean this_present_vocab = true && this.isSetVocab();
-    boolean that_present_vocab = true && that.isSetVocab();
-    if (this_present_vocab || that_present_vocab) {
-      if (!(this_present_vocab && that_present_vocab))
-        return false;
-      if (!this.vocab.equals(that.vocab))
-        return false;
-    }
-
-    boolean this_present_layerSize = true && this.isSetLayerSize();
-    boolean that_present_layerSize = true && that.isSetLayerSize();
-    if (this_present_layerSize || that_present_layerSize) {
-      if (!(this_present_layerSize && that_present_layerSize))
-        return false;
-      if (this.layerSize != that.layerSize)
-        return false;
-    }
-
-    boolean this_present_vectors = true && this.isSetVectors();
-    boolean that_present_vectors = true && that.isSetVectors();
-    if (this_present_vectors || that_present_vectors) {
-      if (!(this_present_vectors && that_present_vectors))
-        return false;
-      if (!this.vectors.equals(that.vectors))
-        return false;
-    }
-
-    return true;
-  }
-
-  @Override
-  public int hashCode() {
-    HashCodeBuilder builder = new HashCodeBuilder();
-
-    boolean present_vocab = true && (isSetVocab());
-    builder.append(present_vocab);
-    if (present_vocab)
-      builder.append(vocab);
-
-    boolean present_layerSize = true && (isSetLayerSize());
-    builder.append(present_layerSize);
-    if (present_layerSize)
-      builder.append(layerSize);
-
-    boolean present_vectors = true && (isSetVectors());
-    builder.append(present_vectors);
-    if (present_vectors)
-      builder.append(vectors);
-
-    return builder.toHashCode();
-  }
-
-  @Override
-  public int compareTo(Word2VecModelThrift other) {
-    if (!getClass().equals(other.getClass())) {
-      return getClass().getName().compareTo(other.getClass().getName());
-    }
-
-    int lastComparison = 0;
-
-    lastComparison = Boolean.valueOf(isSetVocab()).compareTo(other.isSetVocab());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetVocab()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.vocab, other.vocab);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = Boolean.valueOf(isSetLayerSize()).compareTo(other.isSetLayerSize());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetLayerSize()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.layerSize, other.layerSize);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = Boolean.valueOf(isSetVectors()).compareTo(other.isSetVectors());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetVectors()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.vectors, other.vectors);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    return 0;
-  }
-
-  public _Fields fieldForId(int fieldId) {
-    return _Fields.findByThriftId(fieldId);
-  }
-
-  public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
-    schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
-  }
-
-  public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
-    schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder("Word2VecModelThrift(");
-    boolean first = true;
-
-    if (isSetVocab()) {
-      sb.append("vocab:");
-      if (this.vocab == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.vocab);
-      }
-      first = false;
-    }
-    if (isSetLayerSize()) {
-      if (!first) sb.append(", ");
-      sb.append("layerSize:");
-      sb.append(this.layerSize);
-      first = false;
-    }
-    if (isSetVectors()) {
-      if (!first) sb.append(", ");
-      sb.append("vectors:");
-      if (this.vectors == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.vectors);
-      }
-      first = false;
-    }
-    sb.append(")");
-    return sb.toString();
-  }
-
-  public void validate() throws org.apache.thrift.TException {
-    // check for required fields
-    // check for sub-struct validity
-  }
-
-  private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
-    try {
-      write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
-    } catch (org.apache.thrift.TException te) {
-      throw new java.io.IOException(te);
-    }
-  }
-
-  private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
-    try {
-      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
-      __isset_bitfield = 0;
-      read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
-    } catch (org.apache.thrift.TException te) {
-      throw new java.io.IOException(te);
-    }
-  }
-
-  private static class Word2VecModelThriftStandardSchemeFactory implements SchemeFactory {
-    public Word2VecModelThriftStandardScheme getScheme() {
-      return new Word2VecModelThriftStandardScheme();
+    public short getThriftFieldId() {
+      return _thriftId;
     }
   }
 
@@ -606,14 +197,48 @@ public class Word2VecModelThrift implements org.apache.thrift.TBase<Word2VecMode
     }
 
   }
-
-  private static class Word2VecModelThriftTupleSchemeFactory implements SchemeFactory {
-    public Word2VecModelThriftTupleScheme getScheme() {
-      return new Word2VecModelThriftTupleScheme();
+  private static class Word2VecModelThriftStandardSchemeFactory implements SchemeFactory {
+    public Word2VecModelThriftStandardScheme getScheme() {
+      return new Word2VecModelThriftStandardScheme();
     }
   }
-
   private static class Word2VecModelThriftTupleScheme extends TupleScheme<Word2VecModelThrift> {
+
+    @Override
+    public void read(org.apache.thrift.protocol.TProtocol prot, Word2VecModelThrift struct) throws org.apache.thrift.TException {
+      TTupleProtocol iprot = (TTupleProtocol) prot;
+      BitSet incoming = iprot.readBitSet(3);
+      if (incoming.get(0)) {
+        {
+          org.apache.thrift.protocol.TList _list10 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.vocab = new ArrayList<String>(_list10.size);
+          for (int _i11 = 0; _i11 < _list10.size; ++_i11)
+          {
+            String _elem12;
+            _elem12 = iprot.readString();
+            struct.vocab.add(_elem12);
+          }
+        }
+        struct.setVocabIsSet(true);
+      }
+      if (incoming.get(1)) {
+        struct.layerSize = iprot.readI32();
+        struct.setLayerSizeIsSet(true);
+      }
+      if (incoming.get(2)) {
+        {
+          org.apache.thrift.protocol.TList _list13 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.DOUBLE, iprot.readI32());
+          struct.vectors = new ArrayList<Double>(_list13.size);
+          for (int _i14 = 0; _i14 < _list13.size; ++_i14)
+          {
+            double _elem15;
+            _elem15 = iprot.readDouble();
+            struct.vectors.add(_elem15);
+          }
+        }
+        struct.setVectorsIsSet(true);
+      }
+    }
 
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, Word2VecModelThrift struct) throws org.apache.thrift.TException {
@@ -651,41 +276,416 @@ public class Word2VecModelThrift implements org.apache.thrift.TBase<Word2VecMode
         }
       }
     }
+  }
 
-    @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, Word2VecModelThrift struct) throws org.apache.thrift.TException {
-      TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(3);
-      if (incoming.get(0)) {
-        {
-          org.apache.thrift.protocol.TList _list10 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.vocab = new ArrayList<String>(_list10.size);
-          for (int _i11 = 0; _i11 < _list10.size; ++_i11)
-          {
-            String _elem12;
-            _elem12 = iprot.readString();
-            struct.vocab.add(_elem12);
-          }
-        }
-        struct.setVocabIsSet(true);
+  private static class Word2VecModelThriftTupleSchemeFactory implements SchemeFactory {
+    public Word2VecModelThriftTupleScheme getScheme() {
+      return new Word2VecModelThriftTupleScheme();
+    }
+  }
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Word2VecModelThrift");
+
+  private static final org.apache.thrift.protocol.TField VOCAB_FIELD_DESC = new org.apache.thrift.protocol.TField("vocab", org.apache.thrift.protocol.TType.LIST, (short)1);
+  private static final org.apache.thrift.protocol.TField LAYER_SIZE_FIELD_DESC = new org.apache.thrift.protocol.TField("layerSize", org.apache.thrift.protocol.TType.I32, (short)2);
+  private static final org.apache.thrift.protocol.TField VECTORS_FIELD_DESC = new org.apache.thrift.protocol.TField("vectors", org.apache.thrift.protocol.TType.LIST, (short)3);
+
+  private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+
+  static {
+    schemes.put(StandardScheme.class, new Word2VecModelThriftStandardSchemeFactory());
+    schemes.put(TupleScheme.class, new Word2VecModelThriftTupleSchemeFactory());
+  }
+  // isset id assignments
+  private static final int __LAYERSIZE_ISSET_ID = 0;
+  private static _Fields optionals[] = {_Fields.VOCAB, _Fields.LAYER_SIZE, _Fields.VECTORS};
+  public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+  static {
+    Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.VOCAB, new org.apache.thrift.meta_data.FieldMetaData("vocab", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+    tmpMap.put(_Fields.LAYER_SIZE, new org.apache.thrift.meta_data.FieldMetaData("layerSize", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+    tmpMap.put(_Fields.VECTORS, new org.apache.thrift.meta_data.FieldMetaData("vectors", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.DOUBLE))));
+    metaDataMap = Collections.unmodifiableMap(tmpMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Word2VecModelThrift.class, metaDataMap);
+  }
+
+  private List<String> vocab; // optional
+
+  private int layerSize; // optional
+
+  private List<Double> vectors; // optional
+
+  private byte __isset_bitfield = 0;
+
+  public Word2VecModelThrift() {
+  }
+
+  /**
+   * Performs a deep copy on <i>other</i>.
+   */
+  public Word2VecModelThrift(Word2VecModelThrift other) {
+    __isset_bitfield = other.__isset_bitfield;
+    if (other.isSetVocab()) {
+      List<String> __this__vocab = new ArrayList<String>(other.vocab);
+      this.vocab = __this__vocab;
+    }
+    this.layerSize = other.layerSize;
+    if (other.isSetVectors()) {
+      List<Double> __this__vectors = new ArrayList<Double>(other.vectors);
+      this.vectors = __this__vectors;
+    }
+  }
+
+  public void addToVectors(double elem) {
+    if (this.vectors == null) {
+      this.vectors = new ArrayList<Double>();
+    }
+    this.vectors.add(elem);
+  }
+
+  public void addToVocab(String elem) {
+    if (this.vocab == null) {
+      this.vocab = new ArrayList<String>();
+    }
+    this.vocab.add(elem);
+  }
+
+  @Override
+  public void clear() {
+    this.vocab = null;
+    setLayerSizeIsSet(false);
+    this.layerSize = 0;
+    this.vectors = null;
+  }
+
+  @Override
+  public int compareTo(Word2VecModelThrift other) {
+    if (!getClass().equals(other.getClass())) {
+      return getClass().getName().compareTo(other.getClass().getName());
+    }
+
+    int lastComparison = 0;
+
+    lastComparison = Boolean.valueOf(isSetVocab()).compareTo(other.isSetVocab());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetVocab()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.vocab, other.vocab);
+      if (lastComparison != 0) {
+        return lastComparison;
       }
-      if (incoming.get(1)) {
-        struct.layerSize = iprot.readI32();
-        struct.setLayerSizeIsSet(true);
+    }
+    lastComparison = Boolean.valueOf(isSetLayerSize()).compareTo(other.isSetLayerSize());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetLayerSize()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.layerSize, other.layerSize);
+      if (lastComparison != 0) {
+        return lastComparison;
       }
-      if (incoming.get(2)) {
-        {
-          org.apache.thrift.protocol.TList _list13 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.DOUBLE, iprot.readI32());
-          struct.vectors = new ArrayList<Double>(_list13.size);
-          for (int _i14 = 0; _i14 < _list13.size; ++_i14)
-          {
-            double _elem15;
-            _elem15 = iprot.readDouble();
-            struct.vectors.add(_elem15);
-          }
-        }
-        struct.setVectorsIsSet(true);
+    }
+    lastComparison = Boolean.valueOf(isSetVectors()).compareTo(other.isSetVectors());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetVectors()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.vectors, other.vectors);
+      if (lastComparison != 0) {
+        return lastComparison;
       }
+    }
+    return 0;
+  }
+
+  public Word2VecModelThrift deepCopy() {
+    return new Word2VecModelThrift(this);
+  }
+
+  @Override
+  public boolean equals(Object that) {
+    if (that == null)
+      return false;
+    if (that instanceof Word2VecModelThrift)
+      return this.equals((Word2VecModelThrift)that);
+    return false;
+  }
+
+  public boolean equals(Word2VecModelThrift that) {
+    if (that == null)
+      return false;
+
+    boolean this_present_vocab = true && this.isSetVocab();
+    boolean that_present_vocab = true && that.isSetVocab();
+    if (this_present_vocab || that_present_vocab) {
+      if (!(this_present_vocab && that_present_vocab))
+        return false;
+      if (!this.vocab.equals(that.vocab))
+        return false;
+    }
+
+    boolean this_present_layerSize = true && this.isSetLayerSize();
+    boolean that_present_layerSize = true && that.isSetLayerSize();
+    if (this_present_layerSize || that_present_layerSize) {
+      if (!(this_present_layerSize && that_present_layerSize))
+        return false;
+      if (this.layerSize != that.layerSize)
+        return false;
+    }
+
+    boolean this_present_vectors = true && this.isSetVectors();
+    boolean that_present_vectors = true && that.isSetVectors();
+    if (this_present_vectors || that_present_vectors) {
+      if (!(this_present_vectors && that_present_vectors))
+        return false;
+      if (!this.vectors.equals(that.vectors))
+        return false;
+    }
+
+    return true;
+  }
+
+  public _Fields fieldForId(int fieldId) {
+    return _Fields.findByThriftId(fieldId);
+  }
+
+  public Object getFieldValue(_Fields field) {
+    switch (field) {
+    case VOCAB:
+      return getVocab();
+
+    case LAYER_SIZE:
+      return Integer.valueOf(getLayerSize());
+
+    case VECTORS:
+      return getVectors();
+
+    }
+    throw new IllegalStateException();
+  }
+
+  public int getLayerSize() {
+    return this.layerSize;
+  }
+
+  public List<Double> getVectors() {
+    return this.vectors;
+  }
+
+  public java.util.Iterator<Double> getVectorsIterator() {
+    return (this.vectors == null) ? null : this.vectors.iterator();
+  }
+
+  public int getVectorsSize() {
+    return (this.vectors == null) ? 0 : this.vectors.size();
+  }
+
+  public List<String> getVocab() {
+    return this.vocab;
+  }
+
+  public java.util.Iterator<String> getVocabIterator() {
+    return (this.vocab == null) ? null : this.vocab.iterator();
+  }
+
+  public int getVocabSize() {
+    return (this.vocab == null) ? 0 : this.vocab.size();
+  }
+
+  @Override
+  public int hashCode() {
+    HashCodeBuilder builder = new HashCodeBuilder();
+
+    boolean present_vocab = true && (isSetVocab());
+    builder.append(present_vocab);
+    if (present_vocab)
+      builder.append(vocab);
+
+    boolean present_layerSize = true && (isSetLayerSize());
+    builder.append(present_layerSize);
+    if (present_layerSize)
+      builder.append(layerSize);
+
+    boolean present_vectors = true && (isSetVectors());
+    builder.append(present_vectors);
+    if (present_vectors)
+      builder.append(vectors);
+
+    return builder.toHashCode();
+  }
+
+  /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+  public boolean isSet(_Fields field) {
+    if (field == null) {
+      throw new IllegalArgumentException();
+    }
+
+    switch (field) {
+    case VOCAB:
+      return isSetVocab();
+    case LAYER_SIZE:
+      return isSetLayerSize();
+    case VECTORS:
+      return isSetVectors();
+    }
+    throw new IllegalStateException();
+  }
+
+  /** Returns true if field layerSize is set (has been assigned a value) and false otherwise */
+  public boolean isSetLayerSize() {
+    return EncodingUtils.testBit(__isset_bitfield, __LAYERSIZE_ISSET_ID);
+  }
+
+  /** Returns true if field vectors is set (has been assigned a value) and false otherwise */
+  public boolean isSetVectors() {
+    return this.vectors != null;
+  }
+
+  /** Returns true if field vocab is set (has been assigned a value) and false otherwise */
+  public boolean isSetVocab() {
+    return this.vocab != null;
+  }
+
+  public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+    schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+  }
+
+  private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+    try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bitfield = 0;
+      read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+    } catch (org.apache.thrift.TException te) {
+      throw new java.io.IOException(te);
+    }
+  }
+
+  public void setFieldValue(_Fields field, Object value) {
+    switch (field) {
+    case VOCAB:
+      if (value == null) {
+        unsetVocab();
+      } else {
+        setVocab((List<String>)value);
+      }
+      break;
+
+    case LAYER_SIZE:
+      if (value == null) {
+        unsetLayerSize();
+      } else {
+        setLayerSize((Integer)value);
+      }
+      break;
+
+    case VECTORS:
+      if (value == null) {
+        unsetVectors();
+      } else {
+        setVectors((List<Double>)value);
+      }
+      break;
+
+    }
+  }
+
+  public Word2VecModelThrift setLayerSize(int layerSize) {
+    this.layerSize = layerSize;
+    setLayerSizeIsSet(true);
+    return this;
+  }
+
+  public void setLayerSizeIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __LAYERSIZE_ISSET_ID, value);
+  }
+
+  public Word2VecModelThrift setVectors(List<Double> vectors) {
+    this.vectors = vectors;
+    return this;
+  }
+
+  public void setVectorsIsSet(boolean value) {
+    if (!value) {
+      this.vectors = null;
+    }
+  }
+
+  public Word2VecModelThrift setVocab(List<String> vocab) {
+    this.vocab = vocab;
+    return this;
+  }
+
+  public void setVocabIsSet(boolean value) {
+    if (!value) {
+      this.vocab = null;
+    }
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder("Word2VecModelThrift(");
+    boolean first = true;
+
+    if (isSetVocab()) {
+      sb.append("vocab:");
+      if (this.vocab == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.vocab);
+      }
+      first = false;
+    }
+    if (isSetLayerSize()) {
+      if (!first) sb.append(", ");
+      sb.append("layerSize:");
+      sb.append(this.layerSize);
+      first = false;
+    }
+    if (isSetVectors()) {
+      if (!first) sb.append(", ");
+      sb.append("vectors:");
+      if (this.vectors == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.vectors);
+      }
+      first = false;
+    }
+    sb.append(")");
+    return sb.toString();
+  }
+
+  public void unsetLayerSize() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __LAYERSIZE_ISSET_ID);
+  }
+
+  public void unsetVectors() {
+    this.vectors = null;
+  }
+
+  public void unsetVocab() {
+    this.vocab = null;
+  }
+
+  public void validate() throws org.apache.thrift.TException {
+    // check for required fields
+    // check for sub-struct validity
+  }
+
+  public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+    schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+  }
+
+  private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+    try {
+      write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+    } catch (org.apache.thrift.TException te) {
+      throw new java.io.IOException(te);
     }
   }
 

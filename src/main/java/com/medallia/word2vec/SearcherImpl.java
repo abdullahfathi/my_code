@@ -12,7 +12,29 @@ import com.medallia.word2vec.util.Pair;
 
 /** Implementation of {@link Searcher} */
 class SearcherImpl implements Searcher {
+	/** Implementation of {@link Match} */
+	private static class MatchImpl extends Pair<String, Double>implements Match {
+		private MatchImpl(String first, Double second) {
+			super(first, second);
+		}
+
+		@Override
+		public double distance() {
+			return second;
+		}
+
+		@Override
+		public String match() {
+			return first;
+		}
+
+		@Override
+		public String toString() {
+			return String.format("%s [%s]", first, second);
+		}
+	}
 	private final NormalizedWord2VecModel model;
+
 	private final ImmutableMap<String, Integer> word2vectorOffset;
 
 	SearcherImpl(final NormalizedWord2VecModel model) {
@@ -30,9 +52,16 @@ class SearcherImpl implements Searcher {
 		this(NormalizedWord2VecModel.fromWord2VecModel(model));
 	}
 
+	private double calculateDistance(double[] otherVec, double[] vec) {
+		double d = 0;
+		for (int a = 0; a < model.layerSize; a++)
+			d += vec[a] * otherVec[a];
+		return d;
+	}
+
 	@Override
-	public List<Match> getMatches(String s, int maxNumMatches) throws UnknownWordException {
-		return getMatches(getVector(s), maxNumMatches);
+	public boolean contains(String word) {
+		return word2vectorOffset.containsKey(word);
 	}
 
 	@Override
@@ -40,9 +69,14 @@ class SearcherImpl implements Searcher {
 		return calculateDistance(getVector(s1), getVector(s2));
 	}
 
-	@Override
-	public boolean contains(String word) {
-		return word2vectorOffset.containsKey(word);
+	/**
+	 * @return Vector difference from v1 to v2
+	 */
+	private double[] getDifference(double[] v1, double[] v2) {
+		double[] diff = new double[model.layerSize];
+		for (int i = 0; i < model.layerSize; i++)
+			diff[i] = v1[i] - v2[i];
+		return diff;
 	}
 
 	@Override
@@ -57,11 +91,9 @@ class SearcherImpl implements Searcher {
 		}), maxNumMatches);
 	}
 
-	private double calculateDistance(double[] otherVec, double[] vec) {
-		double d = 0;
-		for (int a = 0; a < model.layerSize; a++)
-			d += vec[a] * otherVec[a];
-		return d;
+	@Override
+	public List<Match> getMatches(String s, int maxNumMatches) throws UnknownWordException {
+		return getMatches(getVector(s), maxNumMatches);
 	}
 
 	@Override
@@ -94,16 +126,6 @@ class SearcherImpl implements Searcher {
 		return result;
 	}
 
-	/**
-	 * @return Vector difference from v1 to v2
-	 */
-	private double[] getDifference(double[] v1, double[] v2) {
-		double[] diff = new double[model.layerSize];
-		for (int i = 0; i < model.layerSize; i++)
-			diff[i] = v1[i] - v2[i];
-		return diff;
-	}
-
 	@Override
 	public SemanticDifference similarity(String s1, String s2) throws UnknownWordException {
 		double[] v1 = getVector(s1);
@@ -117,27 +139,5 @@ class SearcherImpl implements Searcher {
 				return SearcherImpl.this.getMatches(target, maxMatches);
 			}
 		};
-	}
-
-	/** Implementation of {@link Match} */
-	private static class MatchImpl extends Pair<String, Double>implements Match {
-		private MatchImpl(String first, Double second) {
-			super(first, second);
-		}
-
-		@Override
-		public String match() {
-			return first;
-		}
-
-		@Override
-		public double distance() {
-			return second;
-		}
-
-		@Override
-		public String toString() {
-			return String.format("%s [%s]", first, second);
-		}
 	}
 }

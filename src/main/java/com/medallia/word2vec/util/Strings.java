@@ -4,14 +4,14 @@ package com.medallia.word2vec.util;
  * Various utility functions for working with String objects
  */
 public class Strings {
-	/** @see {@link Strings#formatEnum(Enum)} */
-	public static String formatEnum(Enum<?> enumValue) {
-		return capitalizeFirstCharacterLowercaseRest(enumValue.name().replace('_', ' '));
-	}
-
 	private static String capitalizeFirstCharacterLowercaseRest(String s) {
 		if (!hasContent(s)) return s;
 		return s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase();
+	}
+
+	/** @see {@link Strings#formatEnum(Enum)} */
+	public static String formatEnum(Enum<?> enumValue) {
+		return capitalizeFirstCharacterLowercaseRest(enumValue.name().replace('_', ' '));
 	}
 
 	/** @return <code>true</code> if the string is not <code>null</code> and has non-zero trimmed length; <code>false</code> otherwise */

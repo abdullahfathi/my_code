@@ -5,12 +5,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Multiset;
-import com.google.common.collect.Multiset.Entry;
 import com.medallia.word2vec.Word2VecTrainerBuilder.TrainingProgressListener;
 import com.medallia.word2vec.Word2VecTrainerBuilder.TrainingProgressListener.Stage;
+
+import ohs.types.Vocabulary;
 
 /**
  * Word2Vec library relies on a Huffman encoding scheme
@@ -56,7 +55,7 @@ public class HuffmanCoding {
 		}
 	}
 
-	private final ImmutableMultiset<String> vocab;
+	private final Vocabulary vocab;
 	private final TrainingProgressListener listener;
 
 	/**
@@ -65,32 +64,9 @@ public class HuffmanCoding {
 	 * @param listener
 	 *            Progress listener
 	 */
-	public HuffmanCoding(ImmutableMultiset<String> vocab, TrainingProgressListener listener) {
+	public HuffmanCoding(Vocabulary vocab, TrainingProgressListener listener) {
 		this.vocab = vocab;
 		this.listener = listener;
-	}
-
-	/**
-	 * @return {@link Map} from each given token to a {@link HuffmanNode}
-	 */
-	public Map<String, HuffmanNode> encode() throws InterruptedException {
-		final int numTokens = vocab.elementSet().size();
-
-		int[] parentNode = new int[numTokens * 2 + 1];
-		byte[] binary = new byte[numTokens * 2 + 1];
-		long[] count = new long[numTokens * 2 + 1];
-		int i = 0;
-		for (Entry<String> e : vocab.entrySet()) {
-			count[i] = e.getCount();
-			i++;
-		}
-		Preconditions.checkState(i == numTokens, "Expected %s to match %s", i, numTokens);
-		for (i = numTokens; i < count.length; i++)
-			count[i] = (long) 1e15;
-
-		createTree(numTokens, count, binary, parentNode);
-
-		return encode(binary, parentNode);
 	}
 
 	/**
@@ -161,24 +137,48 @@ public class HuffmanCoding {
 	}
 
 	/**
+	 * @return {@link Map} from each given token to a {@link HuffmanNode}
+	 */
+	public Map<Integer, HuffmanNode> encode() throws InterruptedException {
+		final int numTokens = vocab.size();
+
+		int[] parentNode = new int[numTokens * 2 + 1];
+		byte[] binary = new byte[numTokens * 2 + 1];
+		long[] count = new long[numTokens * 2 + 1];
+		int i = 0;
+
+		for (int w : vocab.getWordCounts().getSortedKeys()) {
+			count[i] = (long) vocab.getWordCounts().getCount(w);
+			i++;
+		}
+		Preconditions.checkState(i == numTokens, "Expected %s to match %s", i, numTokens);
+		for (i = numTokens; i < count.length; i++)
+			count[i] = (long) 1e15;
+
+		createTree(numTokens, count, binary, parentNode);
+
+		return encode(binary, parentNode);
+	}
+
+	/**
 	 * @return Ordered map from each token to its {@link HuffmanNode}, ordered by frequency descending
 	 */
-	private Map<String, HuffmanNode> encode(byte[] binary, int[] parentNode) throws InterruptedException {
-		int numTokens = vocab.elementSet().size();
+	private Map<Integer, HuffmanNode> encode(byte[] binary, int[] parentNode) throws InterruptedException {
+		int numTokens = vocab.size();
 
 		// Now assign binary code to each unique token
-		ImmutableMap.Builder<String, HuffmanNode> result = ImmutableMap.builder();
+		Map<Integer, HuffmanNode> result = new HashMap<Integer, HuffmanNode>();
 
-//		Map<Integer, String> map = new HashMap<>();
-//		{
-//			int id = 0;
-//			for (Entry<String> e : vocab.entrySet()) {
-//				map.put(id++, e.getElement());
-//			}
-//		}
+		// Map<Integer, String> map = new HashMap<>();
+		// {
+		// int id = 0;
+		// for (Entry<String> e : vocab.entrySet()) {
+		// map.put(id++, e.getElement());
+		// }
+		// }
 
 		int nodeIdx = 0;
-		for (Entry<String> e : vocab.entrySet()) {
+		for (int w : vocab.getWordCounts().getSortedKeys()) {
 			int curNodeIdx = nodeIdx;
 			ArrayList<Byte> code = new ArrayList<>();
 			ArrayList<Integer> points = new ArrayList<>();
@@ -190,15 +190,15 @@ public class HuffmanCoding {
 					break;
 			}
 			int codeLen = code.size();
-			final int count = e.getCount();
+			final int count = (int) vocab.getWordCount(w);
 			final byte[] rawCode = new byte[codeLen];
 			final int[] rawPoints = new int[codeLen + 1];
 
-//			System.out.printf("## id:%d, word:%s\n", nodeIdx, map.get(nodeIdx));
-//			for (int i = 0; i < codeLen; i++) {
-//				System.out.printf("depth:%d, pcode:%d, pid:%d, pword:%s\n", i, (int)code.get(i), points.get(i), map.get(points.get(i)));
-//			}
-//			System.out.println();
+			// System.out.printf("## id:%d, word:%s\n", nodeIdx, map.get(nodeIdx));
+			// for (int i = 0; i < codeLen; i++) {
+			// System.out.printf("depth:%d, pcode:%d, pid:%d, pword:%s\n", i, (int)code.get(i), points.get(i), map.get(points.get(i)));
+			// }
+			// System.out.println();
 
 			rawPoints[0] = numTokens - 2;
 			for (int i = 0; i < codeLen; i++) {
@@ -211,8 +211,8 @@ public class HuffmanCoding {
 			// }
 			// System.out.println();
 
-			String token = e.getElement();
-			result.put(token, new HuffmanNode(rawCode, rawPoints, nodeIdx, count));
+			// String token = e.getElement();
+			result.put(w, new HuffmanNode(rawCode, rawPoints, nodeIdx, count));
 
 			if (nodeIdx % 1_000 == 0) {
 				if (Thread.currentThread().isInterrupted())
@@ -223,6 +223,6 @@ public class HuffmanCoding {
 			nodeIdx++;
 		}
 
-		return result.build();
+		return result;
 	}
 }

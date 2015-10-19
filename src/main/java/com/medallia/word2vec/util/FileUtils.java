@@ -1,15 +1,11 @@
 package com.medallia.word2vec.util;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 
 import com.google.common.base.Function;
-
 import com.google.common.base.Strings;
 
 /**
@@ -25,6 +21,22 @@ public final class FileUtils {
 			return file.getName();
 		}
 	};
+
+	/**
+	 * Deletes a file or directory.
+	 * If the file is a directory it recursively deletes it. 
+	 * @param file file to be deleted
+	 * @return true if all the files where deleted successfully.
+	 */
+	public static boolean deleteRecursive(final File file) {
+		boolean result = true;
+		if (file.isDirectory()) {
+			for (final File inner : file.listFiles()) {
+				result &= deleteRecursive(inner);
+			}
+		}
+		return result & file.delete();
+	}
 
 	/**
 	 * Returns a subdirectory of a given directory; the subdirectory is expected to already exist.
@@ -51,15 +63,6 @@ public final class FileUtils {
 	}
 
 	/**
-	 * @return File for the specified directory, creates dirName directory if necessary.
-	 * @throws IOException if there is an error during directory creation or if a non-directory file with the desired name already
-	 *                     exists.
-	 */
-	public static File getOrCreateDir(String dirName) throws IOException {
-		return getOrCreateDir(new File(dirName));
-	}
-
-	/**
 	 * @return File for the specified directory; parent must already exist, creates dirName subdirectory if necessary.
 	 * @throws IOException if there is an error during directory creation or if a non-directory file with the desired name already
 	 *                     exists.
@@ -78,28 +81,21 @@ public final class FileUtils {
 	}
 
 	/**
-	 * Deletes a file or directory.
-	 * If the file is a directory it recursively deletes it. 
-	 * @param file file to be deleted
-	 * @return true if all the files where deleted successfully.
+	 * @return File for the specified directory, creates dirName directory if necessary.
+	 * @throws IOException if there is an error during directory creation or if a non-directory file with the desired name already
+	 *                     exists.
 	 */
-	public static boolean deleteRecursive(final File file) {
-		boolean result = true;
-		if (file.isDirectory()) {
-			for (final File inner : file.listFiles()) {
-				result &= deleteRecursive(inner);
-			}
-		}
-		return result & file.delete();
-	}
-
-	/** Utility class; don't instantiate. */
-	private FileUtils() {
-		throw new AssertionError("Do not instantiate.");
+	public static File getOrCreateDir(String dirName) throws IOException {
+		return getOrCreateDir(new File(dirName));
 	}
 
 	/** @return A random temporary folder that can be used for file-system operations testing */
 	public static File getRandomTemporaryFolder(String prefix, String suffix) {
 		return new File(System.getProperty("java.io.tmpdir"), Strings.nullToEmpty(prefix) + UUID.randomUUID().toString() + Strings.nullToEmpty(suffix));
+	}
+
+	/** Utility class; don't instantiate. */
+	private FileUtils() {
+		throw new AssertionError("Do not instantiate.");
 	}
 }

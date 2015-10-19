@@ -29,12 +29,19 @@ import java.nio.charset.CharsetDecoder;
  * {@link CharsetDecoder}.
  */
 public class UnicodeReader extends Reader {
+	private static final int BOM_SIZE = 4;
 	PushbackInputStream internalIn;
 	InputStreamReader   internalIn2 = null;
 	String              defaultEnc;
+
 	boolean             strict;
 
-	private static final int BOM_SIZE = 4;
+	/**
+	 * Same as {@link #UnicodeReader(InputStream, String, boolean)}, with strict = false.
+	 */
+	public UnicodeReader(InputStream in, String defaultEnc) {
+		this(in, defaultEnc, false);
+	}
 
 	/**
 	 * Constructor
@@ -49,11 +56,9 @@ public class UnicodeReader extends Reader {
 		this.strict = strict;
 	}
 
-	/**
-	 * Same as {@link #UnicodeReader(InputStream, String, boolean)}, with strict = false.
-	 */
-	public UnicodeReader(InputStream in, String defaultEnc) {
-		this(in, defaultEnc, false);
+	@Override public void close() throws IOException {
+		init();
+		internalIn2.close();
 	}
 
 	/**
@@ -118,11 +123,6 @@ public class UnicodeReader extends Reader {
 		} else {
 			internalIn2 = new InputStreamReader(internalIn, encoding);
 		}
-	}
-
-	@Override public void close() throws IOException {
-		init();
-		internalIn2.close();
 	}
 
 	@Override public int read(char[] cbuf, int off, int len) throws IOException {

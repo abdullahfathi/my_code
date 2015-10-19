@@ -1,16 +1,16 @@
 package com.medallia.word2vec.util;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Maps;
-import org.apache.commons.lang3.mutable.MutableInt;
-import org.apache.commons.logging.Log;
-import org.joda.time.Duration;
-import org.joda.time.Period;
-import org.joda.time.format.PeriodFormat;
-
 import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
 import java.util.Map;
+
+import org.apache.commons.lang3.mutable.MutableInt;
+import org.apache.commons.logging.Log;
+import org.joda.time.Period;
+import org.joda.time.format.PeriodFormat;
+
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Maps;
 
 /**
  * A timer utility that can be used to keep track of the execution time of a single-threaded task
@@ -63,16 +63,6 @@ import java.util.Map;
 public class ProfilingTimer implements AC {
 
 	/**
-	 * Just in case we need to disable this feature due to excessive logging
-	 */
-	public static volatile boolean enabled = true;
-
-	/**
-	 * When this flag is enabled we only report data about the top-level activity
-	 */
-	public static volatile boolean topLevelInfoOnly = true;
-
-	/**
 	 * Keeps information about a task within a {@link ProfilingTimer}. Since tasks can have multiple
 	 * subtasks, this represents a tree.
 	 */
@@ -109,19 +99,6 @@ public class ProfilingTimer implements AC {
 			children.put(child.taskName, child);
 		}
 
-		private void stop() {
-			if (start != CLOSED) {
-				totalNanos += System.nanoTime() - start;
-				count++;
-				start = CLOSED;
-				if (parent == null) {
-					try (AC ac = NDC.push(taskName)) {
-						log(0, log);
-					}
-				}
-			}
-		}
-
 		private void appendToLog(String logAppendMessage) {
 			this.logAppendMessage += logAppendMessage;
 		}
@@ -141,21 +118,79 @@ public class ProfilingTimer implements AC {
 			totalNanos += other.totalNanos;
 			count += other.count;
 		}
+
+		private void stop() {
+			if (start != CLOSED) {
+				totalNanos += System.nanoTime() - start;
+				count++;
+				start = CLOSED;
+				if (parent == null) {
+					try (AC ac = NDC.push(taskName)) {
+						log(0, log);
+					}
+				}
+			}
+		}
 	}
+
+	/**
+	 * Just in case we need to disable this feature due to excessive logging
+	 */
+	public static volatile boolean enabled = true;
+
+	/**
+	 * When this flag is enabled we only report data about the top-level activity
+	 */
+	public static volatile boolean topLevelInfoOnly = true;
 
 	/**
 	 * Null object pattern {@link ProfilingTimer} instance that does nothing at all
 	 */
 	public static final ProfilingTimer NONE = new ProfilingTimer(null, null, null) {
-		@Override public AC start(String taskName, Object... args) { return AC.NOTHING; }
-		@Override public void end() { }
 		@Override public void close() { }
+		@Override public void end() { }
+		@Override public AC start(String taskName, Object... args) { return AC.NOTHING; }
 	};
 
-	private final Log log;
-	private final ThreadLocal<ProfilingTimerNode> current = new ThreadLocal<>();
-	private final ByteArrayOutputStream serializationOutput;
-
+	private static ProfilingTimer create(final Log log, boolean topLevelInfoOnly, ByteArrayOutputStream serializationOutput, final String processName, final Object... args) {
+		// do not use ternary as it creates an annoying resource leak warning
+		if (enabled)
+			if (topLevelInfoOnly)
+				return new ProfilingTimer(null, null, null) {
+					MutableInt level = new MutableInt(0);
+					String logAppendMessage = "";
+					long startNanos = System.nanoTime();
+					@Override public void appendToLog(String logAppendMessage) {
+						if (level.intValue() == 0)
+							this.logAppendMessage += logAppendMessage;
+					}
+					@Override public void close() {
+						if (startNanos != ProfilingTimerNode.CLOSED) {
+							String taskName = String.format(processName, args);
+							try (AC ac = NDC.push(taskName)) {
+								writeToLog(0, System.nanoTime() - startNanos, 1, null, taskName, log, logAppendMessage);
+							}
+							startNanos = ProfilingTimerNode.CLOSED;
+						}
+					}
+					@Override public void end() {
+						level.decrement();
+					}
+					@Override public AC start(String taskName, Object... args) {
+						if (level != null)
+							level.increment();
+						return new AC() {
+							@Override public void close() {
+								level.decrement();
+							}
+						};
+					}
+				};
+			else
+				return new ProfilingTimer(log, serializationOutput, processName, args);
+		else
+			return NONE;
+	}
 	/**
 	 * Starts a new profiling timer with the given process name (optional arguments can be used as in {@link String#format(String, Object...)}).
 	 * When this {@link AC} is closed the profiling information will be dumped on the given log.
@@ -172,7 +207,6 @@ public class ProfilingTimer implements AC {
 	public static ProfilingTimer create(final Log log, final String processName, final Object... args) {
 		return create(log, topLevelInfoOnly, null, processName, args);
 	}
-
 	/** Same as {@link #create(Log, String, Object...)} but logs subtasks as well */
 	public static ProfilingTimer createLoggingSubtasks(final Log log, final String processName, final Object... args) {
 		return create(log, false, null, processName, args);
@@ -183,45 +217,41 @@ public class ProfilingTimer implements AC {
 		return create(null, false, serializationOutput, processName, args);
 	}
 
-	private static ProfilingTimer create(final Log log, boolean topLevelInfoOnly, ByteArrayOutputStream serializationOutput, final String processName, final Object... args) {
-		// do not use ternary as it creates an annoying resource leak warning
-		if (enabled)
-			if (topLevelInfoOnly)
-				return new ProfilingTimer(null, null, null) {
-					MutableInt level = new MutableInt(0);
-					String logAppendMessage = "";
-					long startNanos = System.nanoTime();
-					@Override public AC start(String taskName, Object... args) {
-						if (level != null)
-							level.increment();
-						return new AC() {
-							@Override public void close() {
-								level.decrement();
-							}
-						};
-					}
-					@Override public void end() {
-						level.decrement();
-					}
-					@Override public void close() {
-						if (startNanos != ProfilingTimerNode.CLOSED) {
-							String taskName = String.format(processName, args);
-							try (AC ac = NDC.push(taskName)) {
-								writeToLog(0, System.nanoTime() - startNanos, 1, null, taskName, log, logAppendMessage);
-							}
-							startNanos = ProfilingTimerNode.CLOSED;
-						}
-					}
-					@Override public void appendToLog(String logAppendMessage) {
-						if (level.intValue() == 0)
-							this.logAppendMessage += logAppendMessage;
-					}
-				};
-			else
-				return new ProfilingTimer(log, serializationOutput, processName, args);
-		else
-			return NONE;
+	/** @return a human-readable formatted string for the given amount of nanos */
+	private static String formatElapsed(long nanos) {
+		return String.format("%s (%6.3g nanoseconds)",
+				PeriodFormat.getDefault().print(Period.millis((int)(nanos / 1000))),
+				(double) nanos);
 	}
+
+	/** Writes one profiling line of information to the log */
+	private static void writeToLog(int level, long totalNanos, long count, ProfilingTimerNode parent, String taskName, Log log, String logAppendMessage) {
+		if (log == null) {
+			return;
+		}
+
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < level; i++) {
+			sb.append('\t');
+		}
+		String durationText = String.format("%s%s",
+				formatElapsed(totalNanos),
+				count == 1 ?
+						"" :
+						String.format(" across %d invocations, average: %s", count, formatElapsed(totalNanos / count)));
+		String text = parent == null ?
+				String.format("total time %s", durationText) :
+				String.format("[%s] took %s", taskName, durationText);
+		sb.append(text);
+		sb.append(logAppendMessage);
+		log.info(sb.toString());
+	}
+
+	private final Log log;
+
+	private final ThreadLocal<ProfilingTimerNode> current = new ThreadLocal<>();
+
+	private final ByteArrayOutputStream serializationOutput;
 
 	private ProfilingTimer(Log log, ByteArrayOutputStream serializationOutput, String processName, Object... args) {
 		this.log = log;
@@ -237,6 +267,71 @@ public class ProfilingTimer implements AC {
 		if (currentNode != null) {
 			currentNode.appendToLog(logAppendMessage);
 		}
+	}
+
+	@Override
+	public void close() {
+		ProfilingTimerNode root = current.get();
+		while (current.get() != null) {
+			end();
+		}
+
+		if (root != null && serializationOutput != null) {
+			Common.serialize(root, serializationOutput);
+		}
+	}
+
+	/**
+	 * Indicates that the most recently initiated task (via {@link #start(String, Object...)}) is now finished
+	 */
+	public void end() {
+		ProfilingTimerNode currentNode = current.get();
+		if (currentNode != null) {
+			currentNode.stop();
+			current.set(currentNode.parent);
+		}
+	}
+
+	/**
+	 * Convenience method for when a task starts right after the previous one finished.
+	 */
+	public void endAndStart(String taskName, Object... args) {
+		end();
+		start(taskName, args);
+	}
+
+	private ProfilingTimerNode findOrCreateNode(String taskName, ProfilingTimerNode parent) {
+		ProfilingTimerNode node = null;
+		if (parent != null) {
+			node = parent.children.get(taskName);
+			if (node != null) {
+				node.start = System.nanoTime();
+			}
+		}
+		if (node == null) {
+			node = new ProfilingTimerNode(taskName, parent, log);
+		}
+		return node;
+	}
+
+	private void mergeOrAddNode(ProfilingTimerNode parent, ProfilingTimerNode child) {
+		ProfilingTimerNode nodeToBeMerged = parent.children.get(child.taskName);
+		if (nodeToBeMerged == null) {
+			parent.addChild(child);
+			return;
+		}
+
+		nodeToBeMerged.merge(child);
+		for (ProfilingTimerNode grandchild : child.children.values()) {
+			mergeOrAddNode(nodeToBeMerged, grandchild);
+		}
+	}
+
+	/** Merges the specified tree as a child under the current node. */
+	public void mergeTree(ProfilingTimerNode otherRoot) {
+		ProfilingTimerNode currentNode = current.get();
+		Preconditions.checkNotNull(currentNode);
+		mergeOrAddNode(currentNode, otherRoot);
 	}
 
 	/**
@@ -265,101 +360,6 @@ public class ProfilingTimer implements AC {
 				}
 			}
 		};
-	}
-
-	/**
-	 * Indicates that the most recently initiated task (via {@link #start(String, Object...)}) is now finished
-	 */
-	public void end() {
-		ProfilingTimerNode currentNode = current.get();
-		if (currentNode != null) {
-			currentNode.stop();
-			current.set(currentNode.parent);
-		}
-	}
-
-	/**
-	 * Convenience method for when a task starts right after the previous one finished.
-	 */
-	public void endAndStart(String taskName, Object... args) {
-		end();
-		start(taskName, args);
-	}
-
-	@Override
-	public void close() {
-		ProfilingTimerNode root = current.get();
-		while (current.get() != null) {
-			end();
-		}
-
-		if (root != null && serializationOutput != null) {
-			Common.serialize(root, serializationOutput);
-		}
-	}
-
-	/** Merges the specified tree as a child under the current node. */
-	public void mergeTree(ProfilingTimerNode otherRoot) {
-		ProfilingTimerNode currentNode = current.get();
-		Preconditions.checkNotNull(currentNode);
-		mergeOrAddNode(currentNode, otherRoot);
-	}
-
-	private void mergeOrAddNode(ProfilingTimerNode parent, ProfilingTimerNode child) {
-		ProfilingTimerNode nodeToBeMerged = parent.children.get(child.taskName);
-		if (nodeToBeMerged == null) {
-			parent.addChild(child);
-			return;
-		}
-
-		nodeToBeMerged.merge(child);
-		for (ProfilingTimerNode grandchild : child.children.values()) {
-			mergeOrAddNode(nodeToBeMerged, grandchild);
-		}
-	}
-
-	private ProfilingTimerNode findOrCreateNode(String taskName, ProfilingTimerNode parent) {
-		ProfilingTimerNode node = null;
-		if (parent != null) {
-			node = parent.children.get(taskName);
-			if (node != null) {
-				node.start = System.nanoTime();
-			}
-		}
-		if (node == null) {
-			node = new ProfilingTimerNode(taskName, parent, log);
-		}
-		return node;
-	}
-
-	/** Writes one profiling line of information to the log */
-	private static void writeToLog(int level, long totalNanos, long count, ProfilingTimerNode parent, String taskName, Log log, String logAppendMessage) {
-		if (log == null) {
-			return;
-		}
-
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < level; i++) {
-			sb.append('\t');
-		}
-		String durationText = String.format("%s%s",
-				formatElapsed(totalNanos),
-				count == 1 ?
-						"" :
-						String.format(" across %d invocations, average: %s", count, formatElapsed(totalNanos / count)));
-		String text = parent == null ?
-				String.format("total time %s", durationText) :
-				String.format("[%s] took %s", taskName, durationText);
-		sb.append(text);
-		sb.append(logAppendMessage);
-		log.info(sb.toString());
-	}
-
-	/** @return a human-readable formatted string for the given amount of nanos */
-	private static String formatElapsed(long nanos) {
-		return String.format("%s (%6.3g nanoseconds)",
-				PeriodFormat.getDefault().print(Period.millis((int)(nanos / 1000))),
-				(double) nanos);
 	}
 
 }

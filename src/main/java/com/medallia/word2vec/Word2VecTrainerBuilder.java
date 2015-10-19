@@ -1,16 +1,18 @@
 package com.medallia.word2vec;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Optional;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Multiset;
-import com.medallia.word2vec.util.AutoLog;
-import org.apache.commons.logging.Log;
-import com.medallia.word2vec.neuralnetwork.NeuralNetworkConfig;
-import com.medallia.word2vec.neuralnetwork.NeuralNetworkType;
-
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.logging.Log;
+
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Multiset;
+import com.medallia.word2vec.neuralnetwork.NeuralNetworkConfig;
+import com.medallia.word2vec.neuralnetwork.NeuralNetworkType;
+import com.medallia.word2vec.util.AutoLog;
+
+import ohs.types.Vocabulary;
 
 /**
  * Builder pattern for training a new {@link Word2VecModel}
@@ -57,8 +59,27 @@ import java.util.Map;
  * I ask you to reach out if it is not.
  */
 public class Word2VecTrainerBuilder {
-	private static final Log LOG = AutoLog.getLog();
+	/** Listener for model training progress */
+	public interface TrainingProgressListener {
+		/** Sequential stages of processing */
+		enum Stage {
+			ACQUIRE_VOCAB, FILTER_SORT_VOCAB, CREATE_HUFFMAN_ENCODING, TRAIN_NEURAL_NETWORK,
+		}
 
+		/**
+		 * Called during word2vec training
+		 * <p>
+		 * Note that this is called in a separate thread from the processing thread
+		 * 
+		 * @param stage
+		 *            Current {@link Stage} of processing
+		 * @param progress
+		 *            Progress of the current stage as a double value between 0 and 1
+		 */
+		void update(Stage stage, double progress);
+	}
+
+	private static final Log LOG = AutoLog.getLog();
 	private Integer layerSize;
 	private Integer windowSize;
 	private Integer numThreads;
@@ -70,9 +91,33 @@ public class Word2VecTrainerBuilder {
 	private Double initialLearningRate;
 	private Double downSampleRate;
 	private Integer iterations;
+
 	private TrainingProgressListener listener;
 
 	Word2VecTrainerBuilder() {
+	}
+
+	/**
+	 * Set threshold for occurrence of words. Those that appear with higher frequency in the training data, e.g. stopwords, will be randomly
+	 * removed
+	 * <p>
+	 * Default is 1e-3, useful range is (0, 1e-5)
+	 */
+	public Word2VecTrainerBuilder setDownSamplingRate(double downSampleRate) {
+		Preconditions.checkArgument(downSampleRate >= 0, "Value must be non-negative");
+		this.downSampleRate = downSampleRate;
+		return this;
+	}
+
+	/**
+	 * Set the starting learning rate
+	 * <p>
+	 * Default is 0.025 for skip-gram and 0.05 for CBOW
+	 */
+	public Word2VecTrainerBuilder setInitialLearningRate(double initialLearningRate) {
+		Preconditions.checkArgument(initialLearningRate >= 0, "Value must be non-negative");
+		this.initialLearningRate = initialLearningRate;
+		return this;
 	}
 
 	/**
@@ -83,6 +128,30 @@ public class Word2VecTrainerBuilder {
 	public Word2VecTrainerBuilder setLayerSize(int layerSize) {
 		Preconditions.checkArgument(layerSize > 0, "Value must be positive");
 		this.layerSize = layerSize;
+		return this;
+	}
+
+	/** Set a progress listener */
+	public Word2VecTrainerBuilder setListener(TrainingProgressListener listener) {
+		this.listener = listener;
+		return this;
+	}
+
+	/**
+	 * Specify the minimum frequency for a valid token to be considered part of the vocabulary
+	 * <p>
+	 * Defaults to 5
+	 */
+	public Word2VecTrainerBuilder setMinVocabFrequency(int minFrequency) {
+		Preconditions.checkArgument(minFrequency >= 0, "Value must be non-negative");
+		this.minFrequency = minFrequency;
+		return this;
+	}
+
+	/** Set the number of iterations */
+	public Word2VecTrainerBuilder setNumIterations(int iterations) {
+		Preconditions.checkArgument(iterations > 0, "Value must be positive");
+		this.iterations = iterations;
 		return this;
 	}
 
@@ -97,15 +166,31 @@ public class Word2VecTrainerBuilder {
 		return this;
 	}
 
-	/**
-	 * Specify number of threads to use for parallelization
-	 * <p>
-	 * Defaults to {@link Runtime#availableProcessors()}
-	 */
-	public Word2VecTrainerBuilder useNumThreads(int numThreads) {
-		Preconditions.checkArgument(numThreads > 0, "Value must be positive");
-		this.numThreads = numThreads;
-		return this;
+	/** Train the model */
+	public Word2VecModel train(Vocabulary vocab, List<Integer[]> sents) throws InterruptedException {
+		this.type = MoreObjects.firstNonNull(type, NeuralNetworkType.CBOW);
+		this.initialLearningRate = MoreObjects.firstNonNull(initialLearningRate, type.getDefaultInitialLearningRate());
+		if (this.numThreads == null)
+			this.numThreads = Runtime.getRuntime().availableProcessors();
+		this.iterations = MoreObjects.firstNonNull(iterations, 5);
+		this.layerSize = MoreObjects.firstNonNull(layerSize, 100);
+		this.windowSize = MoreObjects.firstNonNull(windowSize, 5);
+		this.downSampleRate = MoreObjects.firstNonNull(downSampleRate, 0.001);
+		this.minFrequency = MoreObjects.firstNonNull(minFrequency, 5);
+		this.listener = MoreObjects.firstNonNull(listener, new TrainingProgressListener() {
+			@Override
+			public void update(Stage stage, double progress) {
+				System.out.println(String.format("Stage %s, progress %s%%", stage, progress));
+			}
+		});
+
+		return new Word2VecTrainer(minFrequency, vocab,
+
+				new NeuralNetworkConfig(type, numThreads, iterations, layerSize,
+
+						windowSize, negativeSamples, downSampleRate, initialLearningRate, useHierarchicalSoftmax)
+
+		).train(LOG, listener, sents);
 	}
 
 	/**
@@ -140,6 +225,17 @@ public class Word2VecTrainerBuilder {
 	}
 
 	/**
+	 * Specify number of threads to use for parallelization
+	 * <p>
+	 * Defaults to {@link Runtime#availableProcessors()}
+	 */
+	public Word2VecTrainerBuilder useNumThreads(int numThreads) {
+		Preconditions.checkArgument(numThreads > 0, "Value must be positive");
+		this.numThreads = numThreads;
+		return this;
+	}
+
+	/**
 	 * Use a pre-built vocabulary
 	 * <p>
 	 * If this is not specified, word2vec will attempt to learn a vocabulary from the training data
@@ -150,101 +246,5 @@ public class Word2VecTrainerBuilder {
 	public Word2VecTrainerBuilder useVocab(Multiset<String> vocab) {
 		this.vocab = Preconditions.checkNotNull(vocab);
 		return this;
-	}
-
-	/**
-	 * Specify the minimum frequency for a valid token to be considered part of the vocabulary
-	 * <p>
-	 * Defaults to 5
-	 */
-	public Word2VecTrainerBuilder setMinVocabFrequency(int minFrequency) {
-		Preconditions.checkArgument(minFrequency >= 0, "Value must be non-negative");
-		this.minFrequency = minFrequency;
-		return this;
-	}
-
-	/**
-	 * Set the starting learning rate
-	 * <p>
-	 * Default is 0.025 for skip-gram and 0.05 for CBOW
-	 */
-	public Word2VecTrainerBuilder setInitialLearningRate(double initialLearningRate) {
-		Preconditions.checkArgument(initialLearningRate >= 0, "Value must be non-negative");
-		this.initialLearningRate = initialLearningRate;
-		return this;
-	}
-
-	/**
-	 * Set threshold for occurrence of words. Those that appear with higher frequency in the training data, e.g. stopwords, will be randomly
-	 * removed
-	 * <p>
-	 * Default is 1e-3, useful range is (0, 1e-5)
-	 */
-	public Word2VecTrainerBuilder setDownSamplingRate(double downSampleRate) {
-		Preconditions.checkArgument(downSampleRate >= 0, "Value must be non-negative");
-		this.downSampleRate = downSampleRate;
-		return this;
-	}
-
-	/** Set the number of iterations */
-	public Word2VecTrainerBuilder setNumIterations(int iterations) {
-		Preconditions.checkArgument(iterations > 0, "Value must be positive");
-		this.iterations = iterations;
-		return this;
-	}
-
-	/** Set a progress listener */
-	public Word2VecTrainerBuilder setListener(TrainingProgressListener listener) {
-		this.listener = listener;
-		return this;
-	}
-
-	/** Train the model */
-	public Word2VecModel train(Iterable<List<String>> sentences) throws InterruptedException {
-		this.type = MoreObjects.firstNonNull(type, NeuralNetworkType.CBOW);
-		this.initialLearningRate = MoreObjects.firstNonNull(initialLearningRate, type.getDefaultInitialLearningRate());
-		if (this.numThreads == null)
-			this.numThreads = Runtime.getRuntime().availableProcessors();
-		this.iterations = MoreObjects.firstNonNull(iterations, 5);
-		this.layerSize = MoreObjects.firstNonNull(layerSize, 100);
-		this.windowSize = MoreObjects.firstNonNull(windowSize, 5);
-		this.downSampleRate = MoreObjects.firstNonNull(downSampleRate, 0.001);
-		this.minFrequency = MoreObjects.firstNonNull(minFrequency, 5);
-		this.listener = MoreObjects.firstNonNull(listener, new TrainingProgressListener() {
-			@Override
-			public void update(Stage stage, double progress) {
-				System.out.println(String.format("Stage %s, progress %s%%", stage, progress));
-			}
-		});
-
-		Optional<Multiset<String>> vocab = this.vocab == null ? Optional.<Multiset<String>> absent() : Optional.of(this.vocab);
-
-		return new Word2VecTrainer(minFrequency, vocab,
-
-		new NeuralNetworkConfig(type, numThreads, iterations, layerSize,
-
-		windowSize, negativeSamples, downSampleRate, initialLearningRate, useHierarchicalSoftmax)
-
-		).train(LOG, listener, sentences);
-	}
-
-	/** Listener for model training progress */
-	public interface TrainingProgressListener {
-		/** Sequential stages of processing */
-		enum Stage {
-			ACQUIRE_VOCAB, FILTER_SORT_VOCAB, CREATE_HUFFMAN_ENCODING, TRAIN_NEURAL_NETWORK,
-		}
-
-		/**
-		 * Called during word2vec training
-		 * <p>
-		 * Note that this is called in a separate thread from the processing thread
-		 * 
-		 * @param stage
-		 *            Current {@link Stage} of processing
-		 * @param progress
-		 *            Progress of the current stage as a double value between 0 and 1
-		 */
-		void update(Stage stage, double progress);
 	}
 }

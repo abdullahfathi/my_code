@@ -1,34 +1,30 @@
 package com.medallia.word2vec.neuralnetwork;
 
-import com.google.common.collect.Multiset;
+import java.util.List;
+import java.util.Map;
+
 import com.medallia.word2vec.Word2VecTrainerBuilder.TrainingProgressListener;
 import com.medallia.word2vec.huffman.HuffmanCoding.HuffmanNode;
 
-import java.util.List;
-import java.util.Map;
+import ohs.types.Vocabulary;
 
 /**
  * Trainer for neural network using skip gram
  */
 class SkipGramModelTrainer extends NeuralNetworkTrainer {
 
-	SkipGramModelTrainer(NeuralNetworkConfig config, Multiset<String> counts, Map<String, HuffmanNode> huffmanNodes,
-			TrainingProgressListener listener) {
-		super(config, counts, huffmanNodes, listener);
-	}
-
 	/** {@link Worker} for {@link SkipGramModelTrainer} */
 	private class SkipGramWorker extends Worker {
-		private SkipGramWorker(int randomSeed, int iter, Iterable<List<String>> batch) {
+		private SkipGramWorker(int randomSeed, int iter, List<Integer[]> batch) {
 			super(randomSeed, iter, batch);
 		}
 
 		@Override
-		void trainSentence(List<String> sentence) {
-			int sentenceLength = sentence.size();
+		void trainSentence(Integer[] sent) {
+			int len = sent.length;
 
-			for (int sentencePosition = 0; sentencePosition < sentenceLength; sentencePosition++) {
-				String word = sentence.get(sentencePosition);
+			for (int loc = 0; loc < len; loc++) {
+				int word = sent[loc];
 				HuffmanNode huffmanNode = huffmanNodes.get(word);
 
 				for (int c = 0; c < layer1_size; c++) {
@@ -43,14 +39,14 @@ class SkipGramModelTrainer extends NeuralNetworkTrainer {
 				for (int a = b; a < window * 2 + 1 - b; a++) {
 					if (a == window)
 						continue;
-					int c = sentencePosition - window + a;
+					int c = loc - window + a;
 
-					if (c < 0 || c >= sentenceLength)
+					if (c < 0 || c >= len)
 						continue;
 					for (int d = 0; d < layer1_size; d++)
 						neu1e[d] = 0;
 
-					int l1 = huffmanNodes.get(sentence.get(c)).idx;
+					int l1 = huffmanNodes.get(sent[c]).idx;
 
 					if (config.useHierarchicalSoftmax) {
 						for (int d = 0; d < huffmanNode.code.length; d++) {
@@ -87,8 +83,13 @@ class SkipGramModelTrainer extends NeuralNetworkTrainer {
 		}
 	}
 
+	SkipGramModelTrainer(NeuralNetworkConfig config, Vocabulary counts, Map<Integer, HuffmanNode> huffmanNodes,
+			TrainingProgressListener listener) {
+		super(config, counts, huffmanNodes, listener);
+	}
+
 	@Override
-	Worker createWorker(int randomSeed, int iter, Iterable<List<String>> batch) {
+	Worker createWorker(int randomSeed, int iter, List<Integer[]> batch) {
 		return new SkipGramWorker(randomSeed, iter, batch);
 	}
 }

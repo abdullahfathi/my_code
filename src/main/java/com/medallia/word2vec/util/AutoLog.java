@@ -1,24 +1,16 @@
 package com.medallia.word2vec.util;
 
-import com.google.common.base.Preconditions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Logger;
 import org.apache.log4j.varia.NullAppender;
 
+import com.google.common.base.Preconditions;
+
 /**
  * Creates loggers based on the caller's class.
  */
 public final class AutoLog {
-	/** Prevents initialization. */
-	private AutoLog() {
-	}
-
-	/** @return {@link org.apache.commons.logging.Log} based on the caller's class */
-	public static Log getLog() {
-		return getLog(2);
-	}
-
 	/** Make sure there is at least one appender to avoid a warning printed on stderr */
 	private static class InitializeOnDemand {
 		private static final boolean INIT = init();
@@ -27,6 +19,11 @@ public final class AutoLog {
 				Logger.getRootLogger().addAppender(new NullAppender());
 			return true;
 		}
+	}
+
+	/** @return {@link org.apache.commons.logging.Log} based on the caller's class */
+	public static Log getLog() {
+		return getLog(2);
 	}
 
 	/** @return {@link org.apache.commons.logging.Log} based on the stacktrace distance to
@@ -41,5 +38,9 @@ public final class AutoLog {
 			System.err.println(err);
 			throw new IllegalStateException(err, t);
 		}
+	}
+
+	/** Prevents initialization. */
+	private AutoLog() {
 	}
 }

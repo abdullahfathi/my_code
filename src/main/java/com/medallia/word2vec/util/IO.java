@@ -1,9 +1,5 @@
 package com.medallia.word2vec.util;
 
-import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
-import org.apache.commons.io.IOUtils;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -24,6 +20,11 @@ import java.util.Comparator;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import org.apache.commons.io.IOUtils;
+
+import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
+
 /**
  * Static utility functions related to IO.
  */
@@ -37,37 +38,14 @@ public final class IO {
 	
 	private static final int DEFAULT_BUFFER_SIZE = 1024 * 8; // 8K. Same as BufferedOutputStream, so writes are written-through with no extra copying
 	
-	private IO() { }
-
-	/** @return the oldest file in the given collection using the last modified date or return null if the collection is empty */
-	public static File getOldestFileOrNull(Collection<File> files) {
-		if (files.isEmpty())
-			return null;
-		
-		return Collections.min(files, FILE_LAST_MODIFIED_COMPARATOR);
-	}
-
-	/** Copy input to output and close the output stream before returning */
-	public static long copyAndCloseOutput(InputStream input, OutputStream output) throws IOException {
-		try (OutputStream outputStream = output) {
-			return copy(input, outputStream);
-		}
-	}
-	
-	/** Copy input to output and close both the input and output streams before returning */
-	public static long copyAndCloseBoth(InputStream input, OutputStream output) throws IOException {
-		try (InputStream inputStream = input) {
-			return copyAndCloseOutput(inputStream, output);
+	/** Close, ignoring exceptions */
+	public static void close(Closeable stream) {
+		try {
+			stream.close();
+		} catch (IOException e) {			
 		}
 	}
 
-	/** Similar to {@link IOUtils#toByteArray(InputStream)} but closes the stream. */
-	public static byte[] toByteArray(InputStream is) throws IOException {
-		ByteArrayOutputStream bao = new ByteArrayOutputStream();
-		IO.copyAndCloseBoth(is, bao);
-		return bao.toByteArray();
-	}
-	
 	/** Copy input to output; neither stream is closed */
 	public static long copy(InputStream input, OutputStream output) throws IOException {
 		byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
@@ -79,7 +57,7 @@ public final class IO {
 		}
 		return count;
 	}
-	
+
 	/** Copy input to output; neither stream is closed */
 	public static int copy(Reader input, Writer output) throws IOException {
 		char[] buffer = new char[DEFAULT_BUFFER_SIZE];
@@ -92,15 +70,13 @@ public final class IO {
 		return count;
 	}
 	
-	/** Copy input to output and close the output stream before returning */
-	public static int copyAndCloseOutput(Reader input, Writer output) throws IOException {
-		try {
-			return copy(input, output);
-		} finally {
-			output.close();
+	/** Copy input to output and close both the input and output streams before returning */
+	public static long copyAndCloseBoth(InputStream input, OutputStream output) throws IOException {
+		try (InputStream inputStream = input) {
+			return copyAndCloseOutput(inputStream, output);
 		}
-		
 	}
+
 	/** Copy input to output and close both the input and output streams before returning */
 	public static int copyAndCloseBoth(Reader input, Writer output) throws IOException {
 		try {
@@ -110,69 +86,75 @@ public final class IO {
 		}
 	}
 	
-	/**
-	 * Copy the data from the given {@link InputStream} to a temporary file and call the given
-	 * {@link Function} with it; after the function returns the file is deleted.
-	 */
-	public static <X> X runWithFile(InputStream stream, Function<File, X> function) throws IOException {
-		File f = File.createTempFile("run-with-file", null);
+	/** Copy input to output and close the output stream before returning */
+	public static long copyAndCloseOutput(InputStream input, OutputStream output) throws IOException {
+		try (OutputStream outputStream = output) {
+			return copy(input, outputStream);
+		}
+	}
+	
+	/** Copy input to output and close the output stream before returning */
+	public static int copyAndCloseOutput(Reader input, Writer output) throws IOException {
 		try {
-			try (FileOutputStream out = new FileOutputStream(f)) {
-				IOUtils.copy(stream, out);
-			}
-			return function.apply(f);
+			return copy(input, output);
 		} finally {
-			f.delete();
+			output.close();
 		}
+		
+	}
+	
+	/**
+	 * Creates a directory if it does not exist.
+	 * 
+	 * <p>
+	 * It will recursively create all the absolute path specified in the input
+	 * parameter.
+	 * 
+	 * @param directory
+	 *            the {@link File} containing the directory structure that is
+	 *            going to be created.
+	 * @return a {@link File} pointing to the created directory
+	 * @throws IOException if there was en error while creating the directory.
+	 */
+	public static File createDirIfNotExists(File directory) throws IOException {
+		if (!directory.isDirectory()) {
+			if (!directory.mkdirs()) {
+				throw new IOException("Failed to create directory: " + directory.getAbsolutePath());
+			}
+		}
+		return directory;
+	}
+	/** 
+	 * Stores the given contents into a temporary file 
+	 * @param fileContents the raw contents to store in the temporary file
+	 * @param namePrefix the desired file name prefix (must be at least 3 characters long)
+	 * @param extension the desired extension including the '.' character (use null for '.tmp')
+	 * @return a {@link File} reference to the newly created temporary file
+	 * @throws IOException if the temporary file creation fails 
+	 */
+	public static File createTempFile(byte[] fileContents, String namePrefix, String extension) throws IOException {
+		Preconditions.checkNotNull(fileContents, "file contents missing");
+		File tempFile = File.createTempFile(namePrefix, extension);
+		try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+			fos.write(fileContents);
+		}
+		return tempFile;
+	}
+	
+	/**
+	 * @return true if the {@link File} is null, does not exist, or we were able to delete it; false 
+	 * if the file exists and could not be deleted.
+	 */
+	public static boolean deleteIfPresent(File f) {
+		return f == null || !f.exists() || f.delete();
 	}
 
-	/** @return the compressed (gzip) version of the given bytes */
-	public static byte[] gzip(byte[] in) {
-		try {
-			ByteArrayOutputStream bos = new ByteArrayOutputStream();
-			GZIPOutputStream gz = new GZIPOutputStream(bos);
-			gz.write(in);
-			gz.close();
-			return bos.toByteArray();
-		} catch (IOException e) {
-			throw new RuntimeException("Failed to compress bytes", e);
-		}
-	}
-
-	/** @return the decompressed version of the given (compressed with gzip) bytes */
-	public static byte[] gunzip(byte[] in) {
-		try {
-			GZIPInputStream gis = new GZIPInputStream(new ByteArrayInputStream(in));
-			ByteArrayOutputStream bos = new ByteArrayOutputStream();
-			IO.copyAndCloseOutput(gis, bos);
-			return bos.toByteArray();
-		} catch (IOException e) {
-			throw new RuntimeException("Failed to decompress data", e);
-		}
-	}
-
-	/** @return the compressed (gzip) version of the given object */
-	public static byte[] gzipObject(Object object) {
-		try (
-			ByteArrayOutputStream bos = new ByteArrayOutputStream();
-			GZIPOutputStream zos = new GZIPOutputStream(bos);
-			ObjectOutputStream oos = new ObjectOutputStream(zos))
-		{
-			oos.writeObject(object);
-			zos.close(); // Terminate gzip
-			return bos.toByteArray();
-		} catch (IOException e) {
-			throw new RuntimeException("Failed to compress bytes", e);
-		}
-	}
-
-	/** @return the decompressed version of the given (compressed with gzip) bytes */
-	public static Object gunzipObject(byte[] in) {
-		try {
-			return new ObjectInputStream(new GZIPInputStream(new ByteArrayInputStream(in))).readObject();
-		} catch (IOException | ClassNotFoundException e) {
-			throw new RuntimeException("Failed to decompress data", e);
-		}
+	/** @return the oldest file in the given collection using the last modified date or return null if the collection is empty */
+	public static File getOldestFileOrNull(Collection<File> files) {
+		if (files.isEmpty())
+			return null;
+		
+		return Collections.min(files, FILE_LAST_MODIFIED_COMPARATOR);
 	}
 
 	/** ObjectInputStream which doesn't care too much about serialVersionUIDs. Horrible :)
@@ -198,59 +180,78 @@ public final class IO {
 		};
 	}
 
-	/** Close, ignoring exceptions */
-	public static void close(Closeable stream) {
+	/** @return the decompressed version of the given (compressed with gzip) bytes */
+	public static byte[] gunzip(byte[] in) {
 		try {
-			stream.close();
-		} catch (IOException e) {			
+			GZIPInputStream gis = new GZIPInputStream(new ByteArrayInputStream(in));
+			ByteArrayOutputStream bos = new ByteArrayOutputStream();
+			IO.copyAndCloseOutput(gis, bos);
+			return bos.toByteArray();
+		} catch (IOException e) {
+			throw new RuntimeException("Failed to decompress data", e);
+		}
+	}
+
+	/** @return the decompressed version of the given (compressed with gzip) bytes */
+	public static Object gunzipObject(byte[] in) {
+		try {
+			return new ObjectInputStream(new GZIPInputStream(new ByteArrayInputStream(in))).readObject();
+		} catch (IOException | ClassNotFoundException e) {
+			throw new RuntimeException("Failed to decompress data", e);
+		}
+	}
+
+	/** @return the compressed (gzip) version of the given bytes */
+	public static byte[] gzip(byte[] in) {
+		try {
+			ByteArrayOutputStream bos = new ByteArrayOutputStream();
+			GZIPOutputStream gz = new GZIPOutputStream(bos);
+			gz.write(in);
+			gz.close();
+			return bos.toByteArray();
+		} catch (IOException e) {
+			throw new RuntimeException("Failed to compress bytes", e);
+		}
+	}
+
+	/** @return the compressed (gzip) version of the given object */
+	public static byte[] gzipObject(Object object) {
+		try (
+			ByteArrayOutputStream bos = new ByteArrayOutputStream();
+			GZIPOutputStream zos = new GZIPOutputStream(bos);
+			ObjectOutputStream oos = new ObjectOutputStream(zos))
+		{
+			oos.writeObject(object);
+			zos.close(); // Terminate gzip
+			return bos.toByteArray();
+		} catch (IOException e) {
+			throw new RuntimeException("Failed to compress bytes", e);
 		}
 	}
 
 	/**
-	 * Creates a directory if it does not exist.
-	 * 
-	 * <p>
-	 * It will recursively create all the absolute path specified in the input
-	 * parameter.
-	 * 
-	 * @param directory
-	 *            the {@link File} containing the directory structure that is
-	 *            going to be created.
-	 * @return a {@link File} pointing to the created directory
-	 * @throws IOException if there was en error while creating the directory.
+	 * Copy the data from the given {@link InputStream} to a temporary file and call the given
+	 * {@link Function} with it; after the function returns the file is deleted.
 	 */
-	public static File createDirIfNotExists(File directory) throws IOException {
-		if (!directory.isDirectory()) {
-			if (!directory.mkdirs()) {
-				throw new IOException("Failed to create directory: " + directory.getAbsolutePath());
+	public static <X> X runWithFile(InputStream stream, Function<File, X> function) throws IOException {
+		File f = File.createTempFile("run-with-file", null);
+		try {
+			try (FileOutputStream out = new FileOutputStream(f)) {
+				IOUtils.copy(stream, out);
 			}
+			return function.apply(f);
+		} finally {
+			f.delete();
 		}
-		return directory;
 	}
 
-	/**
-	 * @return true if the {@link File} is null, does not exist, or we were able to delete it; false 
-	 * if the file exists and could not be deleted.
-	 */
-	public static boolean deleteIfPresent(File f) {
-		return f == null || !f.exists() || f.delete();
+	/** Similar to {@link IOUtils#toByteArray(InputStream)} but closes the stream. */
+	public static byte[] toByteArray(InputStream is) throws IOException {
+		ByteArrayOutputStream bao = new ByteArrayOutputStream();
+		IO.copyAndCloseBoth(is, bao);
+		return bao.toByteArray();
 	}
 
 
-	/** 
-	 * Stores the given contents into a temporary file 
-	 * @param fileContents the raw contents to store in the temporary file
-	 * @param namePrefix the desired file name prefix (must be at least 3 characters long)
-	 * @param extension the desired extension including the '.' character (use null for '.tmp')
-	 * @return a {@link File} reference to the newly created temporary file
-	 * @throws IOException if the temporary file creation fails 
-	 */
-	public static File createTempFile(byte[] fileContents, String namePrefix, String extension) throws IOException {
-		Preconditions.checkNotNull(fileContents, "file contents missing");
-		File tempFile = File.createTempFile(namePrefix, extension);
-		try (FileOutputStream fos = new FileOutputStream(tempFile)) {
-			fos.write(fileContents);
-		}
-		return tempFile;
-	}
+	private IO() { }
 }
