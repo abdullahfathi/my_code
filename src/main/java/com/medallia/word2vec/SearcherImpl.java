@@ -13,7 +13,7 @@ import com.medallia.word2vec.util.Pair;
 /** Implementation of {@link Searcher} */
 class SearcherImpl implements Searcher {
 	/** Implementation of {@link Match} */
-	private static class MatchImpl extends Pair<String, Double>implements Match {
+	private static class MatchImpl extends Pair<String, Double> implements Match {
 		private MatchImpl(String first, Double second) {
 			super(first, second);
 		}
@@ -33,6 +33,7 @@ class SearcherImpl implements Searcher {
 			return String.format("%s [%s]", first, second);
 		}
 	}
+
 	private final NormalizedWord2VecModel model;
 
 	private final ImmutableMap<String, Integer> word2vectorOffset;
@@ -107,9 +108,11 @@ class SearcherImpl implements Searcher {
 	 *             If word is not in the model's vocabulary
 	 */
 	private double[] getVector(String word) throws UnknownWordException {
-		final double[] result = getVectorOrNull(word);
-		if (result == null)
-			throw new UnknownWordException(word);
+		double[] result = getVectorOrNull(word);
+		if (result == null) {
+			// throw new UnknownWordException(word);
+			result = new double[0];
+		}
 
 		return result;
 	}

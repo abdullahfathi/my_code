@@ -43,26 +43,10 @@ public class Word2VecExamples {
 		// if (!f.exists())
 		// throw new IllegalStateException("Please download and unzip the text8 example from http://mattmahoney.net/dc/text8.zip");
 
-		File f = new File(inputFileName);
 		List<Integer[]> sents = new ArrayList<Integer[]>();
 		Vocabulary vocab = new Vocabulary();
 
-		TextFileReader reader = new TextFileReader(f);
-		while (reader.hasNext()) {
-
-			if (sents.size() == 10000) {
-				break;
-			}
-
-			String[] parts = reader.next().split("\t");
-			String[] words = parts[2].toLowerCase().split(" ");
-			Integer[] ws = new Integer[words.length];
-			for (int i = 0; i < words.length; i++) {
-				ws[i] = vocab.getIndexWithIncrement(words[i]);
-			}
-			sents.add(ws);
-		}
-		reader.close();
+		readSentences(inputFileName, vocab, sents);
 
 		// Word2VecModel model =
 		//
@@ -83,9 +67,9 @@ public class Word2VecExamples {
 
 		Word2VecModel model =
 
-		Word2VecModel.trainer().setMinVocabFrequency(5).useNumThreads(1).
+		Word2VecModel.trainer().setMinVocabFrequency(0).useNumThreads(1).
 
-		setWindowSize(1).type(NeuralNetworkType.CBOW).setLayerSize(200).useNegativeSamples(25).
+		setWindowSize(8).type(NeuralNetworkType.CBOW).setLayerSize(200).useNegativeSamples(25).
 
 		setDownSamplingRate(1e-4).setNumIterations(5).setListener(new TrainingProgressListener() {
 
@@ -143,15 +127,31 @@ public class Word2VecExamples {
 		demoWord(MIRPath.OHSUMED_SENTS_FILE, MIRPath.OHSUMED_DIR + "word2vec_model.txt.gz");
 	}
 
+	public static void readSentences(String inputFileName, Vocabulary vocab, List<Integer[]> sents) {
+		TextFileReader reader = new TextFileReader(inputFileName);
+		while (reader.hasNext()) {
+
+			// if (sents.size() == 10000) {
+			// break;
+			// }
+
+			String[] parts = reader.next().split("\t");
+			String[] words = parts[2].toLowerCase().split(" ");
+			Integer[] ws = new Integer[words.length];
+			for (int i = 0; i < words.length; i++) {
+				ws[i] = vocab.getIndexWithIncrement(words[i]);
+			}
+			sents.add(ws);
+		}
+		reader.close();
+	}
+
 	/** Example using Skip-Gram model */
 	public static void skipGram() throws IOException, TException, InterruptedException, UnknownWordException {
-		List<String> read = Common.readToList(new File("sents.cleaned.word2vec.txt"));
-		List<List<String>> partitioned = Lists.transform(read, new Function<String, List<String>>() {
-			@Override
-			public List<String> apply(String input) {
-				return Arrays.asList(input.split(" "));
-			}
-		});
+		List<Integer[]> sents = new ArrayList<Integer[]>();
+		Vocabulary vocab = new Vocabulary();
+
+		readSentences(MIRPath.OHSUMED_SENTS_FILE, vocab, sents);
 
 		Word2VecModel model = Word2VecModel.trainer().setMinVocabFrequency(100).useNumThreads(20).setWindowSize(7)
 				.type(NeuralNetworkType.SKIP_GRAM).useHierarchicalSoftmax().setLayerSize(300).useNegativeSamples(0)
@@ -160,7 +160,7 @@ public class Word2VecExamples {
 					public void update(Stage stage, double progress) {
 						System.out.println(String.format("%s is %.2f%% complete", Format.formatEnum(stage), progress * 100));
 					}
-				}).train(partitioned);
+				}).train(vocab, sents);
 
 		try (ProfilingTimer timer = ProfilingTimer.create(LOG, "Writing output to file")) {
 			FileUtils.writeStringToFile(new File("300layer.20threads.5iter.model"), ThriftUtils.serializeJson(model.toThrift()));

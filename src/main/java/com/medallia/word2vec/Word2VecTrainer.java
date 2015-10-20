@@ -34,6 +34,7 @@ class Word2VecTrainer {
 			counts.add(token);
 		return counts;
 	}
+
 	private final int minFrequency;
 	private final Vocabulary vocab;
 
