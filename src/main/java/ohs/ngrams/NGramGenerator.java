@@ -9,6 +9,8 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -29,6 +31,7 @@ import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.types.common.StrCounter;
+import ohs.types.common.StrCounterMap;
 import ohs.utils.StrUtils;
 
 public class NGramGenerator {
@@ -36,8 +39,8 @@ public class NGramGenerator {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 		NGramGenerator g = new NGramGenerator();
-		// g.makeTextDump();
-		g.serialize();
+		g.makeTextDump();
+		// g.serialize();
 		// g.generate();
 		System.out.println("process ends.");
 	}
@@ -152,6 +155,9 @@ public class NGramGenerator {
 
 		File[] dataFiles = new File(NGPath.JOURNAL_DIR).listFiles();
 
+		StrCounterMap cm = new StrCounterMap();
+		Set<String> yearSet = new TreeSet<>();
+
 		for (int i = 0; i < dataFiles.length; i++) {
 			File dataFile = dataFiles[i];
 
@@ -162,6 +168,9 @@ public class NGramGenerator {
 			}
 
 			int num_files = 0;
+
+			String journal = dataFile.getName();
+			journal = journal.split("_")[0];
 
 			ZipInputStream is = new ZipInputStream(new FileInputStream(dataFile));
 			ZipEntry entry = null;
@@ -182,28 +191,61 @@ public class NGramGenerator {
 					String year = fileName.split("/")[0];
 					year = year.split("_")[0];
 
-					StringBuffer sb = new StringBuffer();
+					yearSet.add(year);
+					cm.incrementCount(journal, year, 1);
 
-					int c;
-
-					while ((c = is.read()) != -1) {
-						sb.append((char) c);
-					}
-
-					if (sb.length() > 0) {
-						String[] textParts = parse(sb.toString());
-
-						if (textParts.length == 4) {
-							String output = year + "\t" + StrUtils.join("\t", textParts);
-							writer.write(output + "\n");
-						}
-					}
+					// StringBuffer sb = new StringBuffer();
+					//
+					// int c;
+					//
+					// while ((c = is.read()) != -1) {
+					// sb.append((char) c);
+					// }
+					//
+					// if (sb.length() > 0) {
+					// String[] textParts = parse(sb.toString());
+					//
+					// if (textParts.length == 4) {
+					// String output = year + "\t" + StrUtils.join("\t", textParts);
+					// writer.write(output + "\n");
+					// }
+					// }
 				}
 			}
 			is.close();
 
 			System.out.printf("read [%d] files from [%s]\n", num_files, dataFile.getName());
 		}
+
+		List<String> journals = cm.getInnerCountSums().getSortedKeys();
+		List<String> years = new ArrayList<String>(yearSet);
+
+		Collections.sort(years);
+
+		StringBuffer sb = new StringBuffer();
+
+		sb.append("Journal");
+
+		for (int i = 0; i < years.size(); i++) {
+			sb.append("\t" + years.get(i));
+		}
+
+		for (int i = 0; i < journals.size(); i++) {
+			String journal = journals.get(i);
+
+			sb.append(String.format("\n%s", journal));
+
+			for (int j = 0; j < years.size(); j++) {
+				String year = years.get(j);
+				int cnt = (int) cm.getCount(journal, year);
+				sb.append(String.format("\t%d", cnt));
+			}
+		}
+
+		System.out.println(sb.toString());
+
+		// System.out.println(cm.toString());
+
 	}
 
 	private Counter<Integer[]> ngram(int[][] doc, int ngram_size) {

@@ -128,7 +128,7 @@ public class HuffmanCoding {
 			// (int) binary[min2i]);
 			// System.out.println();
 
-			if (a % 1_000 == 0) {
+			if (a % 1_000 == 0 || a == numTokens - 2) {
 				if (Thread.currentThread().isInterrupted())
 					throw new InterruptedException("Interrupted while encoding huffman tree");
 				listener.update(Stage.CREATE_HUFFMAN_ENCODING, (0.5 * a) / numTokens);

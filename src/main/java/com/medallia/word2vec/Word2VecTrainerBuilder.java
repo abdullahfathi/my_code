@@ -61,6 +61,7 @@ import ohs.types.Vocabulary;
 public class Word2VecTrainerBuilder {
 	/** Listener for model training progress */
 	public interface TrainingProgressListener {
+
 		/** Sequential stages of processing */
 		enum Stage {
 			ACQUIRE_VOCAB, FILTER_SORT_VOCAB, CREATE_HUFFMAN_ENCODING, TRAIN_NEURAL_NETWORK,

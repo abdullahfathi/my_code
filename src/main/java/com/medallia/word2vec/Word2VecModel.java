@@ -24,6 +24,7 @@ import com.medallia.word2vec.util.AC;
 import com.medallia.word2vec.util.Common;
 import com.medallia.word2vec.util.ProfilingTimer;
 
+import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 
 /**
@@ -145,6 +146,39 @@ public class Word2VecModel {
 		return fromTextFile(file.getAbsolutePath(), lines);
 	}
 
+	public static Word2VecModel fromGZippedTextFile(String filename) throws IOException {
+		List<String> vocab = Lists.newArrayList();
+		List<Double> vectors = Lists.newArrayList();
+
+		TextFileReader reader = new TextFileReader(filename);
+		reader.hasNext();
+		String[] parts = reader.next().split(" ");
+
+		int vocabSize = Integer.parseInt(parts[0]);
+		int layerSize = Integer.parseInt(parts[1]);
+
+		// Preconditions.checkArgument(vocabSize == lines.size() - 1,
+		// "For file '%s', vocab size is %s, but there are %s word vectors in the file", filename, vocabSize, lines.size() - 1);
+		int n = 0;
+		while (reader.hasNext()) {
+			String line = reader.next();
+			String[] values = line.split(" ");
+			vocab.add(values[0]);
+
+			// Sanity check
+			Preconditions.checkArgument(layerSize == values.length - 1,
+					"For file '%s', on line %s, layer size is %s, but found %s values in the word vector", filename, n++, layerSize,
+					values.length - 1);
+
+			for (int d = 1; d < values.length; d++) {
+				vectors.add(Double.parseDouble(values[d]));
+			}
+		}
+
+		Word2VecModelThrift thrift = new Word2VecModelThrift().setLayerSize(layerSize).setVocab(vocab).setVectors(vectors);
+		return fromThrift(thrift);
+	}
+
 	/**
 	 * @return {@link Word2VecModel} from the lines of the file in the text output format of the Word2Vec C open source project.
 	 */
@@ -254,7 +288,7 @@ public class Word2VecModel {
 		writer.write(String.format("%d %d\n", vocab.size(), layerSize));
 		final double[] vector = new double[layerSize];
 		for (int i = 0; i < vocab.size(); ++i) {
-			writer.write(String.format("%s ", vocab.get(i)));
+			writer.write(String.format("%s", vocab.get(i)));
 
 			vectors.position(i * layerSize);
 			vectors.get(vector);

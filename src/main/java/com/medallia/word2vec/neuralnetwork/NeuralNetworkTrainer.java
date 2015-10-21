@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -142,7 +143,7 @@ public abstract class NeuralNetworkTrainer {
 		 *            Only used for debugging
 		 */
 		private void updateAlpha(int iter) {
-			int currentActual = actualWordCount.addAndGet(wordCount - lastWordCount);
+			long currentActual = actualWordCount.addAndGet(wordCount - lastWordCount);
 			lastWordCount = wordCount;
 
 			// Degrade the learning rate linearly towards 0 but keep a minimum
@@ -172,12 +173,14 @@ public abstract class NeuralNetworkTrainer {
 	}
 
 	private static final int TABLE_SIZE = (int) 1e8;
+
 	/**
 	 * @return Next random value to use
 	 */
 	static long incrementRandom(long r) {
 		return r * 25_214_903_917L + 11;
 	}
+
 	public static List<Integer[]> partitionSentence(List<Integer> sent, int partition_size) {
 		List<Integer[]> ret = new ArrayList<Integer[]>();
 
@@ -197,6 +200,7 @@ public abstract class NeuralNetworkTrainer {
 		}
 		return ret;
 	}
+
 	public static List<List<Integer[]>> partitionSentences(List<Integer[]> sents, int partition_size) {
 		List<List<Integer[]>> ret = new ArrayList<>();
 
@@ -218,6 +222,7 @@ public abstract class NeuralNetworkTrainer {
 
 		return ret;
 	}
+
 	private final TrainingProgressListener listener;
 	final NeuralNetworkConfig config;
 
@@ -230,12 +235,12 @@ public abstract class NeuralNetworkTrainer {
 	/**
 	 * In the C version, this includes the </s> token that replaces a newline character
 	 */
-	int numTrainedTokens;
+	long numTrainedTokens;
 	/**
 	 * To be precise, this is the number of words in the training data that exist in the vocabulary which have been processed so far. It
 	 * includes words that are discarded from sampling. Note that each word is processed once per iteration.
 	 */
-	protected final AtomicInteger actualWordCount;
+	protected final AtomicLong actualWordCount;
 	/** Learning rate, affects how fast values in the layers get updated */
 	volatile double alpha;
 
@@ -265,7 +270,7 @@ public abstract class NeuralNetworkTrainer {
 		this.layer1_size = config.layerSize;
 		this.window = config.windowSize;
 
-		this.actualWordCount = new AtomicInteger();
+		this.actualWordCount = new AtomicLong();
 		this.alpha = config.initialLearningRate;
 
 		this.syn0 = new double[vocabSize][layer1_size];

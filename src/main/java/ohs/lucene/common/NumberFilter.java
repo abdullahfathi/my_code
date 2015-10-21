@@ -34,7 +34,7 @@ public final class NumberFilter extends TokenFilter {
 				String g = m.group();
 				g = g.replace(",", "");
 
-				StringBuffer sb2 = new StringBuffer("#");
+				StringBuffer sb2 = new StringBuffer("<N");
 
 				String[] toks = g.split("\\.");
 				for (int i = 0; i < toks.length; i++) {
@@ -45,7 +45,7 @@ public final class NumberFilter extends TokenFilter {
 						sb2.append("_");
 					}
 				}
-				sb2.append("#");
+				sb2.append(">");
 				String r = sb2.toString();
 				m.appendReplacement(sb, r);
 			} while (m.find());

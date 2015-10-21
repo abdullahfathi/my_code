@@ -6,7 +6,7 @@ public class NGPath {
 
 	public static final String JOURNAL_DIR = DATA_DIR + "journals/";
 
-	public static final String JOURNAL_TEXT_FILE = DATA_DIR + "journal.txt";
+	public static final String JOURNAL_TEXT_FILE = DATA_DIR + "journal.txt.gz";
 
 	public static final String JOURNAL_SER_FILE = DATA_DIR + "journal.ser";
 
