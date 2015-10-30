@@ -46,30 +46,13 @@ public class RelevanceCollector {
 
 		String[] queryDocFileNames = MIRPath.QueryDocFileNames;
 
-		IndexSearcher[] indexSearchers = DocumentSearcher.getIndexSearchers(indexDirNames);
+		IndexSearcher[] indexSearchers = SearcherUtils.getIndexSearchers(indexDirNames);
 
 		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
 
 		for (int i = 0; i < queryFileNames.length; i++) {
-			List<BaseQuery> bqs = new ArrayList<BaseQuery>();
-			StrCounterMap queryRels = new StrCounterMap();
-
-			File queryFile = new File(queryFileNames[i]);
-			File relvFile = new File(relDataFileNames[i]);
-
-			if (i == 0) {
-				bqs = QueryReader.readTrecCdsQueries(queryFileNames[i]);
-				queryRels = RelevanceReader.readTrecCdsRelevances(relDataFileNames[i]);
-			} else if (i == 1) {
-				bqs = QueryReader.readClefEHealthQueries(queryFileNames[i]);
-				queryRels = RelevanceReader.readClefEHealthRelevances(relDataFileNames[i]);
-			} else if (i == 2) {
-				bqs = QueryReader.readOhsumedQueries(queryFileNames[i]);
-				queryRels = RelevanceReader.readOhsumedRelevances(relDataFileNames[i]);
-			} else if (i == 3) {
-				bqs = QueryReader.readTrecGenomicsQueries(queryFileNames[i]);
-				queryRels = RelevanceReader.readTrecGenomicsRelevances(relDataFileNames[i]);
-			}
+			List<BaseQuery> bqs = QueryReader.readQueries(queryFileNames[i]);
+			StrCounterMap queryRels = RelevanceReader.readRelevances(relDataFileNames[i]);
 
 			List<StrCounter> qs = new ArrayList<StrCounter>();
 
@@ -152,7 +135,7 @@ public class RelevanceCollector {
 
 		String[] queryDocFileNames = MIRPath.QueryDocFileNames;
 
-		IndexSearcher[] indexSearchers = DocumentSearcher.getIndexSearchers(indexDirNames);
+		IndexSearcher[] indexSearchers = SearcherUtils.getIndexSearchers(indexDirNames);
 
 		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
 
@@ -286,7 +269,7 @@ public class RelevanceCollector {
 
 		String[] queryDocFileNames = MIRPath.QueryDocFileNames;
 
-		IndexSearcher[] indexSearchers = DocumentSearcher.getIndexSearchers(indexDirNames);
+		IndexSearcher[] indexSearchers = SearcherUtils.getIndexSearchers(indexDirNames);
 
 		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
 

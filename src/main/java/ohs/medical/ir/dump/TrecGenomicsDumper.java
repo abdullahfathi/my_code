@@ -15,7 +15,7 @@ public class TrecGenomicsDumper extends TextDumper {
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
-		TrecGenomicsDumper d = new TrecGenomicsDumper(MIRPath.TREC_GENOMICS_COLLECTION_DIR, MIRPath.TREC_GENOMICS_COLLECTION_FILE);
+		TrecGenomicsDumper d = new TrecGenomicsDumper(MIRPath.TREC_GENOMICS_COL_DIR, MIRPath.TREC_GENOMICS_COL_FILE);
 		d.dump();
 		System.out.println("process ends.");
 	}
@@ -27,7 +27,7 @@ public class TrecGenomicsDumper extends TextDumper {
 	@Override
 	public void dump() throws Exception {
 		System.out.printf("dump from [%s]\n", inputDirName);
-		
+
 		TextFileWriter writer = new TextFileWriter(outputFileName);
 
 		File[] files = new File(inputDirName).listFiles();

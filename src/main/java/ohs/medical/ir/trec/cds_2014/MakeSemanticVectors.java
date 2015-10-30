@@ -20,7 +20,7 @@ import ohs.lucene.common.AnalyzerUtils;
 import ohs.lucene.common.MedicalEnglishAnalyzer;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseMatrix;
-import ohs.medical.ir.DocumentSearcher;
+import ohs.medical.ir.SearcherUtils;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
@@ -53,7 +53,7 @@ public class MakeSemanticVectors {
 
 		parser = new MediaWikiParserFactory(Language.english).createParser();
 
-		indexReader = DocumentSearcher.getIndexSearcher(CDSPath.INDEX_DIR).getIndexReader();
+		indexReader = SearcherUtils.getIndexSearcher(CDSPath.INDEX_DIR).getIndexReader();
 
 	}
 

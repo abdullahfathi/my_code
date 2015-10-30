@@ -291,10 +291,10 @@ public class SearchLogAnalyzer {
 		IndexSearcher[] indexSearchers = new IndexSearcher[indexDirNames.length];
 
 		for (int i = 0; i < indexDirNames.length; i++) {
-			indexSearchers[i] = DocumentSearcher.getIndexSearcher(indexDirNames[i]);
+			indexSearchers[i] = SearcherUtils.getIndexSearcher(indexDirNames[i]);
 		}
 
-		QueryParser queryParser = DocumentSearcher.getQueryParser();
+		QueryParser queryParser = SearcherUtils.getQueryParser();
 		List<List<BaseQuery>> queryData = new ArrayList<List<BaseQuery>>();
 		List<List<SparseVector>> relevanceData = new ArrayList<List<SparseVector>>();
 

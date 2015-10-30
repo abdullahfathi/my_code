@@ -64,11 +64,11 @@ public class DataHandler {
 
 	public void makeRawTextDump() throws Exception {
 		String[] fileNames = { "pmc-text-00.tar.gz", "pmc-text-01.tar.gz", "pmc-text-02.tar.gz", "pmc-text-03.tar.gz" };
-		TextFileWriter writer = new TextFileWriter(MIRPath.TREC_CDS_COLLECTION_FILE);
+		TextFileWriter writer = new TextFileWriter(MIRPath.TREC_CDS_COL_FILE);
 		int num_files = 0;
 
 		for (int i = 0; i < fileNames.length; i++) {
-			String tarFileName = MIRPath.TREC_CDS_COLLECTION_DIR + fileNames[i];
+			String tarFileName = MIRPath.TREC_CDS_COL_DIR + fileNames[i];
 			File tarFile = new File(tarFileName);
 			TarArchiveInputStream is = new TarArchiveInputStream(new GZIPInputStream(new FileInputStream(tarFile)));
 			TarArchiveEntry entry = null;
@@ -270,7 +270,8 @@ public class DataHandler {
 			if ((i + 1) % 1000 == 0) {
 				System.out.printf("\r[%d/%d/%d, %s][%d + %d + %d + %d = %d]",
 
-				numValid, i + 1, docFiles.size(), stopWatch.stop(), numMissPmcId, numMissTitle, numMissAbs, numMissBody, numTotalMiss);
+						numValid, i + 1, docFiles.size(), stopWatch.stop(), numMissPmcId, numMissTitle, numMissAbs, numMissBody,
+						numTotalMiss);
 			}
 
 			if (bodyElem != null && body.length() == 0) {

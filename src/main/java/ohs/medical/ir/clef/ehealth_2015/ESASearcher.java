@@ -25,7 +25,7 @@ import ohs.math.VectorMath;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseMatrix;
 import ohs.matrix.SparseVector;
-import ohs.medical.ir.DocumentSearcher;
+import ohs.medical.ir.SearcherUtils;
 import ohs.medical.ir.MIRPath;
 import ohs.types.Counter;
 import ohs.types.common.IntCounter;
@@ -165,7 +165,7 @@ public class ESASearcher {
 	public ESASearcher(File esaFile, File indexDir) throws Exception {
 		readESAModel(esaFile);
 
-		indexSearcher = DocumentSearcher.getIndexSearcher(indexDir.getPath());
+		indexSearcher = SearcherUtils.getIndexSearcher(indexDir.getPath());
 		cnt_sum_in_coll = indexSearcher.getIndexReader().getSumTotalTermFreq(IndexFieldName.CONTENT);
 		num_docs_in_coll = indexSearcher.getIndexReader().maxDoc();
 	}

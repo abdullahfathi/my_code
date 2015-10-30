@@ -6,7 +6,7 @@ import java.util.List;
 import ohs.matrix.SparseVector;
 import ohs.types.common.IntPair;
 
-public class PLMUtils {
+public class PLMFunctions {
 	public static final double pi = Math.PI;
 
 	// Cumulative distribution function of Arc Kernel

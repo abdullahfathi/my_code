@@ -216,19 +216,19 @@ public class SparseVector implements Vector {
 	}
 
 	public SparseVector copy() {
-		int[] newIndexes = ArrayUtils.copy(indexes);
-		double[] newValues = ArrayUtils.copy(values);
+		int[] newIndexes = ArrayUtils.copyOut(indexes);
+		double[] newValues = ArrayUtils.copyOut(values);
 		SparseVector ret = new SparseVector(newIndexes, newValues, label, dim);
 		ret.setSum(sum);
 		return ret;
 	}
 
 	public int[] copyIndexes() {
-		return ArrayUtils.copy(indexes);
+		return ArrayUtils.copyOut(indexes);
 	}
 
 	public double[] copyValues() {
-		return ArrayUtils.copy(values);
+		return ArrayUtils.copyOut(values);
 	}
 
 	public int dim() {

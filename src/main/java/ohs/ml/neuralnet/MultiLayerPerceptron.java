@@ -21,7 +21,7 @@ public class MultiLayerPerceptron {
 
 			double[] values = new double[indexes.length];
 			ArrayMath.random(values, 1, 5);
-			x.setIndexes(ArrayUtils.copy(indexes));
+			x.setIndexes(ArrayUtils.copyOut(indexes));
 			x.setValues(values);
 
 			int label = i % 2 == 0 ? 0 : 1;

@@ -17,7 +17,7 @@ import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.ling.struct.Span;
 import ohs.lucene.common.IndexFieldName;
-import ohs.medical.ir.DocumentSearcher;
+import ohs.medical.ir.SearcherUtils;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.common.StrPair;
@@ -28,7 +28,7 @@ public class AbbreviationExtracting {
 	public static void extract() throws Exception {
 		System.out.println("extract abbreviations.");
 
-		IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(EHPath.INDEX_DIR);
+		IndexSearcher indexSearcher = SearcherUtils.getIndexSearcher(EHPath.INDEX_DIR);
 		IndexReader indexReader = indexSearcher.getIndexReader();
 
 		File outputFile = new File(EHPath.ABBREVIATION_FILE);

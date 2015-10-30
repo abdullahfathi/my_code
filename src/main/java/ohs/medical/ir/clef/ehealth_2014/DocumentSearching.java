@@ -38,7 +38,7 @@ import ohs.lucene.common.IndexFieldName;
 import ohs.lucene.common.MedicalEnglishAnalyzer;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseVector;
-import ohs.medical.ir.DocumentSearcher;
+import ohs.medical.ir.SearcherUtils;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.common.StrCounterMap;
@@ -96,7 +96,7 @@ public class DocumentSearching {
 		MedicalEnglishAnalyzer analyzer = new MedicalEnglishAnalyzer();
 
 		List<IndexSearcher> indexSearchers = new ArrayList<IndexSearcher>();
-		indexSearchers.add(DocumentSearcher.getIndexSearcher(EHPath.INDEX_DIR));
+		indexSearchers.add(SearcherUtils.getIndexSearcher(EHPath.INDEX_DIR));
 		// indexSearchers.add(new
 		// IndexSearcher(DirectoryReader.open(FSDirectory.open(new
 		// File(WikiPath.INDEX_FULL_DIR)))));
@@ -342,7 +342,7 @@ public class DocumentSearching {
 		MedicalEnglishAnalyzer analyzer = new MedicalEnglishAnalyzer();
 
 		List<IndexSearcher> indexSearchers = new ArrayList<IndexSearcher>();
-		indexSearchers.add(DocumentSearcher.getIndexSearcher(EHPath.INDEX_DIR));
+		indexSearchers.add(SearcherUtils.getIndexSearcher(EHPath.INDEX_DIR));
 		// indexSearchers.add(new
 		// IndexSearcher(DirectoryReader.open(FSDirectory.open(new
 		// File(WikiPath.INDEX_FULL_DIR)))));

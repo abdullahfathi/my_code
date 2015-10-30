@@ -19,7 +19,7 @@ import de.tudarmstadt.ukp.wikipedia.parser.mediawiki.MediaWikiParserFactory;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.lucene.common.IndexFieldName;
-import ohs.medical.ir.DocumentSearcher;
+import ohs.medical.ir.SearcherUtils;
 import ohs.medical.ir.MIRPath;
 
 /**
@@ -29,7 +29,7 @@ import ohs.medical.ir.MIRPath;
 public class DataHandler {
 
 	public static void extractRedirects() throws Exception {
-		IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(MIRPath.WIKI_INDEX_DIR);
+		IndexSearcher indexSearcher = SearcherUtils.getIndexSearcher(MIRPath.WIKI_INDEX_DIR);
 		IndexReader indexReader = indexSearcher.getIndexReader();
 
 		MediaWikiParser parser = new MediaWikiParserFactory().createParser();
@@ -74,7 +74,7 @@ public class DataHandler {
 
 	public static void makeTextDump() throws Exception {
 		TextFileReader reader = new TextFileReader(MIRPath.WIKI_XML_DUMP_FILE);
-		TextFileWriter writer = new TextFileWriter(MIRPath.WIKI_COLLECTION_FILE);
+		TextFileWriter writer = new TextFileWriter(MIRPath.WIKI_COL_FILE);
 
 		reader.setPrintNexts(false);
 
@@ -227,7 +227,7 @@ public class DataHandler {
 	}
 
 	public static void test2() throws Exception {
-		TextFileReader reader = new TextFileReader(MIRPath.WIKI_COLLECTION_FILE);
+		TextFileReader reader = new TextFileReader(MIRPath.WIKI_COL_FILE);
 		reader.setPrintNexts(false);
 
 		StringBuffer sb = new StringBuffer();

@@ -256,15 +256,15 @@ public class LA {
 
 		a[0][0] * a[1][1] * a[2][2]
 
-		+ a[0][1] * a[1][2] * a[2][0]
+				+ a[0][1] * a[1][2] * a[2][0]
 
-		+ a[0][2] * a[1][0] * a[2][1]
+				+ a[0][2] * a[1][0] * a[2][1]
 
-		- a[0][2] * a[1][1] * a[2][0]
+				- a[0][2] * a[1][1] * a[2][0]
 
-		- a[0][1] * a[1][0] * a[2][2]
+				- a[0][1] * a[1][0] * a[2][2]
 
-		- a[0][0] * a[1][2] * a[2][1];
+				- a[0][0] * a[1][2] * a[2][1];
 
 		return ret;
 
@@ -794,7 +794,7 @@ public class LA {
 
 		double[][] identity = ArrayUtils.newIdentityMatrix(rowDim, 1);
 		double[][] ai = joinColumns(a, identity);
-		double[][] ia_inverse = ArrayUtils.copy(ai);
+		double[][] ia_inverse = ArrayUtils.copyOut(ai);
 
 		GaussElimination(ia_inverse);
 
@@ -1084,7 +1084,7 @@ public class LA {
 
 			inverse(a, b);
 
-			double[][] c = ArrayUtils.copy(a);
+			double[][] c = ArrayUtils.copyOut(a);
 
 			product(a, b, c);
 
@@ -1169,13 +1169,13 @@ public class LA {
 
 			{ { 3, -7, 8, 9, -6 }
 
-			, { 0, 2, -5, 7, 3 }
+					, { 0, 2, -5, 7, 3 }
 
-			, { 0, 0, 1, 5, 0 }
+					, { 0, 0, 1, 5, 0 }
 
-			, { 0, 0, 2, 4, -1 }
+					, { 0, 0, 2, 4, -1 }
 
-			, { 0, 0, 0, -2, 0 }
+					, { 0, 0, 0, -2, 0 }
 
 			};
 
@@ -1338,16 +1338,23 @@ public class LA {
 		ArrayMath.substract(b, c, c);
 	}
 
-	public static void outerProduct(double[] a, double[] b, double[] c) {
-		if (ArrayChecker.isSameDimension(a, b) && ArrayChecker.isSameDimension(b, c)) {
+	public static void outerProduct(double[] a, double[] b, double[][] c) {
+		int rowDim = a.length;
+		int colDim = b.length;
+		int[] dims = ArrayUtils.dimensions(c);
+
+		if (rowDim == dims[0] && colDim == dims[1]) {
 
 		} else {
-			throw new IllegalArgumentException("Invaild vector outerProduct");
+			throw new IllegalArgumentException();
 		}
 
-		c[0] = a[1] * b[2] - a[2] * b[1];
-		c[1] = a[2] * b[0] - a[0] * b[2];
-		c[2] = a[0] * b[1] - a[1] * b[0];
+		for (int i = 0; i < a.length; i++) {
+			for (int j = 0; j < b.length; j++) {
+				c[i][j] = a[i] * b[j];
+			}
+		}
+
 	}
 
 	/**
@@ -1966,7 +1973,7 @@ public class LA {
 	}
 
 	public double[][] colBasis(double[][] a) {
-		double[][] b = ArrayUtils.copy(a);
+		double[][] b = ArrayUtils.copyOut(a);
 		int[] pivotColumns = GaussElimination(b);
 
 		double[][] c = new double[a.length][pivotColumns.length];

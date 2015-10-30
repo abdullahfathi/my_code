@@ -3,6 +3,7 @@ package ohs.medical.ir.query;
 import ohs.io.TextFileReader;
 import ohs.medical.ir.MIRPath;
 import ohs.types.Counter;
+import ohs.types.CounterMap;
 import ohs.types.common.StrBidMap;
 import ohs.types.common.StrCounterMap;
 

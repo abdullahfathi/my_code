@@ -60,7 +60,7 @@ public class AbbreviationCollector {
 		for (int i = 3; i < abbrFileNames.length; i++) {
 			System.out.printf("extract abbreviations from [%s].\n", indexDirs[i]);
 
-			IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(indexDirs[i]);
+			IndexSearcher indexSearcher = SearcherUtils.getIndexSearcher(indexDirs[i]);
 			IndexReader indexReader = indexSearcher.getIndexReader();
 
 			TextFileWriter writer = new TextFileWriter(abbrFileNames[i]);

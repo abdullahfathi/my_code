@@ -36,7 +36,7 @@ public class DocumentPriorEstimator {
 		IndexSearcher[] indexSearchers = new IndexSearcher[indexDirNames.length];
 
 		for (int i = 0; i < indexDirNames.length; i++) {
-			indexSearchers[i] = DocumentSearcher.getIndexSearcher(indexDirNames[i]);
+			indexSearchers[i] = SearcherUtils.getIndexSearcher(indexDirNames[i]);
 		}
 
 		DocumentPriorEstimator ds = new DocumentPriorEstimator(indexSearchers, docPriorFileNames);
@@ -45,7 +45,7 @@ public class DocumentPriorEstimator {
 		System.out.println("process ends.");
 	}
 
-	private IndexSearcher[] indexSearchers;
+	private IndexSearcher[] iss;
 
 	private String[] docPriorFileNames;
 
@@ -55,11 +55,11 @@ public class DocumentPriorEstimator {
 
 	private double dirichlet_prior = 1500;
 
-	public DocumentPriorEstimator(IndexSearcher[] indexSearchers, String[] docPriorFileNames) {
+	public DocumentPriorEstimator(IndexSearcher[] iss, String[] docPriorFileNames) {
 		super();
-		this.indexSearchers = indexSearchers;
+		this.iss = iss;
 		this.docPriorFileNames = docPriorFileNames;
-		num_colls = indexSearchers.length;
+		num_colls = iss.length;
 	}
 
 	private void estimate() throws Exception {
@@ -69,9 +69,9 @@ public class DocumentPriorEstimator {
 
 		for (int i = 0; i < num_colls; i++) {
 			Counter<Integer> counter = new Counter<Integer>();
-			IndexReader indexReader = indexSearchers[i].getIndexReader();
-			cnt_sum_in_each_coll[i] = indexReader.getSumTotalTermFreq(IndexFieldName.CONTENT);
-			num_docs_in_each_coll[i] = indexReader.maxDoc();
+			IndexReader ir = iss[i].getIndexReader();
+			cnt_sum_in_each_coll[i] = ir.getSumTotalTermFreq(IndexFieldName.CONTENT);
+			num_docs_in_each_coll[i] = ir.maxDoc();
 			cnt_sum_in_all_colls += cnt_sum_in_each_coll[i];
 		}
 
@@ -79,18 +79,18 @@ public class DocumentPriorEstimator {
 		stopWatch.start();
 
 		for (int i = 0; i < num_colls; i++) {
-			IndexReader indexReader = indexSearchers[i].getIndexReader();
+			IndexReader ir = iss[i].getIndexReader();
 			TextFileWriter writer = new TextFileWriter(docPriorFileNames[i].replace("ser", "txt"));
 
-			DenseVector docPriors = new DenseVector(indexReader.maxDoc());
+			DenseVector docPriors = new DenseVector(ir.maxDoc());
 
-			for (int j = 0; j < indexReader.maxDoc(); j++) {
+			for (int j = 0; j < ir.maxDoc(); j++) {
 				if ((j + 1) % 10000 == 0) {
 					System.out.printf("\r%dth coll [%d/%d docs, %s]", i + 1, j + 1, (int) num_docs_in_each_coll[i], stopWatch.stop());
 				}
-				Document doc = indexReader.document(j);
+				Document doc = ir.document(j);
 
-				Terms termVector = indexReader.getTermVector(j, IndexFieldName.CONTENT);
+				Terms termVector = ir.getTermVector(j, IndexFieldName.CONTENT);
 
 				if (termVector == null) {
 					continue;
@@ -128,7 +128,7 @@ public class DocumentPriorEstimator {
 					for (int w = 0; w < wordIndexer.size(); w++) {
 						String word = wordIndexer.getObject(w);
 						Term termInstance = new Term(IndexFieldName.CONTENT, word);
-						double count = indexSearchers[k].getIndexReader().totalTermFreq(termInstance);
+						double count = iss[k].getIndexReader().totalTermFreq(termInstance);
 						counter.setCount(w, count);
 					}
 					collWordCountData[k] = VectorUtils.toSparseVector(counter);

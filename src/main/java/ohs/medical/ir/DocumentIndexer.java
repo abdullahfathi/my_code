@@ -110,7 +110,7 @@ public class DocumentIndexer {
 		System.out.println("index CLEF eHealth.");
 		IndexWriter indexWriter = getIndexWriter(MIRPath.CLEF_EHEALTH_INDEX_DIR);
 
-		TextFileReader reader = new TextFileReader(MIRPath.CLEF_EHEALTH_COLLECTION_FILE);
+		TextFileReader reader = new TextFileReader(MIRPath.CLEF_EHEALTH_COL_FILE);
 		reader.setPrintNexts(false);
 
 		while (reader.hasNext()) {
@@ -142,10 +142,8 @@ public class DocumentIndexer {
 		System.out.println("index OHSUMED.");
 
 		IndexWriter writer = getIndexWriter(MIRPath.OHSUMED_INDEX_DIR);
-		TextFileReader reader = new TextFileReader(MIRPath.OHSUMED_COLLECTION_FILE);
+		TextFileReader reader = new TextFileReader(MIRPath.OHSUMED_COL_FILE);
 		reader.setPrintNexts(false);
-
-		TextNormalizer tn = new TextNormalizer();
 
 		while (reader.hasNext()) {
 			reader.print(100000);
@@ -179,7 +177,7 @@ public class DocumentIndexer {
 		System.out.println("index TREC CDS.");
 
 		IndexWriter writer = getIndexWriter(MIRPath.TREC_CDS_INDEX_DIR);
-		TextFileReader reader = new TextFileReader(MIRPath.TREC_CDS_COLLECTION_FILE);
+		TextFileReader reader = new TextFileReader(MIRPath.TREC_CDS_COL_FILE);
 		reader.setPrintNexts(false);
 
 		while (reader.hasNext()) {
@@ -221,7 +219,7 @@ public class DocumentIndexer {
 
 	public void indexTrecGenomics() throws Exception {
 		IndexWriter indexWriter = getIndexWriter(MIRPath.TREC_GENOMICS_INDEX_DIR);
-		TextFileReader reader = new TextFileReader(MIRPath.TREC_GENOMICS_COLLECTION_FILE);
+		TextFileReader reader = new TextFileReader(MIRPath.TREC_GENOMICS_COL_FILE);
 		reader.setPrintNexts(false);
 
 		while (reader.hasNext()) {
@@ -254,7 +252,7 @@ public class DocumentIndexer {
 		Set<String> stopSectionNames = getStopSectionNames();
 
 		IndexWriter writer = getIndexWriter(MIRPath.WIKI_INDEX_DIR);
-		TextFileReader reader = new TextFileReader(MIRPath.WIKI_COLLECTION_FILE);
+		TextFileReader reader = new TextFileReader(MIRPath.WIKI_COL_FILE);
 		reader.setPrintNexts(false);
 
 		MediaWikiParserFactory factory = new MediaWikiParserFactory(Language.english);
@@ -368,7 +366,7 @@ public class DocumentIndexer {
 			// return;
 			// }
 
-			IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(indexDirName);
+			IndexSearcher indexSearcher = SearcherUtils.getIndexSearcher(indexDirName);
 			IndexReader indexReader = indexSearcher.getIndexReader();
 
 			List<String> docIds = new ArrayList<String>();

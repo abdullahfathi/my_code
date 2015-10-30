@@ -68,7 +68,7 @@ public class LibLinearWrapper implements Serializable {
 	}
 
 	public String evalute(List<SparseVector> testData) {
-		SparseVector label_correct = new SparseVector(ArrayUtils.copy(model.getLabels()));
+		SparseVector label_correct = new SparseVector(ArrayUtils.copyOut(model.getLabels()));
 
 		SparseVector label_answer = label_correct.copy();
 		SparseVector label_predict = label_correct.copy();

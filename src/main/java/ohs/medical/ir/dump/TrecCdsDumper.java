@@ -31,9 +31,9 @@ public class TrecCdsDumper extends TextDumper {
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
-		TrecCdsDumper dh = new TrecCdsDumper(MIRPath.TREC_CDS_COLLECTION_DIR, MIRPath.TREC_CDS_COLLECTION_FILE);
+		TrecCdsDumper dh = new TrecCdsDumper(MIRPath.TREC_CDS_COL_DIR, MIRPath.TREC_CDS_COL_FILE);
 		dh.readValidDocIDs(MIRPath.TREC_CDS_VALID_DOC_ID_FILE);
-		dh.setIntermediateFileName(MIRPath.TREC_CDS_COLLECTION_XML_FILE);
+		dh.setIntermediateFileName(MIRPath.TREC_CDS_COL_XML_FILE);
 		dh.dump();
 
 		// dh.makeSingleFile();
@@ -72,8 +72,6 @@ public class TrecCdsDumper extends TextDumper {
 				return null;
 			}
 		});
-		
-		
 
 		TextFileReader reader = new TextFileReader(xmlFileName);
 		TextFileWriter writer = new TextFileWriter(outputFileName);

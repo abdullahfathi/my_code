@@ -11,7 +11,7 @@ import ohs.lucene.common.IndexFieldName;
 import ohs.math.VectorMath;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseVector;
-import ohs.medical.ir.DocumentSearcher;
+import ohs.medical.ir.SearcherUtils;
 import ohs.medical.ir.RelevanceModelBuilder;
 import ohs.medical.ir.WordCountBox;
 import ohs.types.Counter;
@@ -27,8 +27,8 @@ public class WikiQueryExpander {
 	// public static void main(String[] args) throws Exception {
 	// System.out.println("process begins.");
 	//
-	// IndexSearcher trecIndexSearcher = DocumentSearcher.getIndexSearcher(MIRPath.TREC_CDS_INDEX_DIR);
-	// IndexSearcher wikiIndexSearcher = DocumentSearcher.getIndexSearcher(MIRPath.WIKI_INDEX_DIR);
+	// IndexSearcher trecIndexSearcher = SearcherUtils.getIndexSearcher(MIRPath.TREC_CDS_INDEX_DIR);
+	// IndexSearcher wikiIndexSearcher = SearcherUtils.getIndexSearcher(MIRPath.WIKI_INDEX_DIR);
 	// Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
 	//
 	// List<BaseQuery> bqs = QueryReader.readTrecCdsQueries(MIRPath.TREC_CDS_QUERY_2014_FILE);
@@ -54,7 +54,7 @@ public class WikiQueryExpander {
 	// queryModel.normalize();
 	//
 	// BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(queryModel, wordIndexer));
-	// SparseVector docScores = DocumentSearcher.search(lbq, trecIndexSearcher, 1000);
+	// SparseVector docScores = SearcherUtils.search(lbq, trecIndexSearcher, 1000);
 	// logWriter.write(expander.getLogBuffer().toString() + "\n\n");
 	// ResultWriter.write(writer, bq.getId(), docScores);
 	// }
@@ -114,7 +114,7 @@ public class WikiQueryExpander {
 
 		BooleanQuery searchQuery1 = AnalyzerUtils.getQuery(VectorUtils.toCounter(queryModel, wordIndexer));
 
-		SparseVector conceptScores1 = DocumentSearcher.search(searchQuery1, wikiIndexSearcher, 50);
+		SparseVector conceptScores1 = SearcherUtils.search(searchQuery1, wikiIndexSearcher, 50);
 		Counter<Integer> c = new Counter<Integer>();
 
 		for (int i = 0; i < conceptScores1.size(); i++) {

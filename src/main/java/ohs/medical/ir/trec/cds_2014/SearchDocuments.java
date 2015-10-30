@@ -30,7 +30,7 @@ import ohs.lucene.common.IndexFieldName;
 import ohs.lucene.common.MedicalEnglishAnalyzer;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseMatrix;
-import ohs.medical.ir.DocumentSearcher;
+import ohs.medical.ir.SearcherUtils;
 import ohs.types.BidMap;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
@@ -155,7 +155,7 @@ public class SearchDocuments {
 
 		analyzer = MedicalEnglishAnalyzer.getAnalyzer();
 
-		indexSearcher = DocumentSearcher.getIndexSearcher(CDSPath.INDEX_DIR);
+		indexSearcher = SearcherUtils.getIndexSearcher(CDSPath.INDEX_DIR);
 		indexSearcher.setSimilarity(new LMDirichletSimilarity());
 	}
 

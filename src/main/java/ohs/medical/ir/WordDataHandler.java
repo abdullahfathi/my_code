@@ -57,7 +57,7 @@ public class WordDataHandler {
 	}
 
 	public void extractBigrams(String indexDirName, String outputFileName) throws Exception {
-		IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(indexDirName);
+		IndexSearcher indexSearcher = SearcherUtils.getIndexSearcher(indexDirName);
 		IndexReader indexReader = indexSearcher.getIndexReader();
 
 		TextFileWriter writer = new TextFileWriter(outputFileName);
@@ -157,7 +157,7 @@ public class WordDataHandler {
 
 	public void makeVocabulary(String indexDirName, String vocFileName) throws Exception {
 		System.out.printf("make a vocabulary from [%s]\n", indexDirName);
-		IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(indexDirName);
+		IndexSearcher indexSearcher = SearcherUtils.getIndexSearcher(indexDirName);
 
 		IndexReader indexReader = indexSearcher.getIndexReader();
 

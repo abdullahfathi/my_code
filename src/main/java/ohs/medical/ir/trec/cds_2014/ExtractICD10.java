@@ -34,7 +34,7 @@ import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.lucene.common.IndexFieldName;
 import ohs.lucene.common.MedicalEnglishAnalyzer;
-import ohs.medical.ir.DocumentSearcher;
+import ohs.medical.ir.SearcherUtils;
 import ohs.medical.ir.MIRPath;
 import ohs.types.Counter;
 import ohs.types.ListMap;
@@ -130,7 +130,7 @@ public class ExtractICD10 {
 	public ExtractICD10() throws Exception {
 		analyzer = MedicalEnglishAnalyzer.getAnalyzer();
 
-		indexSearcher = DocumentSearcher.getIndexSearcher(MIRPath.WIKI_INDEX_DIR);
+		indexSearcher = SearcherUtils.getIndexSearcher(MIRPath.WIKI_INDEX_DIR);
 		indexSearcher.setSimilarity(new LMDirichletSimilarity());
 
 		searchCacheMap = new HashMap<String, Integer>();

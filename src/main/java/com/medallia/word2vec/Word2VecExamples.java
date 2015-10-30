@@ -38,8 +38,8 @@ public class Word2VecExamples {
 
 	public static Properties getDefaultProp() throws IOException {
 		Properties prop = new Properties();
-		prop.setProperty("input_file", "../../data/medical_ir/trec_cds/sents.txt.gz");
-		prop.setProperty("output_file", "../../data/medical_ir/trec_cds/word2vec_model.txt.gz");
+		prop.setProperty("input_file", "../../data/medical_ir/ohsumed/sents.txt.gz");
+		prop.setProperty("output_file", "../../data/medical_ir/ohsumed/word2vec_model.ser.gz");
 		prop.setProperty("network_type", "cbow");
 		prop.setProperty("threads", "100");
 		prop.setProperty("min_freq", "5");
@@ -51,7 +51,7 @@ public class Word2VecExamples {
 		prop.setProperty("down_sample_rate", "1e-4");
 		prop.setProperty("min_sent_size", "10");
 		prop.setProperty("max_sent_size", "100");
-		prop.setProperty("num_train_sents", "all");
+		prop.setProperty("num_train_sents", "10000");
 		return prop;
 	}
 
@@ -87,25 +87,25 @@ public class Word2VecExamples {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 
-		Word2VecModel model = Word2VecModel.fromGZippedTextFile("../../data/medical_ir/ohsumed/word2vec_model.txt.gz");
-		
-		interact(model.forSearch());
+		// Word2VecModel model = Word2VecModel.fromGZippedTextFile("../../data/medical_ir/ohsumed/word2vec_model.ser.gz");
+		//
+		// interact(model.forSearch());
 
-		// File propFile = new File("word2vec.prop");
-		// Properties prop = getDefaultProp();
-		//
-		// if (propFile.exists()) {
-		// FileInputStream fis = new FileInputStream(propFile);
-		// prop.load(fis);
-		// fis.close();
-		// } else {
-		// FileOutputStream fos = new FileOutputStream(propFile);
-		// prop.store(fos, "word2vec prop");
-		// fos.close();
-		// }
-		//
-		// Word2VecExamples e = new Word2VecExamples(prop);
-		// e.process();
+		File propFile = new File("word2vec.prop");
+		Properties prop = getDefaultProp();
+
+		if (propFile.exists()) {
+			FileInputStream fis = new FileInputStream(propFile);
+			prop.load(fis);
+			fis.close();
+		} else {
+			FileOutputStream fos = new FileOutputStream(propFile);
+			prop.store(fos, "word2vec prop");
+			fos.close();
+		}
+
+		Word2VecExamples e = new Word2VecExamples(prop);
+		e.process();
 
 		System.out.println("process ends.");
 	}

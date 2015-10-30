@@ -55,7 +55,7 @@ public class ResultFormatter {
 		nameMap.put("cbeem_esa_true_false.txt", "KISTI_EN_RUN7.dat");
 		nameMap.put("cbeem_esa_true_true.txt", "KISTI_EN_RUN8.dat");
 
-		StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(MIRPath.CLEF_EHEALTH_DOCUMENT_ID_MAP_FIE);
+		StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(MIRPath.CLEF_EHEALTH_DOC_ID_MAP_FIE);
 
 		File outputDir = new File(MIRPath.CLEF_EHEALTH_OUTPUT_RESULT_2015_DIR, "submit");
 

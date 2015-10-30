@@ -84,7 +84,7 @@ public class ArrayChecker {
 	public static boolean isConsistent(double[][] a) {
 
 		if (!isUpperTriangular(a)) {
-			a = ArrayUtils.copy(a);
+			a = ArrayUtils.copyOut(a);
 			LA.GaussElimination(a);
 		}
 
@@ -694,6 +694,10 @@ public class ArrayChecker {
 		} else {
 			return false;
 		}
+	}
+
+	public static boolean isSame(int a, int b) {
+		return a == b ? true : false;
 	}
 
 	/**

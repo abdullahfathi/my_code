@@ -44,10 +44,41 @@ public class ArrayMath {
 		if (!ArrayChecker.isSameDimension(a, b, c)) {
 			throw new IllegalArgumentException();
 		}
-		
+
 		for (int i = 0; i < a.length; i++) {
 			c[i] = a[i] + b[i];
 		}
+	}
+
+	public static void outerProduct(double[] a, double[] b, double[][] c) {
+		int rowDim = a.length;
+		int colDim = b.length;
+		int[] dims = ArrayUtils.dimensions(c);
+
+		if (rowDim == dims[0] && colDim == dims[1]) {
+
+		} else {
+			throw new IllegalArgumentException();
+		}
+
+		for (int i = 0; i < a.length; i++) {
+			for (int j = 0; j < b.length; j++) {
+				c[i][j] = a[i] * b[j];
+			}
+		}
+
+	}
+
+	public static double dotProduct(double[] a, double[] b) {
+		if (!ArrayChecker.isSameDimension(a, b)) {
+			throw new IllegalArgumentException();
+		}
+
+		double ret = 0;
+		for (int i = 0; i < a.length; i++) {
+			ret += a[i] * b[i];
+		}
+		return ret;
 	}
 
 	/**
@@ -378,7 +409,7 @@ public class ArrayMath {
 		double[] cents = new double[num_docs];
 		double uniform_cent = 1f / num_docs;
 
-		double[] old_cents = ArrayUtils.copy(init_cents);
+		double[] old_cents = ArrayUtils.copyOut(init_cents);
 		double old_dist = Double.MAX_VALUE;
 
 		for (int i = 0; i < max_iter; i++) {
@@ -464,7 +495,7 @@ public class ArrayMath {
 	}
 
 	public static double jensenShannonDivergence(double[] a, double[] b) {
-		assert(a.length == b.length);
+		assert (a.length == b.length);
 		double[] average = new double[a.length];
 		for (int i = 0; i < a.length; ++i) {
 			average[i] += (a[i] + b[i]) / 2;
@@ -715,8 +746,6 @@ public class ArrayMath {
 			}
 
 			normalize(vs);
-
-			System.out.println(product(vs));
 
 			double[] log_vs = log(vs);
 
@@ -1034,13 +1063,13 @@ public class ArrayMath {
 		return ret;
 	}
 
-	public static double product(double[] a) {
-		double ret = 1;
-		for (int i = 0; i < a.length; i++) {
-			ret *= a[i];
-		}
-		return ret;
-	}
+	// public static double product(double[] a) {
+	// double ret = 1;
+	// for (int i = 0; i < a.length; i++) {
+	// ret *= a[i];
+	// }
+	// return ret;
+	// }
 
 	public static void random(double[] x, double min, double max) {
 		Random random = new Random();

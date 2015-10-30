@@ -20,7 +20,7 @@ public class OhsumedDumper extends TextDumper {
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
-		OhsumedDumper dh = new OhsumedDumper(MIRPath.OHSUMED_COLLECTION_DIR, MIRPath.OHSUMED_COLLECTION_FILE);
+		OhsumedDumper dh = new OhsumedDumper(MIRPath.OHSUMED_COL_DIR, MIRPath.OHSUMED_COL_FILE);
 		dh.dump();
 		System.out.println("process ends.");
 	}

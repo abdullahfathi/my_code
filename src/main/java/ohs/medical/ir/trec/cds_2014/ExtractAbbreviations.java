@@ -17,7 +17,7 @@ import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.ling.struct.Span;
 import ohs.lucene.common.IndexFieldName;
-import ohs.medical.ir.DocumentSearcher;
+import ohs.medical.ir.SearcherUtils;
 import ohs.medical.ir.clef.ehealth_2014.AbbreviationExtractor;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
@@ -29,7 +29,7 @@ public class ExtractAbbreviations {
 	public static void extract() throws Exception {
 		System.out.println("extract abbreviations.");
 
-		IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(CDSPath.INDEX_DIR);
+		IndexSearcher indexSearcher = SearcherUtils.getIndexSearcher(CDSPath.INDEX_DIR);
 		IndexReader indexReader = indexSearcher.getIndexReader();
 
 		TextFileWriter writer = new TextFileWriter(CDSPath.ABBREVIATION_FILE);

@@ -18,7 +18,7 @@ import ohs.lucene.common.IndexFieldName;
 import ohs.lucene.common.MedicalEnglishAnalyzer;
 import ohs.matrix.SparseVector;
 import ohs.medical.ir.DocumentIdMapper;
-import ohs.medical.ir.DocumentSearcher;
+import ohs.medical.ir.SearcherUtils;
 import ohs.medical.ir.MIRPath;
 import ohs.medical.ir.query.BaseQuery;
 import ohs.medical.ir.query.QueryReader;
@@ -50,11 +50,11 @@ public class ConceptRelevanceCollector {
 		String[] queryDocFileNames = { MIRPath.TREC_CDS_CONCEPT_QUERY_DOC_FILE, MIRPath.CLEF_EHEALTH_CONCEPT_QUERY_DOC_FILE,
 				MIRPath.OHSUMED_CONCEPT_QUERY_DOC_FILE };
 
-		IndexSearcher[] indexSearchers = DocumentSearcher.getIndexSearchers(indexDirNames);
+		IndexSearcher[] indexSearchers = SearcherUtils.getIndexSearchers(indexDirNames);
 
 		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
 
-		IndexSearcher wikiSearcher = DocumentSearcher.getIndexSearcher(MIRPath.WIKI_INDEX_DIR);
+		IndexSearcher wikiSearcher = SearcherUtils.getIndexSearcher(MIRPath.WIKI_INDEX_DIR);
 
 		for (int i = 0; i < queryFileNames.length; i++) {
 			List<BaseQuery> bqs = new ArrayList<BaseQuery>();
@@ -89,7 +89,7 @@ public class ConceptRelevanceCollector {
 			for (int j = 0; j < bqs.size(); j++) {
 				BaseQuery bq = bqs.get(j);
 				StrCounter c = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
-				SparseVector queryConceptWeights = DocumentSearcher.search(AnalyzerUtils.getQuery(c), wikiSearcher, 100);
+				SparseVector queryConceptWeights = SearcherUtils.search(AnalyzerUtils.getQuery(c), wikiSearcher, 100);
 
 				writer.write(String.format("Q_%d:\t", j + 1) + getString(queryConceptWeights) + "\n");
 
@@ -136,7 +136,7 @@ public class ConceptRelevanceCollector {
 
 					cc.keepTopNKeys(50);
 
-					SparseVector docConceptWeights = DocumentSearcher.search(AnalyzerUtils.getQuery(cc), wikiSearcher, 100);
+					SparseVector docConceptWeights = SearcherUtils.search(AnalyzerUtils.getQuery(cc), wikiSearcher, 100);
 					writer.write(rel + "\t" + getString(docConceptWeights) + "\n");
 				}
 				writer.write("\n");

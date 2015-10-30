@@ -28,7 +28,7 @@ public class WikiIndexer4ICD {
 
 		IndexWriter indexWriter = DocumentIndexer.getIndexWriter(MIRPath.WIKI_INDEX_DIR);
 
-		TextFileReader reader = new TextFileReader(MIRPath.WIKI_COLLECTION_FILE);
+		TextFileReader reader = new TextFileReader(MIRPath.WIKI_COL_FILE);
 		reader.setPrintNexts(false);
 
 		MediaWikiParserFactory factory = new MediaWikiParserFactory(Language.english);

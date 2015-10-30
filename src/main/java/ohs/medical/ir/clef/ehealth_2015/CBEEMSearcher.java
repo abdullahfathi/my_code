@@ -31,7 +31,7 @@ import ohs.math.VectorUtils;
 import ohs.matrix.DenseVector;
 import ohs.matrix.SparseMatrix;
 import ohs.matrix.SparseVector;
-import ohs.medical.ir.DocumentSearcher;
+import ohs.medical.ir.SearcherUtils;
 import ohs.medical.ir.HyperParameter;
 import ohs.medical.ir.MIRPath;
 import ohs.medical.ir.WordCountBox;
@@ -86,7 +86,7 @@ public class CBEEMSearcher {
 
 		String[] docMapFileNames = MIRPath.DocIdMapFileNames;
 
-		IndexSearcher[] indexSearchers = DocumentSearcher.getIndexSearchers(indexDirNames);
+		IndexSearcher[] indexSearchers = SearcherUtils.getIndexSearchers(indexDirNames);
 
 		DenseVector[] docPriorData = new DenseVector[indexSearchers.length];
 
@@ -112,7 +112,7 @@ public class CBEEMSearcher {
 		IOUtils.deleteFilesUnder(logDirName);
 		IOUtils.deleteFilesUnder(resultDirName);
 
-		QueryParser queryParser = DocumentSearcher.getQueryParser();
+		QueryParser queryParser = SearcherUtils.getQueryParser();
 
 		List<BaseQuery> baseQueries = new ArrayList<BaseQuery>();
 
@@ -730,7 +730,7 @@ public class CBEEMSearcher {
 			logBuff = new StringBuffer();
 
 			for (int j = 0; j < num_colls; j++) {
-				docScoreData[j] = DocumentSearcher.search(baseQuery.getLuceneQuery(), indexSearchers[j], hyperParam.getTopK());
+				docScoreData[j] = SearcherUtils.search(baseQuery.getLuceneQuery(), indexSearchers[j], hyperParam.getTopK());
 			}
 
 			SparseVector docScores = rerank(colId, baseQuery);

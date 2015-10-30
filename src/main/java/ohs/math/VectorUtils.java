@@ -227,11 +227,11 @@ public class VectorUtils {
 		return toSparseVector(ret);
 	}
 
-	public static SparseVector toSparseVector(StrCounter x, Indexer<String> indexer) {
+	public static SparseVector toSparseVector(Counter<String> x, Indexer<String> indexer) {
 		return toSparseVector(x, indexer, false);
 	}
 
-	public static SparseVector toSparseVector(StrCounter x, Indexer<String> indexer, boolean addIfUnseen) {
+	public static SparseVector toSparseVector(Counter<String> x, Indexer<String> indexer, boolean addIfUnseen) {
 		List<Integer> indexList = new ArrayList<Integer>();
 		List<Double> valueList = new ArrayList<Double>();
 

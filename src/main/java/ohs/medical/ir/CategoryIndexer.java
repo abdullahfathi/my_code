@@ -56,7 +56,7 @@ public class CategoryIndexer {
 		}
 
 		IndexWriter indexWriter = DocumentIndexer.getIndexWriter(MIRPath.WIKI_CATEGORY_INDEX_DIR);
-		IndexReader indexReader = DocumentSearcher.getIndexSearcher(MIRPath.WIKI_INDEX_DIR).getIndexReader();
+		IndexReader indexReader = SearcherUtils.getIndexSearcher(MIRPath.WIKI_INDEX_DIR).getIndexReader();
 
 		int numCats = 0;
 
@@ -107,7 +107,7 @@ public class CategoryIndexer {
 
 	public void makeCategoryMap() throws Exception {
 		System.out.println("make category map.");
-		IndexReader indexReader = DocumentSearcher.getIndexSearcher(MIRPath.WIKI_INDEX_DIR).getIndexReader();
+		IndexReader indexReader = SearcherUtils.getIndexSearcher(MIRPath.WIKI_INDEX_DIR).getIndexReader();
 		TextFileWriter writer = new TextFileWriter(MIRPath.WIKI_CATEGORY_MAP_FILE);
 
 		StopWatch stopWatch = new StopWatch();

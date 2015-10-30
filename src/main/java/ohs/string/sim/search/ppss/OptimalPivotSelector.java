@@ -157,7 +157,10 @@ public class OptimalPivotSelector extends PivotSelector {
 			int[] locs = new int[pivot_size];
 
 			for (int j = 0, s = 0; j < pivot_size; j++) {
-				double[] col = ArrayUtils.copyColumn(W, j);
+				double[] col = new double[W.length];
+
+				ArrayUtils.copyColumn(W, j, col);
+
 				int i = ArrayMath.argMin(col, s, col.length);
 				locs[j] = i;
 				s = i + 1;

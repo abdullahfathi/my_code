@@ -23,7 +23,7 @@ import ohs.math.VectorMath;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseMatrix;
 import ohs.matrix.SparseVector;
-import ohs.medical.ir.DocumentSearcher;
+import ohs.medical.ir.SearcherUtils;
 import ohs.medical.ir.clef.ehealth_2015.CentralityEstimator;
 import ohs.types.Counter;
 import ohs.types.common.IntCounter;
@@ -99,7 +99,7 @@ public class ESASearcher {
 	public ESASearcher(ESA esa, File indexDir) throws Exception {
 		this.esa = esa;
 
-		indexSearcher = DocumentSearcher.getIndexSearcher(indexDir.getPath());
+		indexSearcher = SearcherUtils.getIndexSearcher(indexDir.getPath());
 		cnt_sum_in_coll = indexSearcher.getIndexReader().getSumTotalTermFreq(IndexFieldName.CONTENT);
 		num_docs_in_coll = indexSearcher.getIndexReader().maxDoc();
 	}
@@ -122,7 +122,7 @@ public class ESASearcher {
 			}
 
 			TermsEnum reuse = null;
-			TermsEnum iterator = termVector.iterator(reuse);
+			TermsEnum iterator = termVector.iterator();
 			BytesRef ref = null;
 			DocsAndPositionsEnum docsAndPositions = null;
 			IntCounter wordCounts = new IntCounter();

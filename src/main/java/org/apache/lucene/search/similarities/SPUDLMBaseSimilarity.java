@@ -128,7 +128,6 @@ public abstract class SPUDLMBaseSimilarity extends SimilarityBase {
 
 	}
 
-	@Override
 	protected void explain(Explanation expl, BasicStats stats, int doc, float freq, float docLen) {
 		expl.addDetail(new Explanation(collectionModel.computePolyaProbability(stats, null), "collection probability"));
 	}

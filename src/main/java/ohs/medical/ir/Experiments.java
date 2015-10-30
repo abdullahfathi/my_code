@@ -154,7 +154,7 @@ public class Experiments {
 
 	public void run(int num_fb_iters, double mixture_for_fb_model, double[] mixtures_for_field_rms, int num_fb_docs, int num_fb_words)
 			throws Exception {
-		IndexSearcher wikiIndexSearcher = DocumentSearcher.getIndexSearcher(MIRPath.WIKI_INDEX_DIR);
+		IndexSearcher wikiIndexSearcher = SearcherUtils.getIndexSearcher(MIRPath.WIKI_INDEX_DIR);
 		String outputFileName = null;
 
 		{
@@ -174,10 +174,10 @@ public class Experiments {
 
 		System.out.println(outputFileName);
 
-		mixtures_for_field_rms = ArrayUtils.copy(mixtures_for_field_rms);
+		mixtures_for_field_rms = ArrayUtils.copyOut(mixtures_for_field_rms);
 		ArrayMath.normalize(mixtures_for_field_rms);
 
-		IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(MIRPath.TREC_CDS_INDEX_DIR);
+		IndexSearcher indexSearcher = SearcherUtils.getIndexSearcher(MIRPath.TREC_CDS_INDEX_DIR);
 		IndexReader indexReader = indexSearcher.getIndexReader();
 		List<BaseQuery> bqs = QueryReader.readQueries(MIRPath.TREC_CDS_QUERY_2015_A_FILE);
 
@@ -198,9 +198,9 @@ public class Experiments {
 
 			for (int j = 0; j < 1; j++) {
 				BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(expQueryModel, wordIndexer));
-				docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
+				docScores = SearcherUtils.search(lbq, indexSearcher, 1000);
 
-				// SparseVector wikiScores = DocumentSearcher.search(lbq, wikiIndexSearcher, 50);
+				// SparseVector wikiScores = SearcherUtils.search(lbq, wikiIndexSearcher, 50);
 
 				WordCountBox wcb1 = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, IndexFieldName.TITLE);
 				WordCountBox wcb2 = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, IndexFieldName.ABSTRACT);
@@ -225,7 +225,7 @@ public class Experiments {
 			}
 
 			BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(expQueryModel, wordIndexer));
-			docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
+			docScores = SearcherUtils.search(lbq, indexSearcher, 1000);
 
 			WordCountBox wcb = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, IndexFieldName.CONTENT);
 
@@ -242,7 +242,7 @@ public class Experiments {
 			// System.out.printf("RM:\t%s\n", VectorUtils.toCounter(rm, wordIndexer));
 			// System.out.println();
 
-			ResultWriter.write(writer, bq.getId(), docScores);
+			SearcherUtils.write(writer, bq.getId(), docScores);
 		}
 		writer.close();
 	}
@@ -256,7 +256,7 @@ public class Experiments {
 		String[] QueryFileNames = { MIRPath.TREC_CDS_QUERY_2014_FILE, MIRPath.CLEF_EHEALTH_QUERY_2015_FILE, MIRPath.OHSUMED_QUERY_FILE,
 				MIRPath.TREC_GENOMICS_QUERY_2007_FILE };
 
-		IndexSearcher[] indexSearchers = DocumentSearcher.getIndexSearchers(IndexDirNames);
+		IndexSearcher[] indexSearchers = SearcherUtils.getIndexSearchers(IndexDirNames);
 
 		DenseVector[] docPriorData = new DenseVector[indexSearchers.length];
 
@@ -293,7 +293,7 @@ public class Experiments {
 
 		for (int i = 0; i < QueryFileNames.length; i++) {
 			List<BaseQuery> bqs = QueryReader.readQueries(QueryFileNames[i]);
-			IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(IndexDirNames[i]);
+			IndexSearcher indexSearcher = SearcherUtils.getIndexSearcher(IndexDirNames[i]);
 
 			String resDirName = OutputDirNames[i];
 
@@ -306,7 +306,7 @@ public class Experiments {
 				String searchText = bq.getSearchText();
 
 				BooleanQuery lbq = AnalyzerUtils.getQuery(searchText, analyzer);
-				SparseVector docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
+				SparseVector docScores = SearcherUtils.search(lbq, indexSearcher, 1000);
 
 				StrCounter queryWordCounts = AnalyzerUtils.getWordCounts(searchText, analyzer);
 
@@ -319,7 +319,7 @@ public class Experiments {
 				KLDivergenceScorer scorer = new KLDivergenceScorer();
 				docScores = scorer.score(wcb, qLM);
 
-				ResultWriter.write(writer, bq.getId(), docScores);
+				SearcherUtils.write(writer, bq.getId(), docScores);
 			}
 
 			writer.close();
@@ -333,7 +333,7 @@ public class Experiments {
 
 		for (int i = 0; i < QueryFileNames.length; i++) {
 			List<BaseQuery> bqs = QueryReader.readQueries(QueryFileNames[i]);
-			IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(IndexDirNames[i]);
+			IndexSearcher indexSearcher = SearcherUtils.getIndexSearcher(IndexDirNames[i]);
 			IndexReader indexReader = indexSearcher.getIndexReader();
 
 			String resDirName = OutputDirNames[i];
@@ -349,7 +349,7 @@ public class Experiments {
 				String searchText = bq.getSearchText();
 
 				BooleanQuery lbq = AnalyzerUtils.getQuery(searchText, analyzer);
-				SparseVector docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
+				SparseVector docScores = SearcherUtils.search(lbq, indexSearcher, 1000);
 
 				StrCounter queryWordCounts = AnalyzerUtils.getWordCounts(searchText, analyzer);
 
@@ -380,7 +380,7 @@ public class Experiments {
 				// System.out.printf("QM1:\t%s\n", VectorUtils.toCounter(qLM, wordIndexer));
 				// System.out.printf("QM2:\t%s\n", VectorUtils.toCounter(expQLM, wordIndexer));
 
-				ResultWriter.write(writer, bq.getId(), docScores);
+				SearcherUtils.write(writer, bq.getId(), docScores);
 			}
 
 			writer.close();
@@ -397,7 +397,7 @@ public class Experiments {
 
 		for (int i = 0; i < QueryFileNames.length; i++) {
 			List<BaseQuery> bqs = QueryReader.readQueries(QueryFileNames[i]);
-			IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(IndexDirNames[i]);
+			IndexSearcher indexSearcher = SearcherUtils.getIndexSearcher(IndexDirNames[i]);
 			IndexReader indexReader = indexSearcher.getIndexReader();
 
 			String resDirName = OutputDirNames[i];
@@ -413,7 +413,7 @@ public class Experiments {
 
 				BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
 
-				SparseVector docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
+				SparseVector docScores = SearcherUtils.search(lbq, indexSearcher, 1000);
 
 				Indexer<String> wordIndexer = new Indexer<String>();
 				SparseVector qLM = VectorUtils.toSparseVector(queryWordCounts, wordIndexer, true);
@@ -436,7 +436,7 @@ public class Experiments {
 				// System.out.printf("QM1:\t%s\n", VectorUtils.toCounter(qLM, wordIndexer));
 				// System.out.printf("QM2:\t%s\n", VectorUtils.toCounter(expQLM, wordIndexer));
 
-				ResultWriter.write(writer, bq.getId(), docScores);
+				SearcherUtils.write(writer, bq.getId(), docScores);
 			}
 
 			writer.close();
@@ -475,9 +475,9 @@ public class Experiments {
 	public void searchByKLDMultiFieldsProximityFB() throws Exception {
 		System.out.println("search by KLD Multi-Fields Proximity FB.");
 
-		IndexSearcher wikiIndexSearcher = DocumentSearcher.getIndexSearcher(MIRPath.WIKI_INDEX_DIR);
+		IndexSearcher wikiIndexSearcher = SearcherUtils.getIndexSearcher(MIRPath.WIKI_INDEX_DIR);
 
-		IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(MIRPath.TREC_CDS_INDEX_DIR);
+		IndexSearcher indexSearcher = SearcherUtils.getIndexSearcher(MIRPath.TREC_CDS_INDEX_DIR);
 		IndexReader indexReader = indexSearcher.getIndexReader();
 		List<BaseQuery> bqs = QueryReader.readQueries(MIRPath.TREC_CDS_QUERY_2015_A_FILE);
 
@@ -500,9 +500,9 @@ public class Experiments {
 
 			for (int j = 0; j < 1; j++) {
 				BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(expQueryModel, wordIndexer));
-				docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
+				docScores = SearcherUtils.search(lbq, indexSearcher, 1000);
 
-				// SparseVector wikiScores = DocumentSearcher.search(lbq, wikiIndexSearcher, 50);
+				// SparseVector wikiScores = SearcherUtils.search(lbq, wikiIndexSearcher, 50);
 
 				WordCountBox wcb1 = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, IndexFieldName.TITLE);
 				WordCountBox wcb2 = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, IndexFieldName.ABSTRACT);
@@ -540,7 +540,7 @@ public class Experiments {
 			}
 
 			BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(expQueryModel, wordIndexer));
-			docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
+			docScores = SearcherUtils.search(lbq, indexSearcher, 1000);
 
 			WordCountBox wcb = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, IndexFieldName.CONTENT);
 
@@ -557,7 +557,7 @@ public class Experiments {
 			// System.out.printf("RM:\t%s\n", VectorUtils.toCounter(rm, wordIndexer));
 			// System.out.println();
 
-			ResultWriter.write(writer, bq.getId(), docScores);
+			SearcherUtils.write(writer, bq.getId(), docScores);
 		}
 		writer.close();
 	}
@@ -567,7 +567,7 @@ public class Experiments {
 
 		String resultFileName = MIRPath.TREC_CDS_OUTPUT_RESULT_2015_DIR + "kld_passage.txt";
 
-		IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(MIRPath.TREC_CDS_INDEX_DIR);
+		IndexSearcher indexSearcher = SearcherUtils.getIndexSearcher(MIRPath.TREC_CDS_INDEX_DIR);
 		IndexReader indexReader = indexSearcher.getIndexReader();
 		List<BaseQuery> bqs = QueryReader.readQueries(MIRPath.TREC_CDS_QUERY_2015_A_FILE);
 
@@ -581,7 +581,7 @@ public class Experiments {
 
 			BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
 
-			SparseVector docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
+			SparseVector docScores = SearcherUtils.search(lbq, indexSearcher, 1000);
 			docScores.normalizeAfterSummation();
 
 			Indexer<String> wordIndexer = new Indexer<String>();
@@ -592,7 +592,7 @@ public class Experiments {
 
 			KLDivergenceScorer scorer = new KLDivergenceScorer();
 			docScores = scorer.scoreByPassages(wcb, queryModel);
-			ResultWriter.write(writer, bq.getId(), docScores);
+			SearcherUtils.write(writer, bq.getId(), docScores);
 		}
 		writer.close();
 	}
@@ -602,7 +602,7 @@ public class Experiments {
 
 		for (int i = 0; i < QueryFileNames.length; i++) {
 			List<BaseQuery> bqs = QueryReader.readQueries(QueryFileNames[i]);
-			IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(IndexDirNames[i]);
+			IndexSearcher indexSearcher = SearcherUtils.getIndexSearcher(IndexDirNames[i]);
 
 			String resDirName = OutputDirNames[i];
 
@@ -615,7 +615,7 @@ public class Experiments {
 				String searchText = bq.getSearchText();
 
 				BooleanQuery lbq = AnalyzerUtils.getQuery(searchText, analyzer);
-				SparseVector docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
+				SparseVector docScores = SearcherUtils.search(lbq, indexSearcher, 1000);
 
 				StrCounter queryWordCounts = AnalyzerUtils.getWordCounts(searchText, analyzer);
 
@@ -628,7 +628,7 @@ public class Experiments {
 				KLDivergenceScorer scorer = new KLDivergenceScorer();
 				docScores = scorer.scoreByPLMs(wcb, qLM);
 
-				ResultWriter.write(writer, bq.getId(), docScores);
+				SearcherUtils.write(writer, bq.getId(), docScores);
 			}
 
 			writer.close();
@@ -638,9 +638,9 @@ public class Experiments {
 	public void searchByKLDProximityFB() throws Exception {
 		System.out.println("search by KLD Proximity FB.");
 
-		IndexSearcher wikiIndexSearcher = DocumentSearcher.getIndexSearcher(MIRPath.WIKI_INDEX_DIR);
+		IndexSearcher wikiIndexSearcher = SearcherUtils.getIndexSearcher(MIRPath.WIKI_INDEX_DIR);
 
-		IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(MIRPath.TREC_CDS_INDEX_DIR);
+		IndexSearcher indexSearcher = SearcherUtils.getIndexSearcher(MIRPath.TREC_CDS_INDEX_DIR);
 		IndexReader indexReader = indexSearcher.getIndexReader();
 		List<BaseQuery> bqs = QueryReader.readQueries(MIRPath.TREC_CDS_QUERY_2015_A_FILE);
 
@@ -662,9 +662,9 @@ public class Experiments {
 			SparseVector docScores = null;
 
 			BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(expQueryModel, wordIndexer));
-			docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
+			docScores = SearcherUtils.search(lbq, indexSearcher, 1000);
 
-			// SparseVector wikiScores = DocumentSearcher.search(lbq, wikiIndexSearcher, 50);
+			// SparseVector wikiScores = SearcherUtils.search(lbq, wikiIndexSearcher, 50);
 
 			// WordCountBox wcb1 = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, IndexFieldName.TITLE);
 			// WordCountBox wcb2 = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, IndexFieldName.ABSTRACT);
@@ -680,7 +680,7 @@ public class Experiments {
 			expQueryModel = VectorMath.addAfterScale(queryModel, rm, 1 - mixture, mixture);
 
 			lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(expQueryModel, wordIndexer));
-			docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
+			docScores = SearcherUtils.search(lbq, indexSearcher, 1000);
 
 			WordCountBox wcb = WordCountBox.getWordCountBox(indexReader, docScores, wordIndexer, IndexFieldName.CONTENT);
 
@@ -698,7 +698,7 @@ public class Experiments {
 			// System.out.printf("RM:\t%s\n", VectorUtils.toCounter(rm, wordIndexer));
 			// System.out.println();
 
-			ResultWriter.write(writer, bq.getId(), docScores);
+			SearcherUtils.write(writer, bq.getId(), docScores);
 		}
 		writer.close();
 	}
@@ -713,7 +713,7 @@ public class Experiments {
 
 		for (int i = 0; i < QueryFileNames.length; i++) {
 			List<BaseQuery> bqs = QueryReader.readQueries(QueryFileNames[i]);
-			IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(IndexDirNames[i]);
+			IndexSearcher indexSearcher = SearcherUtils.getIndexSearcher(IndexDirNames[i]);
 			IndexReader indexReader = indexSearcher.getIndexReader();
 
 			String resDirName = OutputDirNames[i];
@@ -729,7 +729,7 @@ public class Experiments {
 
 				BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
 
-				SparseVector docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
+				SparseVector docScores = SearcherUtils.search(lbq, indexSearcher, 1000);
 				docScores.normalize();
 
 				Indexer<String> wordIndexer = new Indexer<String>();
@@ -743,7 +743,7 @@ public class Experiments {
 				KLDivergenceScorer kldScorer = new KLDivergenceScorer();
 				docScores = kldScorer.scoreBySWPassages(wcb, qLM, qws);
 
-				ResultWriter.write(writer, bq.getId(), docScores);
+				SearcherUtils.write(writer, bq.getId(), docScores);
 			}
 
 			writer.close();
@@ -755,7 +755,7 @@ public class Experiments {
 
 		for (int i = 0; i < QueryFileNames.length; i++) {
 			List<BaseQuery> bqs = QueryReader.readQueries(QueryFileNames[i]);
-			IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(IndexDirNames[i]);
+			IndexSearcher indexSearcher = SearcherUtils.getIndexSearcher(IndexDirNames[i]);
 
 			String resDirName = OutputDirNames[i];
 
@@ -766,8 +766,8 @@ public class Experiments {
 			for (int j = 0; j < bqs.size(); j++) {
 				BaseQuery bq = bqs.get(j);
 				BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
-				SparseVector docScores = DocumentSearcher.search(lbq, indexSearcher, 1000);
-				ResultWriter.write(writer, bq.getId(), docScores);
+				SparseVector docScores = SearcherUtils.search(lbq, indexSearcher, 1000);
+				SearcherUtils.write(writer, bq.getId(), docScores);
 			}
 
 			writer.close();
@@ -784,7 +784,7 @@ public class Experiments {
 
 		for (int i = 0; i < QueryFileNames.length; i++) {
 			List<BaseQuery> bqs = QueryReader.readQueries(QueryFileNames[i]);
-			IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(IndexDirNames[i]);
+			IndexSearcher indexSearcher = SearcherUtils.getIndexSearcher(IndexDirNames[i]);
 			IndexReader indexReader = indexSearcher.getIndexReader();
 
 			String resDirName = OutputDirNames[i];
@@ -800,7 +800,7 @@ public class Experiments {
 
 				BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
 
-				SparseVector docScores = DocumentSearcher.search(lbq, indexSearcher, 10);
+				SparseVector docScores = SearcherUtils.search(lbq, indexSearcher, 10);
 				docScores.normalize();
 
 				Indexer<String> wordIndexer = new Indexer<String>();
@@ -934,7 +934,7 @@ public class Experiments {
 
 				docScores.normalizeAfterSummation();
 
-				ResultWriter.write(writer, bq.getId(), docScores);
+				SearcherUtils.write(writer, bq.getId(), docScores);
 			}
 
 			writer.close();
@@ -945,7 +945,8 @@ public class Experiments {
 		TextFileReader reader = new TextFileReader(MIRPath.PERFORMANCE_FILE);
 		TextFileWriter writer = new TextFileWriter(MIRPath.PERFORMANCE_SUMMARY_FILE);
 
-		writer.write("FileName\tCollection\tModelName\tRelevant\tRetrieved\tRelInRet\tRelevantAt\tP\tMap\tNDCG\tP_RRT\tMAP_RRT\tNDCG_RRT\n");
+		writer.write(
+				"FileName\tCollection\tModelName\tRelevant\tRetrieved\tRelInRet\tRelevantAt\tP\tMap\tNDCG\tP_RRT\tMAP_RRT\tNDCG_RRT\n");
 
 		while (reader.hasNext()) {
 			List<String> lines = reader.getNextLines();
@@ -997,9 +998,9 @@ public class Experiments {
 
 			String output = String.format("%s\t%s\t%s\t%d\t%d\t%d\t%d\t%f\t%f\t%f\t%f\t%f\t%f",
 
-			file.getPath(), collName, modelName, num_relevant, num_retrieved, num_relevant_in_retrieved, num_relevant_at,
+					file.getPath(), collName, modelName, num_relevant, num_retrieved, num_relevant_in_retrieved, num_relevant_at,
 
-			p, map, ndcg, p_rrt, map_rrt, ndcg_rrt);
+					p, map, ndcg, p_rrt, map_rrt, ndcg_rrt);
 
 			writer.write(output + "\n");
 

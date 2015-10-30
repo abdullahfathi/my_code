@@ -46,7 +46,7 @@ public class HyperParameter {
 	boolean adjustNumbers;
 
 	public HyperParameter() {
-		this(100, 10, 5, 25, 2000, 0, false, false, false, 0.5, false, false);
+		this(1000, 10, 5, 25, 2000, 0.5, false, false, false, 0.5, false, false);
 	}
 
 	public HyperParameter(int top_k, int top_k_in_wiki, int num_fb_docs, int num_fb_words, double dirichlet_prior,

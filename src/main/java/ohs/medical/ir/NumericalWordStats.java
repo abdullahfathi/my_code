@@ -21,12 +21,12 @@ import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.common.IntCounter;
 
-public class NumericalWordAnalyzer {
+public class NumericalWordStats {
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 
-		NumericalWordAnalyzer a = new NumericalWordAnalyzer();
+		NumericalWordStats a = new NumericalWordStats();
 		a.analyze1();
 
 		System.out.println("process ends.");
@@ -119,7 +119,7 @@ public class NumericalWordAnalyzer {
 	}
 
 	public void analyze2() throws Exception {
-		IndexSearcher[] indexSearchers = DocumentSearcher.getIndexSearchers(MIRPath.IndexDirNames);
+		IndexSearcher[] indexSearchers = SearcherUtils.getIndexSearchers(MIRPath.IndexDirNames);
 
 		for (int i = 0; i < indexSearchers.length; i++) {
 			IndexSearcher indexSearcher = indexSearchers[i];

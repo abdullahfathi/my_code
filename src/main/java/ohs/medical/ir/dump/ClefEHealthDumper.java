@@ -40,7 +40,7 @@ public class ClefEHealthDumper extends TextDumper {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 
-		ClefEHealthDumper dh = new ClefEHealthDumper(MIRPath.CLEF_EHEALTH_COLLECTION_DIR, MIRPath.CLEF_EHEALTH_COLLECTION_FILE);
+		ClefEHealthDumper dh = new ClefEHealthDumper(MIRPath.CLEF_EHEALTH_COL_DIR, MIRPath.CLEF_EHEALTH_COL_FILE);
 		// dh.readVisitedDocs(MIRPath.CLEF_EHEALTH_DIR + "doc_ids.txt");
 		dh.dump();
 

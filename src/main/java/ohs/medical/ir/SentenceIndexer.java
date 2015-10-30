@@ -47,18 +47,6 @@ public class SentenceIndexer {
 
 	public static final int ram_size = 5000;
 
-	public static IndexWriter getIndexWriter(String outputDirName) throws Exception {
-		IOUtils.deleteFilesUnder(outputDirName);
-
-		IndexWriterConfig iwc = new IndexWriterConfig(MedicalEnglishAnalyzer.getAnalyzer());
-		// IndexWriterConfig iwc = new IndexWriterConfig(new StandardAnalyzer());
-		iwc.setOpenMode(OpenMode.CREATE);
-		iwc.setRAMBufferSizeMB(ram_size);
-
-		IndexWriter ret = new IndexWriter(FSDirectory.open(Paths.get(outputDirName)), iwc);
-		return ret;
-	}
-
 	/**
 	 * @param args
 	 * @throws Exception
@@ -86,15 +74,15 @@ public class SentenceIndexer {
 	public void index() throws Exception {
 		System.out.printf("index sentences in [%s] to [%s]\n", sentFileName, indexDirName);
 
-		IndexWriter iw = getIndexWriter(indexDirName);
+		IndexWriter iw = DocumentIndexer.getIndexWriter(indexDirName);
 
-		TextFileReader tfr = new TextFileReader(sentFileName);
-		tfr.setPrintNexts(false);
+		TextFileReader reader = new TextFileReader(sentFileName);
+		reader.setPrintNexts(false);
 
-		while (tfr.hasNext()) {
-			tfr.print(100000);
+		while (reader.hasNext()) {
+			reader.print(100000);
 
-			String line = tfr.next();
+			String line = reader.next();
 			String[] parts = line.split("\t");
 
 			String docId = parts[0];
@@ -108,8 +96,8 @@ public class SentenceIndexer {
 
 			iw.addDocument(doc);
 		}
-		tfr.printLast();
-		tfr.close();
+		reader.printLast();
+		reader.close();
 
 		iw.close();
 	}

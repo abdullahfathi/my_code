@@ -135,7 +135,7 @@ public class KLDivergenceScorer {
 		for (int i = 0; i < wcb.getDocWordCounts().rowSize(); i++) {
 			int docId = wcb.getDocWordCounts().indexAtRowLoc(i);
 			List<Integer> words = wcb.getDocWords().get(docId);
-			List<IntPair> locWords = PLMUtils.getQueryLocsInDocument(qLM, words);
+			List<IntPair> locWords = PLMFunctions.getQueryLocsInDocument(qLM, words);
 
 			double doc_len = words.size();
 
@@ -150,7 +150,7 @@ public class KLDivergenceScorer {
 
 			for (int j = 0; j < locWords.size(); j++) {
 				int center = locWords.get(j).getFirst();
-				double psg_len = PLMUtils.PropagationCountSum(center, doc_len, propFunction, sigma);
+				double psg_len = PLMFunctions.PropagationCountSum(center, doc_len, propFunction, sigma);
 
 				IntCounter c = new IntCounter();
 
@@ -161,7 +161,7 @@ public class KLDivergenceScorer {
 				for (int k = 0; k < locWords.size(); k++) {
 					int w = locWords.get(k).getSecond();
 					int pos = locWords.get(k).getFirst();
-					double prop_count = PLMUtils.PropagationCount((pos - center) / sigma, propFunction);
+					double prop_count = PLMFunctions.PropagationCount((pos - center) / sigma, propFunction);
 					double pr = prop_count / psg_len;
 					c.incrementCount(w, pr);
 				}

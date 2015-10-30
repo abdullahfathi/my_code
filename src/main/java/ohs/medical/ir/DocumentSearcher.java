@@ -1,27 +1,36 @@
 package ohs.medical.ir;
 
-import java.nio.file.Paths;
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.similarities.LMDirichletSimilarity;
-import org.apache.lucene.store.FSDirectory;
 
+import ohs.io.IOUtils;
+import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
+import ohs.ir.eval.Performance;
+import ohs.ir.eval.PerformanceEvaluator;
 import ohs.lucene.common.AnalyzerUtils;
 import ohs.lucene.common.IndexFieldName;
 import ohs.lucene.common.MedicalEnglishAnalyzer;
+import ohs.math.ArrayMath;
+import ohs.math.ArrayUtils;
+import ohs.math.VectorMath;
 import ohs.math.VectorUtils;
+import ohs.matrix.DenseVector;
 import ohs.matrix.SparseVector;
+import ohs.matrix.Vector;
 import ohs.medical.ir.query.BaseQuery;
 import ohs.medical.ir.query.QueryReader;
+import ohs.medical.ir.query.RelevanceReader;
+import ohs.medical.ir.trec.cds_2015.ProximityRelevanceModelBuilder;
 import ohs.types.Indexer;
+import ohs.types.common.StrBidMap;
 import ohs.types.common.StrCounter;
 import ohs.types.common.StrCounterMap;
 
@@ -32,131 +41,183 @@ import ohs.types.common.StrCounterMap;
  */
 public class DocumentSearcher {
 
-	public static IndexSearcher getIndexSearcher(String indexDirName) throws Exception {
-		System.out.printf("open an index at [%s]\n", indexDirName);
-		IndexSearcher ret = new IndexSearcher(DirectoryReader.open(FSDirectory.open(Paths.get(indexDirName))));
-		ret.setSimilarity(new LMDirichletSimilarity());
-		// indexSearcher.setSimilarity(new BM25Similarity());
-		// indexSearcher.setSimilarity(new DFRSimilarity(new BasicModelBE(), new
-		// AfterEffectB(), new NormalizationH1()));
-		return ret;
-	}
-
-	public static IndexSearcher[] getIndexSearchers(String[] indexDirNames) throws Exception {
-		IndexSearcher[] ret = new IndexSearcher[indexDirNames.length];
-		for (int i = 0; i < ret.length; i++) {
-			ret[i] = getIndexSearcher(indexDirNames[i]);
-		}
-		return ret;
-	}
-
-	public static QueryParser getQueryParser() throws Exception {
-		QueryParser ret = new QueryParser(IndexFieldName.CONTENT, MedicalEnglishAnalyzer.getAnalyzer());
-		return ret;
-	}
-
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
-
-		String[] queryFileNames = MIRPath.QueryFileNames;
-		String[] indexDirNames = MIRPath.IndexDirNames;
-		String[] resultDirNames = MIRPath.ResultDirNames;
-
-		// for (int i = 0; i < outputDirNames.length; i++) {
-		// IOUtils.deleteFilesUnder(new File(outputDirNames[i]));
-		// }
-
-		QueryParser queryParser = getQueryParser();
-
-		IndexSearcher[] indexSearchers = new IndexSearcher[indexDirNames.length];
-
-		for (int i = 0; i < indexDirNames.length; i++) {
-			indexSearchers[i] = getIndexSearcher(indexDirNames[i]);
-		}
-
-		DocumentSearcher ds = new DocumentSearcher(queryParser, indexSearchers);
-
-		for (int i = 0; i < queryFileNames.length; i++) {
-			List<BaseQuery> baseQueries = new ArrayList<BaseQuery>();
-			StrCounterMap relevanceData = new StrCounterMap();
-
-			String indexDirName = indexDirNames[i];
-			String resultDirName = resultDirNames[i];
-			String resultFileName = resultDirName + "init.txt";
-
-			if (i == 0) {
-				baseQueries = QueryReader.readTrecCdsQueries(queryFileNames[i]);
-			} else if (i == 1) {
-				baseQueries = QueryReader.readClefEHealthQueries(queryFileNames[i]);
-			} else if (i == 2) {
-				baseQueries = QueryReader.readOhsumedQueries(queryFileNames[i]);
-			}
-
-			baseQueries = QueryReader.filter(baseQueries, relevanceData);
-			ds.search(i, baseQueries, resultFileName);
-		}
-
-		SearchResultEvaluator e = new SearchResultEvaluator();
-		e.evaluate();
+		DocumentSearcher tc = new DocumentSearcher();
+		// tc.searchByQLD();
+		// tc.searchByKLD();
+		// tc.searchByKLDFB();
+		tc.searchByCBEEM();
 
 		System.out.println("process ends.");
 	}
 
-	public static SparseVector search(Query query, IndexSearcher indexSearcher, int top_k) throws Exception {
-		TopDocs topDocs = indexSearcher.search(query, top_k);
-		int num_docs = topDocs.scoreDocs.length;
+	private Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
 
-		SparseVector ret = new SparseVector(num_docs);
-		for (int i = 0; i < topDocs.scoreDocs.length; i++) {
-			ScoreDoc scoreDoc = topDocs.scoreDocs[i];
-			ret.incrementAtLoc(i, scoreDoc.doc, scoreDoc.score);
+	private String[] queryFileNames = MIRPath.QueryFileNames;
+
+	private String[] indexDirNames = MIRPath.IndexDirNames;
+
+	private String[] resDirNames = MIRPath.ResultDirNames;
+
+	private String[] docIdMapFileNames = MIRPath.DocIdMapFileNames;
+
+	private String[] relFileNames = MIRPath.RelevanceFileNames;
+
+	private IndexSearcher[] iss = SearcherUtils.getIndexSearchers(indexDirNames);
+
+	private String[] docPriorFileNames = MIRPath.DocPriorFileNames;
+
+	public DocumentSearcher() throws Exception {
+
+	}
+
+	public void searchByCBEEM() throws Exception {
+		System.out.println("search by CBEEM.");
+
+		DenseVector[] docPriorData = new DenseVector[iss.length];
+
+		for (int i = 0; i < indexDirNames.length; i++) {
+			File inputFile = new File(docPriorFileNames[i]);
+			DenseVector docPriors = null;
+			if (inputFile.exists()) {
+				docPriors = DenseVector.read(inputFile.getPath());
+				double uniform_prior = 1f / docPriors.size();
+				for (int j = 0; j < docPriors.size(); j++) {
+					if (docPriors.value(j) == 0) {
+						docPriors.set(j, uniform_prior);
+					}
+				}
+			} else {
+				docPriors = new DenseVector(iss[i].getIndexReader().maxDoc());
+				double uniform_prior = 1f / docPriors.size();
+				docPriors.setAll(uniform_prior);
+			}
+			docPriorData[i] = docPriors;
 		}
-		ret.sortByIndex();
-		return ret;
-	}
 
-	public static SparseVector search(SparseVector queryModel, Indexer<String> wordIndexer, IndexSearcher indexSearcher, int top_k)
-			throws Exception {
-		Query q = AnalyzerUtils.getQuery((StrCounter) VectorUtils.toCounter(queryModel, wordIndexer));
-		return search(q, indexSearcher, top_k);
-	}
+		HyperParameter hp = new HyperParameter();
 
-	private QueryParser queryParser;
-
-	private IndexSearcher[] indexSearchers;
-
-	public DocumentSearcher(QueryParser queryParser, IndexSearcher[] indexSearchers) {
-		super();
-		this.queryParser = queryParser;
-		this.indexSearchers = indexSearchers;
-	}
-
-	public void search(int colId, List<BaseQuery> baseQueries, String resultFileName) throws Exception {
-		TextFileWriter writer = new TextFileWriter(resultFileName);
-
-		for (int i = 0; i < baseQueries.size(); i++) {
-			BaseQuery baseQuery = baseQueries.get(i);
-
-			Query query = queryParser.parse(baseQuery.getSearchText());
-
-			HyperParameter hyperParameter = new HyperParameter();
-			hyperParameter.setTopK(1000);
-
-			SparseVector docScores = search(query, indexSearchers[colId], hyperParameter.getTopK());
-
-			write(writer, baseQuery.getId(), docScores);
+		for (int i = 0; i < queryFileNames.length; i++) {
+			List<BaseQuery> bqs = QueryReader.readQueries(queryFileNames[i]);
+			String outputFileName = resDirNames[i] + "cbeem.txt";
+			CbeemDocumentSearcher cbeemSearcher = new CbeemDocumentSearcher(iss, docPriorData, hp, analyzer, false);
+			cbeemSearcher.search(i, bqs, null, outputFileName, null);
 		}
-		writer.close();
+
 	}
 
-	public void write(TextFileWriter writer, String queryId, SparseVector docScores) {
-		docScores.sortByValue();
-		for (int i = 0; i < docScores.size(); i++) {
-			int docId = docScores.indexAtLoc(i);
-			double score = docScores.valueAtLoc(i);
-			writer.write(queryId + "\t" + docId + "\t" + score + "\n");
+	public void searchByKLD() throws Exception {
+		System.out.println("search by KLD.");
+
+		for (int i = 0; i < queryFileNames.length; i++) {
+			List<BaseQuery> bqs = QueryReader.readQueries(queryFileNames[i]);
+			IndexSearcher is = iss[i];
+
+			String outputFileName = resDirNames[i] + "kld.txt";
+
+			TextFileWriter writer = new TextFileWriter(outputFileName);
+
+			for (int j = 0; j < bqs.size(); j++) {
+				BaseQuery bq = bqs.get(j);
+				System.out.println(bq);
+
+				BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
+				SparseVector docScores = SearcherUtils.search(lbq, is, 1000);
+				docScores.normalizeAfterSummation();
+
+				Indexer<String> wordIndexer = new Indexer<String>();
+				StrCounter qwcs = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
+
+				SparseVector qlm = VectorUtils.toSparseVector(qwcs, wordIndexer, true);
+				qlm.normalize();
+
+				WordCountBox wcb = WordCountBox.getWordCountBox(is.getIndexReader(), docScores, wordIndexer);
+
+				KLDivergenceScorer scorer = new KLDivergenceScorer();
+				docScores = scorer.score(wcb, qlm);
+
+				SearcherUtils.write(writer, bq.getId(), docScores);
+			}
+			writer.close();
 		}
-		docScores.sortByIndex();
+
+	}
+
+	public void searchByKLDFB() throws Exception {
+		System.out.println("search by KLD FB.");
+
+		for (int i = 0; i < queryFileNames.length; i++) {
+			List<BaseQuery> bqs = QueryReader.readQueries(queryFileNames[i]);
+			IndexSearcher is = iss[i];
+			IndexReader ir = is.getIndexReader();
+
+			String outputFileName = resDirNames[i] + "kld_fb.txt";
+
+			// IOUtils.deleteFilesUnder(resDirNames[i]);
+
+			TextFileWriter writer = new TextFileWriter(outputFileName);
+
+			for (int j = 0; j < bqs.size(); j++) {
+				BaseQuery bq = bqs.get(j);
+
+				Indexer<String> wordIndexer = new Indexer<String>();
+				StrCounter qwcs = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
+
+				SparseVector qlm = VectorUtils.toSparseVector(qwcs, wordIndexer, true);
+				qlm.normalize();
+
+				SparseVector expQLM = qlm.copy();
+				SparseVector docScores = null;
+
+				BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(expQLM, wordIndexer));
+				docScores = SearcherUtils.search(lbq, is, 1000);
+
+				WordCountBox wcb = WordCountBox.getWordCountBox(ir, docScores, wordIndexer, IndexFieldName.CONTENT);
+
+				RelevanceModelBuilder rmb = new RelevanceModelBuilder(10, 15, 20);
+				SparseVector rm = rmb.getRelevanceModel(wcb, docScores);
+				// SparseVector prm = rmb.getPositionalRelevanceModel(qLM, wcb3, docScores);
+
+				double mixture = 0.5;
+
+				expQLM = VectorMath.addAfterScale(qlm, rm, 1 - mixture, mixture);
+
+				KLDivergenceScorer scorer = new KLDivergenceScorer();
+				docScores = scorer.score(wcb, expQLM);
+
+				System.out.println(bq);
+				System.out.printf("QM1:\t%s\n", VectorUtils.toCounter(qlm, wordIndexer));
+				System.out.printf("QM2:\t%s\n", VectorUtils.toCounter(expQLM, wordIndexer));
+
+				SearcherUtils.write(writer, bq.getId(), docScores);
+			}
+
+			writer.close();
+		}
+	}
+
+	public void searchByQLD() throws Exception {
+		System.out.println("search by QLD.");
+
+		for (int i = 0; i < queryFileNames.length; i++) {
+			List<BaseQuery> bqs = QueryReader.readQueries(queryFileNames[i]);
+			IndexSearcher is = iss[i];
+
+			String outputFileName = resDirNames[i] + "qld.txt";
+
+			// IOUtils.deleteFilesUnder(resDirNames[i]);
+
+			TextFileWriter writer = new TextFileWriter(outputFileName);
+
+			for (int j = 0; j < bqs.size(); j++) {
+				BaseQuery bq = bqs.get(j);
+				BooleanQuery lbq = AnalyzerUtils.getQuery(bq.getSearchText(), analyzer);
+				SparseVector docScores = SearcherUtils.search(lbq, is, 1000);
+				SearcherUtils.write(writer, bq.getId(), docScores);
+			}
+			writer.close();
+		}
 	}
 
 }

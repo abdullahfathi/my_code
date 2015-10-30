@@ -19,15 +19,13 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.compress.compressors.CompressorInputStream;
 import org.apache.commons.compress.compressors.CompressorOutputStream;
@@ -213,6 +211,19 @@ public class IOUtils {
 		return getFilesUnder(new File(dirName));
 	}
 
+	public static void main(String[] args) throws Exception {
+		String text = readText("text8");
+		System.out.println(text + "\n");
+
+		BufferedWriter bw = openBufferedWriter("text8.gz");
+		bw.write(text);
+		bw.close();
+
+		String text2 = readText("text8.gz");
+
+		System.out.println(text2);
+	}
+
 	public static void move(String inputFileName, String outputDirName) throws Exception {
 		copy(inputFileName, outputDirName);
 		new File(inputFileName).delete();
@@ -233,19 +244,6 @@ public class IOUtils {
 
 	public static BufferedReader openBufferedReader(String fileName) throws Exception {
 		return openBufferedReader(fileName, UTF_8);
-	}
-
-	public static void main(String[] args) throws Exception {
-		String text = readText("text8");
-		System.out.println(text + "\n");
-
-		BufferedWriter bw = openBufferedWriter("text8.gz");
-		bw.write(text);
-		bw.close();
-
-		String text2 = readText("text8.gz");
-
-		System.out.println(text2);
 	}
 
 	public static BufferedReader openBufferedReader(String fileName, String encoding) throws Exception {
@@ -388,15 +386,15 @@ public class IOUtils {
 
 	public static double[] readDoubleArray(ObjectInputStream ois) throws Exception {
 		int size = ois.readInt();
-		int nonzeroSize = ois.readInt();
+		int num_nonzeros = ois.readInt();
 		double[] ret = new double[size];
 
-		if (size == nonzeroSize) {
+		if (size == num_nonzeros) {
 			for (int i = 0; i < size; i++) {
 				ret[i] = ois.readDouble();
 			}
 		} else {
-			for (int i = 0; i < nonzeroSize; i++) {
+			for (int i = 0; i < num_nonzeros; i++) {
 				int index = ois.readInt();
 				double value = ois.readDouble();
 				ret[index] = value;
@@ -418,7 +416,7 @@ public class IOUtils {
 		Indexer<String> ret = new Indexer<String>();
 		int size = ois.readInt();
 		for (int i = 0; i < size; i++) {
-			String item = readText(ois);
+			String item = readString(ois);
 			ret.add(item);
 		}
 		return ret;
@@ -456,15 +454,15 @@ public class IOUtils {
 
 	public static int[] readIntegerArray(ObjectInputStream ois) throws Exception {
 		int size = ois.readInt();
-		int nonzeroSize = ois.readInt();
+		int num_nonzeros = ois.readInt();
 		int[] ret = new int[size];
 
-		if (size == nonzeroSize) {
+		if (size == num_nonzeros) {
 			for (int i = 0; i < size; i++) {
 				ret[i] = ois.readInt();
 			}
 		} else {
-			for (int i = 0; i < nonzeroSize; i++) {
+			for (int i = 0; i < num_nonzeros; i++) {
 				int index = ois.readInt();
 				int value = ois.readInt();
 				ret[index] = value;
@@ -546,7 +544,7 @@ public class IOUtils {
 		return new HashSet<String>(readLines(fileName));
 	}
 
-	public static String readText(ObjectInputStream ois) throws Exception {
+	public static String readString(ObjectInputStream ois) throws Exception {
 		int size = ois.readInt();
 		StringBuffer sb = new StringBuffer(size);
 		for (int j = 0; j < size; j++) {
@@ -630,11 +628,11 @@ public class IOUtils {
 			}
 		}
 
-		int nonzeroSize = indexes.size();
+		int num_nonzeros = indexes.size();
 
-		oos.writeInt(nonzeroSize);
+		oos.writeInt(num_nonzeros);
 
-		if (nonzeroSize == size) {
+		if (num_nonzeros >= (x.length / 2f)) {
 			for (int i = 0; i < x.length; i++) {
 				oos.writeDouble(x[i]);
 			}
@@ -648,11 +646,20 @@ public class IOUtils {
 		oos.flush();
 	}
 
+	public static void write(ObjectOutputStream oos, Double[] x) throws Exception {
+		oos.writeInt(x.length);
+		for (int i = 0; i < x.length; i++) {
+			oos.writeDouble(x[i].doubleValue());
+		}
+		oos.flush();
+	}
+
 	public static void write(ObjectOutputStream oos, double[][] x) throws Exception {
 		oos.writeInt(x.length);
 		for (int i = 0; i < x.length; i++) {
 			write(oos, x[i]);
 		}
+		oos.flush();
 	}
 
 	public static void write(ObjectOutputStream oos, Indexer<String> indexer) throws Exception {
@@ -676,11 +683,11 @@ public class IOUtils {
 			}
 		}
 
-		int nonzeroSize = indexes.size();
+		int num_nonzeros = indexes.size();
 
-		oos.writeInt(nonzeroSize);
+		oos.writeInt(num_nonzeros);
 
-		if (nonzeroSize == size) {
+		if (num_nonzeros > (size / 2f)) {
 			for (int i = 0; i < x.length; i++) {
 				oos.writeInt(x[i]);
 			}
@@ -700,6 +707,7 @@ public class IOUtils {
 			oos.writeInt(indexes[i]);
 			oos.writeDouble(values[i]);
 		}
+		oos.flush();
 	}
 
 	public static void write(ObjectOutputStream oos, int[][] x) throws Exception {
@@ -707,18 +715,29 @@ public class IOUtils {
 		for (int i = 0; i < x.length; i++) {
 			write(oos, x[i]);
 		}
+		oos.flush();
 	}
 
 	public static void write(ObjectOutputStream oos, Integer[] x) throws Exception {
-		int[] y = new int[x.length];
-		ArrayUtils.copyAs(x, y);
-		write(oos, y);
+		oos.writeInt(x.length);
+		for (int i = 0; i < x.length; i++) {
+			oos.writeInt(x[i].intValue());
+		}
+		oos.flush();
 	}
 
-	public static void write(ObjectOutputStream oos, String text) throws Exception {
-		oos.writeInt(text.length());
-		for (int i = 0; i < text.length(); i++) {
-			oos.writeByte(text.charAt(i));
+	public static void write(ObjectOutputStream oos, List<String> list) throws Exception {
+		oos.writeInt(list.size());
+		for (int i = 0; i < list.size(); i++) {
+			write(oos, list.get(i));
+		}
+		oos.flush();
+	}
+
+	public static void write(ObjectOutputStream oos, String s) throws Exception {
+		oos.writeInt(s.length());
+		for (int i = 0; i < s.length(); i++) {
+			oos.writeByte(s.charAt(i));
 		}
 		oos.flush();
 	}
@@ -762,13 +781,13 @@ public class IOUtils {
 		write(fileName, counterMap, nf);
 	}
 
-	public static void write(String fileName, CounterMap<String, String> counterMap, NumberFormat nf) throws Exception {
+	public static void write(String fileName, CounterMap<String, String> cm, NumberFormat nf) throws Exception {
 		BufferedWriter bw = openBufferedWriter(fileName, UTF_8, false);
-		List<String> keys = counterMap.getInnerCountSums().getSortedKeys();
+		List<String> keys = cm.getInnerCountSums().getSortedKeys();
 
 		for (int i = 0; i < keys.size(); i++) {
 			String outerKey = keys.get(i);
-			Counter<String> innerCounter = counterMap.getCounter(outerKey);
+			Counter<String> innerCounter = cm.getCounter(outerKey);
 			StringBuffer sb = new StringBuffer();
 
 			double sum = innerCounter.totalCount();

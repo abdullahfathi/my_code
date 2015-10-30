@@ -29,7 +29,7 @@ import ohs.io.TextFileReader;
 import ohs.lucene.common.IndexFieldName;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseVector;
-import ohs.medical.ir.DocumentSearcher;
+import ohs.medical.ir.SearcherUtils;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
@@ -189,7 +189,7 @@ public class QueryClassifierTrainer {
 	private void generateTrainData() throws Exception {
 		System.out.println("generate training data.");
 
-		IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(CDSPath.INDEX_DIR);
+		IndexSearcher indexSearcher = SearcherUtils.getIndexSearcher(CDSPath.INDEX_DIR);
 
 		File vocDir = new File(CDSPath.VOCABULARY_DIR);
 

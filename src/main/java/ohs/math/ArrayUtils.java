@@ -13,12 +13,6 @@ import ohs.matrix.DenseVector;
 
 public class ArrayUtils {
 
-	public static double[] copy(double[] x) {
-		double[] ret = new double[x.length];
-		copy(x, ret);
-		return ret;
-	}
-
 	/**
 	 * @param a
 	 *            input
@@ -29,26 +23,28 @@ public class ArrayUtils {
 		System.arraycopy(a, 0, b, 0, a.length);
 	}
 
-	/**
-	 * @param a
-	 *            input
-	 * @param start
-	 * @param end
-	 * @return
-	 */
-	public static double[] copy(double[] a, int start, int end) {
-		int size = end - start;
-		double[] ret = new double[size];
-		System.arraycopy(a, start, ret, 0, size);
-		return ret;
+	public static void copy(double[] a, double[][] b) {
+		if (sizeOfEntries(b) != a.length) {
+			throw new IllegalArgumentException();
+		}
 	}
 
-	public static double[][] copy(double[][] x) {
-		double[][] ret = new double[x.length][];
-		for (int i = 0; i < ret.length; i++) {
-			ret[i] = copy(x[i]);
+	public static void copy(double[] a, int[] b) {
+		for (int i = 0; i < a.length; i++) {
+			b[i] = (int) a[i];
 		}
-		return ret;
+	}
+
+	public static void copy(double[][] a, double[] b) {
+		if (sizeOfEntries(a) != b.length) {
+			throw new IllegalArgumentException();
+		}
+
+		for (int i = 0, k = 0; i < a.length; i++) {
+			for (int j = 0; j < a[i].length; j++) {
+				b[k++] = a[i][j];
+			}
+		}
 	}
 
 	/**
@@ -63,12 +59,6 @@ public class ArrayUtils {
 		}
 	}
 
-	public static float[] copy(float[] x) {
-		float[] ret = new float[x.length];
-		copy(x, ret);
-		return ret;
-	}
-
 	/**
 	 * @param a
 	 *            input
@@ -77,16 +67,6 @@ public class ArrayUtils {
 	 */
 	public static void copy(float[] a, float[] b) {
 		System.arraycopy(a, 0, b, 0, a.length);
-	}
-
-	/**
-	 * @param x
-	 * @return
-	 */
-	public static int[] copy(int[] x) {
-		int[] ret = new int[x.length];
-		copy(x, ret);
-		return ret;
 	}
 
 	public static void copy(int[] a, int[] b) {
@@ -116,18 +96,6 @@ public class ArrayUtils {
 			while (iter.hasNext()) {
 				b[loc++] = iter.next();
 			}
-		}
-	}
-
-	public static int[] copyAs(double[] a) {
-		int[] ret = new int[a.length];
-		copyAs(a, ret);
-		return ret;
-	}
-
-	public static void copyAs(double[] a, int[] b) {
-		for (int i = 0; i < a.length; i++) {
-			b[i] = (int) a[i];
 		}
 	}
 
@@ -189,46 +157,40 @@ public class ArrayUtils {
 		}
 	}
 
-	public static void copyColumn(double[] a, double[][] b, int index) {
+	public static void copyColumn(double[] a, double[][] b, int b_col) {
 		int[] dims = dimensions(b);
 
 		for (int i = 0; i < dims[0]; i++) {
-			b[i][index] = a[i];
+			b[i][b_col] = a[i];
 		}
-	}
-
-	public static double[] copyColumn(double[][] a, int index) {
-		double[] ret = new double[a.length];
-		copyColumn(a, index, ret);
-		return ret;
 	}
 
 	/**
 	 * @param a
-	 * @param index
+	 * @param a_col
 	 * @param b
 	 *            output
 	 */
-	public static void copyColumn(double[][] a, int index, double[] b) {
+	public static void copyColumn(double[][] a, int a_col, double[] b) {
 		if (a.length != b.length) {
 			throw new IllegalArgumentException();
 		}
 		for (int i = 0; i < a.length; i++) {
-			b[i] = a[i][index];
+			b[i] = a[i][a_col];
 		}
 	}
 
 	/**
 	 * @param a
 	 *            input
-	 * @param col_a
+	 * @param a_col
 	 *            column index of matrix a
 	 * @param b
 	 *            output
-	 * @param col_b
+	 * @param b_col
 	 *            column index of matrix b
 	 */
-	public static void copyColumn(double[][] a, int col_a, double[][] b, int col_b) {
+	public static void copyColumn(double[][] a, int a_col, double[][] b, int b_col) {
 		if (!ArrayChecker.isSameDimensions(a, b)) {
 			throw new IllegalArgumentException();
 		}
@@ -236,28 +198,72 @@ public class ArrayUtils {
 		int rowDim = a.length;
 		int colDim = a[0].length;
 		for (int i = 0; i < rowDim; i++) {
-			b[i][col_b] = a[i][col_a];
+			b[i][b_col] = a[i][a_col];
 		}
 	}
 
-	public static void copyRow(double[] a, double[][] b, int index) {
+	public static double[] copyOut(double[] x) {
+		double[] ret = new double[x.length];
+		copy(x, ret);
+		return ret;
+	}
+
+	/**
+	 * @param a
+	 *            input
+	 * @param start
+	 * @param end
+	 * @return
+	 */
+	public static double[] copyOut(double[] a, int start, int end) {
+		int size = end - start;
+		double[] ret = new double[size];
+		System.arraycopy(a, start, ret, 0, size);
+		return ret;
+	}
+
+	public static double[][] copyOut(double[][] x) {
+		double[][] ret = new double[x.length][];
+		for (int i = 0; i < ret.length; i++) {
+			ret[i] = copyOut(x[i]);
+		}
+		return ret;
+	}
+
+	public static float[] copyOut(float[] x) {
+		float[] ret = new float[x.length];
+		copy(x, ret);
+		return ret;
+	}
+
+	/**
+	 * @param x
+	 * @return
+	 */
+	public static int[] copyOut(int[] x) {
+		int[] ret = new int[x.length];
+		copy(x, ret);
+		return ret;
+	}
+
+	public static void copyRow(double[] a, double[][] b, int b_row) {
 		int colDim = b[0].length;
 		for (int i = 0; i < colDim; i++) {
-			b[index][i] = a[i];
+			b[b_row][i] = a[i];
 		}
 	}
 
-	public static void copyRow(double[][] a, int index, double[] b) {
+	public static void copyRow(double[][] a, int a_row, double[] b) {
 		int colDim = a[0].length;
 		for (int i = 0; i < colDim; i++) {
-			b[i] = a[index][i];
+			b[i] = a[a_row][i];
 		}
 	}
 
-	public static void copyRow(double[][] a, int aIndex, double[][] b, int bIndex) {
+	public static void copyRow(double[][] a, int a_row, double[][] b, int b_row) {
 		int colDim = a[0].length;
 		for (int i = 0; i < colDim; i++) {
-			b[bIndex][i] = a[aIndex][i];
+			b[b_row][i] = a[a_row][i];
 		}
 	}
 
@@ -392,6 +398,11 @@ public class ArrayUtils {
 		Arrays.fill(a, value);
 	}
 
+	public static int sizeOfEntries(double[][] a) {
+		int[] dims = dimensions(a);
+		return dims[0] * dims[1];
+	}
+
 	public static int sizeOfNonzero(double[] x) {
 		int ret = 0;
 
@@ -434,7 +445,7 @@ public class ArrayUtils {
 	}
 
 	public static List<Integer>[] splitInOrder(List<Integer> indexList, double[] proportions) {
-		DenseVector fold_prop = new DenseVector(copy(proportions));
+		DenseVector fold_prop = new DenseVector(copyOut(proportions));
 		fold_prop.normalizeAfterSummation();
 
 		DenseVector fold_maxIndex = fold_prop.copy();

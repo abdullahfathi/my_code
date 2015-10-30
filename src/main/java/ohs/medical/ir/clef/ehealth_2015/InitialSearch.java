@@ -10,7 +10,7 @@ import org.apache.lucene.search.Query;
 import ohs.io.IOUtils;
 import ohs.io.TextFileWriter;
 import ohs.matrix.SparseVector;
-import ohs.medical.ir.DocumentSearcher;
+import ohs.medical.ir.SearcherUtils;
 import ohs.medical.ir.MIRPath;
 import ohs.medical.ir.query.BaseQuery;
 import ohs.medical.ir.query.QueryReader;
@@ -32,9 +32,9 @@ public class InitialSearch {
 
 	public static void search() throws Exception {
 
-		QueryParser queryParser = DocumentSearcher.getQueryParser();
+		QueryParser queryParser = SearcherUtils.getQueryParser();
 
-		IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(MIRPath.CLEF_EHEALTH_INDEX_DIR);
+		IndexSearcher indexSearcher = SearcherUtils.getIndexSearcher(MIRPath.CLEF_EHEALTH_INDEX_DIR);
 
 		List<BaseQuery> baseQueries = QueryReader.readClefEHealthQueries(MIRPath.CLEF_EHEALTH_QUERY_2015_FILE);
 
@@ -49,7 +49,7 @@ public class InitialSearch {
 			Query luceneQuery = queryParser.parse(baseQuery.getSearchText());
 			baseQuery.setLuceneQuery(luceneQuery);
 
-			SparseVector docScores = DocumentSearcher.search(baseQuery.getLuceneQuery(), indexSearcher, 1000);
+			SparseVector docScores = SearcherUtils.search(baseQuery.getLuceneQuery(), indexSearcher, 1000);
 			docScores.sortByValue();
 
 			for (int j = 0; j < docScores.size(); j++) {

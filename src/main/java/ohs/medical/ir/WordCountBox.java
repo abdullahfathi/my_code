@@ -40,12 +40,12 @@ public class WordCountBox {
 		return ret;
 	}
 
-	public static WordCountBox getWordCountBox(IndexReader indexReader, SparseVector docScores, Indexer<String> wordIndexer)
+	public static WordCountBox getWordCountBox(IndexReader ir, SparseVector docScores, Indexer<String> wordIndexer)
 			throws Exception {
-		return getWordCountBox(indexReader, docScores, wordIndexer, IndexFieldName.CONTENT);
+		return getWordCountBox(ir, docScores, wordIndexer, IndexFieldName.CONTENT);
 	}
 
-	public static WordCountBox getWordCountBox(IndexReader indexReader, SparseVector docScores, Indexer<String> wordIndexer, String field)
+	public static WordCountBox getWordCountBox(IndexReader ir, SparseVector docScores, Indexer<String> wordIndexer, String field)
 			throws Exception {
 		Set<Integer> fbWords = new HashSet<Integer>();
 
@@ -55,9 +55,9 @@ public class WordCountBox {
 		for (int j = 0; j < docScores.size(); j++) {
 			int docId = docScores.indexAtLoc(j);
 			double score = docScores.valueAtLoc(j);
-			Document doc = indexReader.document(docId);
+			Document doc = ir.document(docId);
 
-			Terms termVector = indexReader.getTermVector(docId, field);
+			Terms termVector = ir.getTermVector(docId, field);
 
 			if (termVector == null) {
 				continue;
@@ -79,7 +79,7 @@ public class WordCountBox {
 				}
 
 				String word = bytesRef.utf8ToString();
-				if (word.startsWith("#")) {
+				if (word.startsWith("<N") && word.endsWith(">")) {
 					continue;
 				}
 				int w = wordIndexer.getIndex(word);
@@ -109,7 +109,7 @@ public class WordCountBox {
 			}
 		}
 
-		SparseMatrix docWordCounts = VectorUtils.toSpasreMatrix(cm);
+		SparseMatrix dwcs = VectorUtils.toSpasreMatrix(cm);
 
 		Counter<Integer> c1 = new Counter<Integer>();
 		Counter<Integer> c2 = new Counter<Integer>();
@@ -117,8 +117,8 @@ public class WordCountBox {
 		for (int w : fbWords) {
 			String word = wordIndexer.getObject(w);
 			Term term = new Term(field, word);
-			double cnt = indexReader.totalTermFreq(term);
-			double df = indexReader.docFreq(term);
+			double cnt = ir.totalTermFreq(term);
+			double df = ir.docFreq(term);
 			c1.setCount(w, cnt);
 			c2.setCount(w, df);
 		}
@@ -126,9 +126,9 @@ public class WordCountBox {
 		SparseVector collWordCounts = VectorUtils.toSparseVector(c1);
 		SparseVector docFreqs = VectorUtils.toSparseVector(c2);
 
-		double cnt_sum_in_coll = indexReader.getSumTotalTermFreq(IndexFieldName.CONTENT);
+		double cnt_sum_in_coll = ir.getSumTotalTermFreq(IndexFieldName.CONTENT);
 
-		WordCountBox ret = new WordCountBox(docWordCounts, collWordCounts, cnt_sum_in_coll, docFreqs, indexReader.maxDoc(), docWords);
+		WordCountBox ret = new WordCountBox(dwcs, collWordCounts, cnt_sum_in_coll, docFreqs, ir.maxDoc(), docWords);
 		ret.setWordIndexer(wordIndexer);
 		return ret;
 	}

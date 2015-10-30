@@ -12,7 +12,7 @@ import ohs.lucene.common.IndexFieldName;
 import ohs.lucene.common.MedicalEnglishAnalyzer;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseMatrix;
-import ohs.medical.ir.DocumentSearcher;
+import ohs.medical.ir.SearcherUtils;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
@@ -28,7 +28,7 @@ public class BuildAbbreviationModel {
 
 	public void build() throws Exception {
 
-		IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(CDSPath.INDEX_DIR);
+		IndexSearcher indexSearcher = SearcherUtils.getIndexSearcher(CDSPath.INDEX_DIR);
 
 		File vocDir = new File(CDSPath.VOCABULARY_DIR);
 

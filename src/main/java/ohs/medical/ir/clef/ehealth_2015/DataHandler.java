@@ -12,7 +12,7 @@ import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.lucene.common.IndexFieldName;
 import ohs.medical.ir.DocumentIdMapper;
-import ohs.medical.ir.DocumentSearcher;
+import ohs.medical.ir.SearcherUtils;
 import ohs.medical.ir.MIRPath;
 import ohs.medical.ir.NLPUtils;
 import ohs.medical.ir.query.BaseQuery;
@@ -37,7 +37,7 @@ public class DataHandler {
 		String[] indexDirNames = MIRPath.IndexDirNames;
 		String[] collNames = MIRPath.CollNames;
 
-		IndexSearcher[] indexSearchers = DocumentSearcher.getIndexSearchers(indexDirNames);
+		IndexSearcher[] indexSearchers = SearcherUtils.getIndexSearchers(indexDirNames);
 
 		Map map = new HashMap();
 
@@ -100,13 +100,13 @@ public class DataHandler {
 	public static void pairQueryRelevantDocuments() throws Exception {
 		String queryFileName = MIRPath.CLEF_EHEALTH_QUERY_2015_FILE;
 		String revFileName = MIRPath.CLEF_EHEALTH_RELEVANCE_JUDGE_2015_FILE;
-		String docMapFileName = MIRPath.CLEF_EHEALTH_DOCUMENT_ID_MAP_FIE;
+		String docMapFileName = MIRPath.CLEF_EHEALTH_DOC_ID_MAP_FIE;
 
 		List<BaseQuery> baseQueries = QueryReader.readClefEHealthQueries(queryFileName);
 		CounterMap<String, String>  relvData = RelevanceReader.readClefEHealthRelevances(revFileName);
 		StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(docMapFileName);
 
-		IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(MIRPath.CLEF_EHEALTH_INDEX_DIR);
+		IndexSearcher indexSearcher = SearcherUtils.getIndexSearcher(MIRPath.CLEF_EHEALTH_INDEX_DIR);
 
 		String outputFileName = MIRPath.CLEF_EHEALTH_OUTPUT_RESULT_2015_QUERY_DOC_DIR + "CLEF_2015_TRAIN.txt";
 

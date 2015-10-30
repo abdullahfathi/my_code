@@ -21,13 +21,14 @@ public class AnalyzerUtils {
 	}
 
 	public static BooleanQuery getQuery(List<String> words, String field) throws Exception {
-		BooleanQuery ret = new BooleanQuery();
+		BooleanQuery.Builder builder = new BooleanQuery.Builder();
+
 		for (int i = 0; i < words.size(); i++) {
 			String word = words.get(i);
 			TermQuery tq = new TermQuery(new Term(field, word));
-			ret.add(tq, Occur.SHOULD);
+			builder.add(tq, Occur.SHOULD);
 		}
-		return ret;
+		return builder.build();
 	}
 
 	public static BooleanQuery getQuery(StrCounter wordCounts) throws Exception {
@@ -35,16 +36,16 @@ public class AnalyzerUtils {
 	}
 
 	public static BooleanQuery getQuery(StrCounter wordCounts, String field) throws Exception {
-		BooleanQuery ret = new BooleanQuery();
+		BooleanQuery.Builder builder = new BooleanQuery.Builder();
 		List<String> words = wordCounts.getSortedKeys();
 		for (int i = 0; i < words.size() && i < BooleanQuery.getMaxClauseCount(); i++) {
 			String word = words.get(i);
 			double cnt = wordCounts.getCount(word);
 			TermQuery tq = new TermQuery(new Term(field, word));
 			tq.setBoost((float) cnt);
-			ret.add(tq, Occur.SHOULD);
+			builder.add(tq, Occur.SHOULD);
 		}
-		return ret;
+		return builder.build();
 	}
 
 	public static BooleanQuery getQuery(String text, Analyzer analyzer) throws Exception {
@@ -52,7 +53,7 @@ public class AnalyzerUtils {
 	}
 
 	public static BooleanQuery getQuery(String text, Analyzer analyzer, String field) throws Exception {
-		BooleanQuery ret = new BooleanQuery();
+		BooleanQuery.Builder builder = new BooleanQuery.Builder();
 
 		StrCounter c = getWordCounts(text, analyzer);
 		List<String> words = c.getSortedKeys();
@@ -62,9 +63,9 @@ public class AnalyzerUtils {
 			double cnt = c.getProbability(word);
 			TermQuery tq = new TermQuery(new Term(field, word));
 			tq.setBoost((float) cnt);
-			ret.add(tq, Occur.SHOULD);
+			builder.add(tq, Occur.SHOULD);
 		}
-		return ret;
+		return builder.build();
 	}
 
 	public static StrCounter getWordCounts(String text, Analyzer analyzer) throws Exception {

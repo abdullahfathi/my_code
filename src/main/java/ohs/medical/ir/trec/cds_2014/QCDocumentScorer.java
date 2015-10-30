@@ -68,7 +68,7 @@ public class QCDocumentScorer {
 			}
 
 			TermsEnum reuse = null;
-			TermsEnum iterator = termVector.iterator(reuse);
+			TermsEnum iterator = termVector.iterator();
 			BytesRef ref = null;
 			DocsAndPositionsEnum docsAndPositions = null;
 			Counter<Integer> counter = new Counter<Integer>();

@@ -30,7 +30,7 @@ public class DataStats {
 
 		String[] relFileNames = MIRPath.RelevanceFileNames;
 
-		QueryParser queryParser = DocumentSearcher.getQueryParser();
+		QueryParser queryParser = SearcherUtils.getQueryParser();
 
 		String[] collNames = MIRPath.CollNames;
 		String[] labels = { "#Docs", "Voc. Size", "Avg. Doc. Len", "#Queries", "Avg. Query Len.", "Query-Doc Pairs" };
@@ -48,34 +48,20 @@ public class DataStats {
 			double avg_doc_len = 0;
 			double avg_query_len = 0;
 
-			IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(indexDirNames[i]);
+			IndexSearcher indexSearcher = SearcherUtils.getIndexSearcher(indexDirNames[i]);
 			IndexReader indexReader = indexSearcher.getIndexReader();
 
 			if (i < indexDirNames.length - 1) {
 				File queryFile = new File(queryFileNames[i]);
 				File relvFile = new File(relFileNames[i]);
 
-				List<BaseQuery> baseQueries = new ArrayList<BaseQuery>();
-				CounterMap<String, String> relevanceData = new CounterMap<String, String>();
+				List<BaseQuery> baseQueries = QueryReader.readQueries(queryFileNames[i]);
+				CounterMap<String, String> relData = RelevanceReader.readRelevances(relFileNames[i]);
 
-				if (i == 0) {
-					baseQueries = QueryReader.readTrecCdsQueries(queryFileNames[i]);
-					relevanceData = RelevanceReader.readTrecCdsRelevances(relFileNames[i]);
-				} else if (i == 1) {
-					baseQueries = QueryReader.readClefEHealthQueries(queryFileNames[i]);
-					relevanceData = RelevanceReader.readClefEHealthRelevances(relFileNames[i]);
-				} else if (i == 2) {
-					baseQueries = QueryReader.readOhsumedQueries(queryFileNames[i]);
-					relevanceData = RelevanceReader.readOhsumedRelevances(relFileNames[i]);
-				} else if (i == 2) {
-					baseQueries = QueryReader.readTrecGenomicsQueries(queryFileNames[i]);
-					relevanceData = RelevanceReader.readTrecGenomicsRelevances(relFileNames[i]);
-				}
-
-				baseQueries = QueryReader.filter(baseQueries, relevanceData);
+				baseQueries = QueryReader.filter(baseQueries, relData);
 
 				num_queries = baseQueries.size();
-				num_query_doc_pairs = relevanceData.totalSize();
+				num_query_doc_pairs = relData.totalSize();
 
 				for (int j = 0; j < baseQueries.size(); j++) {
 					BaseQuery bq = baseQueries.get(j);
@@ -135,7 +121,7 @@ public class DataStats {
 
 		String[] relFileNames = MIRPath.RelevanceFileNames;
 
-		QueryParser queryParser = DocumentSearcher.getQueryParser();
+		QueryParser queryParser = SearcherUtils.getQueryParser();
 
 		String[] collNames = MIRPath.CollNames;
 		String[] labels = { "#Docs", "Voc. Size", "Avg. Doc. Len", "#Queries", "Avg. Query Len.", "Query-Doc Pairs" };
@@ -153,7 +139,7 @@ public class DataStats {
 			double avg_doc_len = 0;
 			double avg_query_len = 0;
 
-			IndexSearcher indexSearcher = DocumentSearcher.getIndexSearcher(indexDirNames[i]);
+			IndexSearcher indexSearcher = SearcherUtils.getIndexSearcher(indexDirNames[i]);
 			IndexReader indexReader = indexSearcher.getIndexReader();
 
 			if (i < indexDirNames.length - 1) {

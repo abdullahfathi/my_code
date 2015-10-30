@@ -277,7 +277,7 @@ public class RelevanceModelBuilder {
 			int docId = docScores.indexAtLoc(i);
 			double doc_score = docScores.valueAtLoc(i);
 			List<Integer> words = wcb.getDocWords().get(docId);
-			List<IntPair> locWords = PLMUtils.getQueryLocsInDocument(qLM, words);
+			List<IntPair> locWords = PLMFunctions.getQueryLocsInDocument(qLM, words);
 
 			double real_doc_len = locWords.size();
 			double len_norm = Math.sqrt(2 * pi) * sigma;

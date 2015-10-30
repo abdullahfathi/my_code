@@ -20,10 +20,9 @@ import ohs.matrix.DenseVector;
 import ohs.matrix.SparseMatrix;
 import ohs.matrix.SparseVector;
 import ohs.matrix.Vector;
-import ohs.medical.ir.DocumentSearcher;
 import ohs.medical.ir.HyperParameter;
 import ohs.medical.ir.MIRPath;
-import ohs.medical.ir.ResultWriter;
+import ohs.medical.ir.SearcherUtils;
 import ohs.medical.ir.WordCountBox;
 import ohs.medical.ir.query.BaseQuery;
 import ohs.types.Indexer;
@@ -236,7 +235,7 @@ public class TrecCbeemDocumentSearcher {
 			// if (i == colId) {
 			// searchQuery = expSearchQuery;
 			// }
-			collDocScores[i] = DocumentSearcher.search(searchQuery, indexSearchers[i], hyperParam.getTopK());
+			collDocScores[i] = SearcherUtils.search(searchQuery, indexSearchers[i], hyperParam.getTopK());
 		}
 
 		setWordCountBoxes();
@@ -264,7 +263,7 @@ public class TrecCbeemDocumentSearcher {
 
 			SparseVector docScores = search(colId, baseQuery, docRels);
 
-			ResultWriter.write(writer, baseQuery.getId(), docScores);
+			SearcherUtils.write(writer, baseQuery.getId(), docScores);
 
 			if (logWriter != null) {
 				logWriter.write(logBuf.toString().trim() + "\n\n");
@@ -336,7 +335,7 @@ public class TrecCbeemDocumentSearcher {
 		// SparseVector ret = scoreDocuments(colId, expQueryModel);
 
 		BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(expQLM, wordIndexer));
-		SparseVector ret = DocumentSearcher.search(lbq, indexSearchers[colId], hyperParam.getTopK());
+		SparseVector ret = SearcherUtils.search(lbq, indexSearchers[colId], hyperParam.getTopK());
 		ret.normalize();
 
 		if (makeLog) {

@@ -32,7 +32,7 @@ import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.lucene.common.IndexFieldName;
-import ohs.medical.ir.DocumentSearcher;
+import ohs.medical.ir.SearcherUtils;
 import ohs.medical.ir.MIRPath;
 import ohs.types.Counter;
 import ohs.types.DeepMap;
@@ -137,7 +137,7 @@ public class ICDHandler {
 
 	public ICDHandler() throws Exception {
 		// analyzer = MedicalEnglishAnalyzer.getAnalyzer();
-		indexSearcher = DocumentSearcher.getIndexSearcher(MIRPath.WIKI_INDEX_DIR);
+		indexSearcher = SearcherUtils.getIndexSearcher(MIRPath.WIKI_INDEX_DIR);
 		cacheMap = new HashMap<String, Integer>();
 	}
 

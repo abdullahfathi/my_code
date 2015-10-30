@@ -3,6 +3,8 @@ package com.medallia.word2vec;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -24,6 +26,7 @@ import com.medallia.word2vec.util.AC;
 import com.medallia.word2vec.util.Common;
 import com.medallia.word2vec.util.ProfilingTimer;
 
+import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 
@@ -179,6 +182,31 @@ public class Word2VecModel {
 		return fromThrift(thrift);
 	}
 
+	static Word2VecModel fromSerFile(String fileName) throws Exception {
+		List<String> vocab = Lists.newArrayList();
+		List<Double> vectors = Lists.newArrayList();
+
+		ObjectInputStream ois = IOUtils.openObjectInputStream(fileName);
+		int[] dims = IOUtils.readIntegerArray(ois);
+
+		int vocabSize = dims[0];
+		int layerSize = dims[1];
+
+		for (int n = 0; n < vocabSize; n++) {
+			String word = IOUtils.readString(ois);
+			vocab.add(word);
+
+			double[] values = IOUtils.readDoubleArray(ois);
+
+			for (int j = 0; j < values.length; j++) {
+				vectors.add(values[j]);
+			}
+		}
+
+		Word2VecModelThrift thrift = new Word2VecModelThrift().setLayerSize(layerSize).setVocab(vocab).setVectors(vectors);
+		return fromThrift(thrift);
+	}
+
 	/**
 	 * @return {@link Word2VecModel} from the lines of the file in the text output format of the Word2Vec C open source project.
 	 */
@@ -279,6 +307,30 @@ public class Word2VecModel {
 		}
 
 		out.flush();
+	}
+
+	public void toSerFile(String outputFileName) throws Exception {
+		ObjectOutputStream oos = IOUtils.openObjectOutputStream(outputFileName);
+
+		int[] dims = new int[] { vocab.size(), layerSize };
+
+		IOUtils.write(oos, dims);
+
+		final double[] vector = new double[layerSize];
+		final ByteBuffer buffer = ByteBuffer.allocate(4 * layerSize);
+
+		for (int i = 0; i < vocab.size(); ++i) {
+			String word = vocab.get(i);
+
+			vectors.position(i * layerSize);
+			vectors.get(vector);
+
+			IOUtils.write(oos, word);
+			IOUtils.write(oos, vector);
+		}
+
+		oos.close();
+
 	}
 
 	public void toTextFile(String outputFile) throws IOException {

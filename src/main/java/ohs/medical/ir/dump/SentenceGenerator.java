@@ -85,7 +85,7 @@ public class SentenceGenerator {
 
 		TextFileWriter writer = new TextFileWriter(MIRPath.CLEF_EHEALTH_SENTS_FILE);
 
-		TextFileReader reader = new TextFileReader(MIRPath.CLEF_EHEALTH_COLLECTION_FILE);
+		TextFileReader reader = new TextFileReader(MIRPath.CLEF_EHEALTH_COL_FILE);
 		reader.setPrintNexts(false);
 
 		while (reader.hasNext()) {
@@ -118,7 +118,7 @@ public class SentenceGenerator {
 
 		TextFileWriter writer = new TextFileWriter(MIRPath.OHSUMED_SENTS_FILE);
 
-		TextFileReader reader = new TextFileReader(MIRPath.OHSUMED_COLLECTION_FILE);
+		TextFileReader reader = new TextFileReader(MIRPath.OHSUMED_COL_FILE);
 		reader.setPrintNexts(false);
 
 		long num_sents = 0;
@@ -166,7 +166,7 @@ public class SentenceGenerator {
 
 		TextFileWriter writer = new TextFileWriter(MIRPath.TREC_CDS_SENTS_FILE);
 
-		TextFileReader reader = new TextFileReader(MIRPath.TREC_CDS_COLLECTION_FILE);
+		TextFileReader reader = new TextFileReader(MIRPath.TREC_CDS_COL_FILE);
 		reader.setPrintNexts(false);
 
 		while (reader.hasNext()) {
@@ -206,7 +206,7 @@ public class SentenceGenerator {
 	public void generateForTrecGenomics() throws Exception {
 		TextFileWriter writer = new TextFileWriter(MIRPath.TREC_GENOMICS_SENTS_FILE);
 
-		TextFileReader reader = new TextFileReader(MIRPath.TREC_GENOMICS_COLLECTION_FILE);
+		TextFileReader reader = new TextFileReader(MIRPath.TREC_GENOMICS_COL_FILE);
 		reader.setPrintNexts(false);
 
 		while (reader.hasNext()) {
