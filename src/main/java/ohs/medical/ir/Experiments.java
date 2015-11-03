@@ -293,7 +293,11 @@ public class Experiments {
 
 				for (int k = 0; k < num_ret_docs; k++) {
 					double[] sim = ArrayUtils.copy(sims[k]);
-					ArrayMath.sortByValues(sim);
+					int[] indexes = ArrayMath.rankedIndexes(sim);
+
+					for (int l = 0; l < 10; l++) {
+
+					}
 				}
 
 				ArrayMath.normalizeColumns(sims);

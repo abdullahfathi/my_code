@@ -115,16 +115,10 @@ public class ArrayMath {
 		return argMax(x, 0, x.length);
 	}
 
-	public static void sortByValues(double[] a, int[] b) {
-		for (int i = 0; i < a.length; i++) {
-			b[i] = i;
-		}
-		quicksort(b, a);
-	}
-
-	public static int[] sortByValues(double[] a) {
+	public static int[] rankedIndexes(double[] a) {
 		int[] b = new int[a.length];
-		sortByValues(a, b);
+		a = ArrayUtils.copy(a);
+		quicksort(b, a);
 		return b;
 	}
 
