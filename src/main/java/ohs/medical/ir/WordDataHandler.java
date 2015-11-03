@@ -46,7 +46,7 @@ public class WordDataHandler {
 		// for (int i = 4; i < indexDirNames.length; i++) {
 		// dh.makeVocabulary(indexDirNames[i], vocFileNames[i]);
 		// }
-		// dh.mergeVocabularies(vocFileNames, MIRPath.VOCABULARY_FILE);
+		// dh.mergeVocabularies(vocFileNames, MIRPath.VOCAB_FILE);
 		// }
 
 		// dh.extractBigrams(indexDirNames[0], bigramFileNames[0]);

@@ -264,7 +264,7 @@ public class TrecSearcher {
 
 		System.out.println(outputFileName);
 
-		mixtures_for_field_rms = ArrayUtils.copyOut(mixtures_for_field_rms);
+		mixtures_for_field_rms = ArrayUtils.copy(mixtures_for_field_rms);
 		ArrayMath.normalize(mixtures_for_field_rms);
 
 		TextFileWriter writer = new TextFileWriter(outputFileName);

@@ -22,7 +22,7 @@ public class MIRPath {
 
 	public static final String PERFORMANCE_DETAIL_FILE = DATA_DIR + "performance_detail.txt";
 
-	public static final String VOCABULARY_FILE = DATA_DIR + "vocab.txt";
+	public static final String VOCAB_FILE = DATA_DIR + "vocab.txt";
 
 	/*
 	 * Wikipedia
@@ -119,7 +119,9 @@ public class MIRPath {
 
 	public static final String CLEF_EHEALTH_DOC_PRIOR_FILE = CLEF_EHEALTH_DIR + "document_prior.ser";
 
-	public static final String CLEF_EHEALTH_ABBR_FILE = CLEF_EHEALTH_DIR + "abbrs.txt";
+	public static final String CLEF_EHEALTH_ABBR_DIR = CLEF_EHEALTH_DIR + "abbr/";
+
+	public static final String CLEF_EHEALTH_ABBR_FILE = CLEF_EHEALTH_ABBR_DIR + "abbrs.txt";
 
 	public static final String CLEF_EHEALTH_OUTPUT_RESULT_2015_DIR = CLEF_EHEALTH_OUTPUT_DIR + "result-clef2015/";
 
@@ -193,7 +195,9 @@ public class MIRPath {
 
 	public static final String TREC_CDS_DOC_PRIOR_FILE = TREC_CDS_DIR + "document_prior.ser";
 
-	public static final String TREC_CDS_ABBR_FILE = TREC_CDS_DIR + "abbrs.txt";
+	public static final String TREC_CDS_ABBR_DIR = TREC_CDS_DIR + "abbr/";
+
+	public static final String TREC_CDS_ABBR_FILE = TREC_CDS_ABBR_DIR + "abbrs.txt";
 
 	public static final String TREC_CDS_QUERY_DOC_FILE = TREC_CDS_DIR + "query_doc.txt";
 
@@ -253,7 +257,9 @@ public class MIRPath {
 
 	public static final String TREC_GENOMICS_DOC_PRIOR_FILE = TREC_GENOMICS_DIR + "document_prior.ser";
 
-	public static final String TREC_GENOMICS_ABBR_FILE = TREC_GENOMICS_DIR + "abbrs.txt";
+	public static final String TREC_GENOMICS_ABBR_DIR = TREC_GENOMICS_DIR + "abbr/";
+
+	public static final String TREC_GENOMICS_ABBR_FILE = TREC_GENOMICS_ABBR_DIR + "abbrs.txt";
 
 	public static final String TREC_GENOMICS_QUERY_DOC_FILE = TREC_GENOMICS_DIR + "query_doc.txt";
 
@@ -293,13 +299,9 @@ public class MIRPath {
 
 	public static final String OHSUMED_DOC_PRIOR_FILE = OHSUMED_DIR + "document_prior.ser";
 
-	public static final String OHSUMED_ABBR_FILE = OHSUMED_DIR + "abbrs.txt";
+	public static final String OHSUMED_ABBR_DIR = OHSUMED_DIR + "abbr/";
 
-	public static final String ABBREVIATION_FILE = DATA_DIR + "abbrs.txt";
-
-	public static final String ABBREVIATION_GROUP_FILE = DATA_DIR + "abbrs_group.txt";
-
-	public static final String ABBREVIATION_FILTERED_FILE = DATA_DIR + "abbrs_filtered.txt";
+	public static final String OHSUMED_ABBR_FILE = OHSUMED_ABBR_DIR + "abbrs.txt";
 
 	public static final String OHSUMED_QUERY_DOC_FILE = OHSUMED_DIR + "query_doc.txt";
 
@@ -319,13 +321,17 @@ public class MIRPath {
 
 	public static final String[] IndexDirNames = { TREC_CDS_INDEX_DIR, CLEF_EHEALTH_INDEX_DIR, OHSUMED_INDEX_DIR, TREC_GENOMICS_INDEX_DIR };
 
+	public static final String[] SentIndexDirNames = { TREC_CDS_INDEX_SENT_DIR, CLEF_EHEALTH_INDEX_SENT_DIR, OHSUMED_INDEX_SENT_DIR,
+			TREC_GENOMICS_INDEX_SENT_DIR };
+
 	public static final String[] ResultDirNames = { TREC_CDS_OUTPUT_RESULT_DIR, CLEF_EHEALTH_OUTPUT_RESULT_DIR, OHSUMED_OUTPUT_RESULT_DIR,
 			TREC_GENOMICS_OUTPUT_RESULT_DIR };
 
 	public static final String[] OutputDirNames = { TREC_CDS_OUTPUT_DIR, CLEF_EHEALTH_OUTPUT_DIR, OHSUMED_OUTPUT_DIR,
 			TREC_GENOMICS_OUTPUT_DIR };
 
-	public static final String[] LogDirNames = { TREC_CDS_OUTPUT_LOG_DIR, CLEF_EHEALTH_OUTPUT_LOG_DIR, OHSUMED_OUTPUT_LOG_DIR };
+	public static final String[] LogDirNames = { TREC_CDS_OUTPUT_LOG_DIR, CLEF_EHEALTH_OUTPUT_LOG_DIR, OHSUMED_OUTPUT_LOG_DIR,
+			TREC_GENOMICS_OUTPUT_LOG_DIR };
 
 	public static final String[] DocPriorFileNames = { TREC_CDS_DOC_PRIOR_FILE, CLEF_EHEALTH_DOC_PRIOR_FILE, OHSUMED_DOC_PRIOR_FILE,
 			TREC_GENOMICS_DOC_PRIOR_FILE };

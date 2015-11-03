@@ -48,7 +48,6 @@ public class DocumentIndexer {
 	public static final int ram_size = 5000;
 
 	public static IndexWriter getIndexWriter(String outputDirName) throws Exception {
-		IOUtils.deleteFilesUnder(outputDirName);
 
 		IndexWriterConfig iwc = new IndexWriterConfig(MedicalEnglishAnalyzer.getAnalyzer());
 		// IndexWriterConfig iwc = new IndexWriterConfig(new StandardAnalyzer());
@@ -97,7 +96,7 @@ public class DocumentIndexer {
 		// di.indexTrecGenomics();
 
 		// di.indexWiki();
-		// di.makeDocumentIdMap();
+		di.makeDocumentIdMap();
 
 		System.out.println("process ends.");
 	}
@@ -153,6 +152,10 @@ public class DocumentIndexer {
 
 			// if (parts.length != 2) {
 			// continue;
+			// }
+
+			// if (reader.getNumLines() > 10000) {
+			// break;
 			// }
 
 			String seqId = parts[0];
@@ -352,9 +355,6 @@ public class DocumentIndexer {
 		String[] docMapFileNames = MIRPath.DocIdMapFileNames;
 
 		for (int i = 0; i < indexDirNames.length; i++) {
-			if (i != 3) {
-				continue;
-			}
 			String indexDirName = indexDirNames[i];
 			String docMapFileName = docMapFileNames[i];
 

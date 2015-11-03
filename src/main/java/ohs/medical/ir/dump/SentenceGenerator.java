@@ -68,9 +68,9 @@ public class SentenceGenerator {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 		SentenceGenerator di = new SentenceGenerator();
-		di.generateForTrecCds();
+		// di.generateForTrecCds();
 		// di.generateForClefEHealth();
-		// di.generateForOhsumed();
+		di.generateForOhsumed();
 		// di.generateForTrecGenomics();
 
 		System.out.println("process ends.");
@@ -149,7 +149,7 @@ public class SentenceGenerator {
 			List<String> sents = NLPUtils.tokenize(abs);
 
 			for (int i = 0; i < sents.size(); i++) {
-				String output = String.format("%s\t%d\t%s", seqId, i, sents.get(i));
+				String output = String.format("%s\t%d\t%s", medlineId, i, sents.get(i));
 				writer.write(output + "\n");
 			}
 

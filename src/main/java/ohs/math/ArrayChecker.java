@@ -84,7 +84,7 @@ public class ArrayChecker {
 	public static boolean isConsistent(double[][] a) {
 
 		if (!isUpperTriangular(a)) {
-			a = ArrayUtils.copyOut(a);
+			a = ArrayUtils.copy(a);
 			LA.GaussElimination(a);
 		}
 
@@ -132,7 +132,7 @@ public class ArrayChecker {
 	}
 
 	public static boolean isEqual(double[] a, double[] b) {
-		if (!isSameDimension(a, b)) {
+		if (!isSameDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 
@@ -628,7 +628,7 @@ public class ArrayChecker {
 		return true;
 	}
 
-	public static boolean isSameColumnDimension(double[][] a, double[] b) {
+	public static boolean isSameColumnDim(double[][] a, double[] b) {
 		int aRowDim = a.length;
 		int aColDim = a[0].length;
 		int bDim = b.length;
@@ -640,23 +640,23 @@ public class ArrayChecker {
 		}
 	}
 
-	public static boolean isSameDimension(double[] a, double[] b) {
+	public static boolean isSameDim(double[] a, double[] b) {
 		return a.length == b.length ? true : false;
 	}
 
-	public static boolean isSameDimension(double[] a, double[] b, double[] c) {
-		return isSameDimension(a, b) && isSameDimension(b, c) ? true : false;
+	public static boolean isSameDim(double[] a, double[] b, double[] c) {
+		return isSameDim(a, b) && isSameDim(b, c) ? true : false;
 	}
 
-	public static boolean isSameDimension(int[] a, double[] b) {
+	public static boolean isSameDim(int[] a, double[] b) {
 		return a.length == b.length ? true : false;
 	}
 
-	public static boolean isSameDimension(int[] a, int[] b) {
+	public static boolean isSameDim(int[] a, int[] b) {
 		return a.length == b.length ? true : false;
 	}
 
-	public static boolean isSameDimensions(double[][] a, double[][] b) {
+	public static boolean isSameDim(double[][] a, double[][] b) {
 		int aRowDim = a.length;
 		int aColDim = a[0].length;
 		int bRowDim = b.length;
@@ -669,11 +669,11 @@ public class ArrayChecker {
 		}
 	}
 
-	public static boolean isSameDimensions(double[][] a, double[][] b, double[][] c) {
-		return isSameDimensions(a, b) && isSameDimensions(b, c) ? true : false;
+	public static boolean isSameDim(double[][] a, double[][] b, double[][] c) {
+		return isSameDim(a, b) && isSameDim(b, c) ? true : false;
 	}
 
-	public static boolean isSameRowDimension(double[][] a, double[] b) {
+	public static boolean isSameRowDim(double[][] a, double[] b) {
 		int aRowDim = a.length;
 		int aColDim = a[0].length;
 		int bDim = b.length;
@@ -685,7 +685,7 @@ public class ArrayChecker {
 		}
 	}
 
-	public static boolean isSameRowDimension(double[][] a, double[][] b) {
+	public static boolean isSameRowDim(double[][] a, double[][] b) {
 		int aRowDim = a.length;
 		int bRowDim = b.length;
 

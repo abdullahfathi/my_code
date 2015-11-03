@@ -117,7 +117,7 @@ public class ProximityScorer {
 
 			double[] values = new double[minDists.size()];
 
-			ArrayUtils.copyAs(minDists, values);
+			ArrayUtils.copy(minDists, values);
 
 			double avg_mean_dist = ArrayMath.mean(values);
 			double score = 1 / (avg_mean_dist + 1);

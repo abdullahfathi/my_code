@@ -16,20 +16,20 @@ public class ArrayMath {
 
 	/**
 	 * @param a
-	 *            input
 	 * @param b
-	 *            input
 	 * @param c
-	 *            output
+	 * @return
 	 */
-	public static void add(double[] a, double b, double[] c) {
-		if (!ArrayChecker.isSameDimension(a, c)) {
+	public static double add(double[] a, double b, double[] c) {
+		if (!ArrayChecker.isSameDim(a, c)) {
 			throw new IllegalArgumentException();
 		}
-
+		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
 			c[i] = a[i] + b;
+			sum += c[i];
 		}
+		return sum;
 	}
 
 	/**
@@ -39,81 +39,74 @@ public class ArrayMath {
 	 *            input
 	 * @param c
 	 *            output
+	 * @return
 	 */
-	public static void add(double[] a, double[] b, double[] c) {
-		if (!ArrayChecker.isSameDimension(a, b, c)) {
+	public static double add(double[] a, double[] b, double[] c) {
+		if (!ArrayChecker.isSameDim(a, b, c)) {
 			throw new IllegalArgumentException();
 		}
-
+		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
 			c[i] = a[i] + b[i];
+			sum += c[i];
 		}
+		return sum;
 	}
 
-	public static void outerProduct(double[] a, double[] b, double[][] c) {
-		int rowDim = a.length;
-		int colDim = b.length;
-		int[] dims = ArrayUtils.dimensions(c);
+	/**
+	 * @param a
+	 * @param b
+	 * @param coef_a
+	 * @param coef_b
+	 * @param c
+	 *            output
+	 * @return
+	 */
+	public static double addAfterScale(double[] a, double b, double coef_a, double coef_b, double[] c) {
+		if (!ArrayChecker.isSameDim(a, c)) {
+			throw new IllegalArgumentException();
+		}
+		double sum = 0;
+		for (int i = 0; i < a.length; i++) {
+			c[i] = coef_a * a[i] + coef_b * b;
+			sum += c[i];
+		}
+		return sum;
+	}
 
-		if (rowDim == dims[0] && colDim == dims[1]) {
+	/**
+	 * @param a
+	 * @param b
+	 * @param coef_a
+	 * @param coef_b
+	 * @param c
+	 *            output
+	 * @return
+	 */
+	public static double addAfterScale(double[] a, double[] b, double coef_a, double coef_b, double[] c) {
+		if (!ArrayChecker.isSameDim(a, b, c)) {
+			throw new IllegalArgumentException();
+		}
+		double sum = 0;
+		for (int i = 0; i < a.length; i++) {
+			c[i] = coef_a * a[i] + coef_b * b[i];
+			sum += c[i];
+		}
+		return sum;
+	}
+
+	public static double addAfterScale(double[] a, double[] b, double[] coef_a, double[] coef_b, double[] c) {
+		if (ArrayChecker.isSameDim(a, b, c) && ArrayChecker.isSameDim(c, coef_a, coef_b)) {
 
 		} else {
 			throw new IllegalArgumentException();
 		}
-
+		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
-			for (int j = 0; j < b.length; j++) {
-				c[i][j] = a[i] * b[j];
-			}
+			c[i] = a[i] * coef_a[i] + b[i] * coef_b[i];
+			sum += c[i];
 		}
-
-	}
-
-	public static double dotProduct(double[] a, double[] b) {
-		if (!ArrayChecker.isSameDimension(a, b)) {
-			throw new IllegalArgumentException();
-		}
-
-		double ret = 0;
-		for (int i = 0; i < a.length; i++) {
-			ret += a[i] * b[i];
-		}
-		return ret;
-	}
-
-	/**
-	 * @param a
-	 * @param b
-	 * @param coef_a
-	 * @param coef_b
-	 * @param c
-	 *            output
-	 */
-	public static void addAfterScale(double[] a, double b, double coef_a, double coef_b, double[] c) {
-		if (!ArrayChecker.isSameDimension(a, c)) {
-			throw new IllegalArgumentException();
-		}
-		for (int i = 0; i < a.length; i++) {
-			c[i] = coef_a * a[i] + coef_b * b;
-		}
-	}
-
-	/**
-	 * @param a
-	 * @param b
-	 * @param coef_a
-	 * @param coef_b
-	 * @param c
-	 *            output
-	 */
-	public static void addAfterScale(double[] a, double[] b, double coef_a, double coef_b, double[] c) {
-		if (!ArrayChecker.isSameDimension(a, b, c)) {
-			throw new IllegalArgumentException();
-		}
-
-		for (int i = 0; i < a.length; i++) {
-			c[i] = coef_a * a[i] + coef_b * b[i];
-		}
+		return sum;
 	}
 
 	public static int argMax(double[] x) {
@@ -282,7 +275,7 @@ public class ArrayMath {
 		}
 
 		int[] ret = new int[set.size()];
-		ArrayUtils.copyAs(set, ret);
+		ArrayUtils.copy(set, ret);
 		return ret;
 	}
 
@@ -396,48 +389,62 @@ public class ArrayMath {
 	/**
 	 * @param trans_probs
 	 *            Column-normalized transition probabilities
-	 * @param init_cents
+	 * @param cents
 	 * @param max_iter
 	 * @param min_distance
 	 * @param damping_factor
 	 * @return
 	 */
-	public static double[] doRandomWalk(double[][] trans_probs, double[] init_cents, int max_iter, double min_distance,
-			double damping_factor) {
+	public static void doRandomWalk(double[][] trans_probs, double[] cents, int max_iter, double min_distance, double damping_factor) {
+		if (!ArrayChecker.isProductable(trans_probs, cents)) {
+			throw new IllegalArgumentException();
+		}
+
 		int num_docs = trans_probs.length;
 
-		double[] cents = new double[num_docs];
 		double uniform_cent = 1f / num_docs;
 
-		double[] old_cents = ArrayUtils.copyOut(init_cents);
+		double[] old_cents = ArrayUtils.copy(cents);
 		double old_dist = Double.MAX_VALUE;
 
 		for (int i = 0; i < max_iter; i++) {
-			LA.product(trans_probs, old_cents, cents);
+			double sum1 = LA.product(trans_probs, old_cents, cents);
+			double sum2 = addAfterScale(cents, uniform_cent, 1 - damping_factor, damping_factor, cents);
 
-			for (int j = 0; j < cents.length; j++) {
-				cents[j] = damping_factor * uniform_cent + (1 - damping_factor) * cents[j];
-			}
+			// for (int j = 0; j < cents.length; j++) {
+			// cents[j] = damping_factor * uniform_cent + (1 - damping_factor) * cents[j];
+			// sum += cents[j];
+			// }
 
-			normalize(cents, cents);
+			scale(cents, 1f / sum2, cents);
 
 			double dist = euclideanDistance(old_cents, cents);
 
 			System.out.printf("%d: %s - %s = %s\n", i + 1, old_dist, dist, old_dist - dist);
 
-			if (dist > old_dist || dist < min_distance) {
+			if (dist < min_distance) {
+				break;
+			}
+
+			if (dist > old_dist) {
+				ArrayUtils.copy(old_cents, cents);
 				break;
 			}
 			old_dist = dist;
 			ArrayUtils.copy(cents, old_cents);
 		}
-		return cents;
 	}
 
-	public static double[] doRandomWalk(double[][] trans_probs, int max_iter, double min_distance, double damping_factor) {
-		int num_docs = trans_probs.length;
-		double[] init_cents = ArrayUtils.newArray(num_docs, 1f / num_docs);
-		return doRandomWalk(trans_probs, init_cents, max_iter, min_distance, damping_factor);
+	public static double dotProduct(double[] a, double[] b) {
+		if (!ArrayChecker.isSameDim(a, b)) {
+			throw new IllegalArgumentException();
+		}
+
+		double sum = 0;
+		for (int i = 0; i < a.length; i++) {
+			sum += a[i] * b[i];
+		}
+		return sum;
 	}
 
 	public static double entropy(double[] a) {
@@ -495,12 +502,12 @@ public class ArrayMath {
 	}
 
 	public static double jensenShannonDivergence(double[] a, double[] b) {
-		assert (a.length == b.length);
-		double[] average = new double[a.length];
-		for (int i = 0; i < a.length; ++i) {
-			average[i] += (a[i] + b[i]) / 2;
+		if (!ArrayChecker.isSameDim(a, b)) {
+			throw new IllegalArgumentException();
 		}
-		return (KLDivergence(a, average) + KLDivergence(b, average)) / 2;
+		double[] c = new double[a.length];
+		addAfterScale(a, b, 0.5, 0.5, c);
+		return (klDivergence(a, c) + klDivergence(b, c)) / 2;
 	}
 
 	/**
@@ -557,7 +564,10 @@ public class ArrayMath {
 	 * @param b
 	 * @return
 	 */
-	public static double KLDivergence(double[] a, double[] b) {
+	public static double klDivergence(double[] a, double[] b) {
+		if (!ArrayChecker.isSameDim(a, b)) {
+			throw new IllegalArgumentException();
+		}
 		double ret = 0;
 
 		for (int i = 0; i < a.length; ++i) {
@@ -642,21 +652,22 @@ public class ArrayMath {
 		return ret;
 	}
 
-	public static double[] log(double[] a) {
-		double[] ret = new double[a.length];
-		log(a, ret);
-		return ret;
-	}
-
 	/**
 	 * @param a
 	 * @param b
 	 *            output
+	 * @return
 	 */
-	public static void log(double[] a, double[] b) {
+	public static double log(double[] a, double[] b) {
+		if (!ArrayChecker.isSameDim(a, b)) {
+			throw new IllegalArgumentException();
+		}
+		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
 			b[i] = Math.log(a[i]);
+			sum += b[i];
 		}
+		return sum;
 	}
 
 	public static double logSum(double[] x) {
@@ -676,7 +687,7 @@ public class ArrayMath {
 			double[] probs = new double[100];
 			int[] samples = new int[probs.length];
 
-			random(probs, 0, 1);
+			random(0, 1, probs);
 
 			cumulate(probs, probs);
 
@@ -733,7 +744,10 @@ public class ArrayMath {
 
 			System.out.println(ArrayUtils.toString(m));
 
-			double[] b = doRandomWalk(m, 100, 0.0000001, 0);
+			double[] b = new double[m[0].length];
+			ArrayUtils.setAll(b, 1f / b.length);
+
+			doRandomWalk(m, b, 100, 0.0000001, 0);
 
 			System.out.println(ArrayUtils.toString(b));
 		}
@@ -747,7 +761,9 @@ public class ArrayMath {
 
 			normalize(vs);
 
-			double[] log_vs = log(vs);
+			double[] log_vs = new double[vs.length];
+
+			log(vs, log_vs);
 
 			double log_sum1 = sum(log_vs);
 			System.out.println(Math.exp(log_sum1));
@@ -901,15 +917,18 @@ public class ArrayMath {
 	 *            input
 	 * @param c
 	 *            output
+	 * @return
 	 */
-	public static void multiply(double[] a, double[] b, double[] c) {
-		if (!ArrayChecker.isSameDimension(a, b, c)) {
+	public static double multiply(double[] a, double[] b, double[] c) {
+		if (!ArrayChecker.isSameDim(a, b, c)) {
 			throw new IllegalArgumentException();
 		}
-
+		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
 			c[i] = a[i] * b[i];
+			sum += c[i];
 		}
+		return sum;
 	}
 
 	/**
@@ -921,7 +940,7 @@ public class ArrayMath {
 	 *            output
 	 */
 	public static void multiply(double[][] a, double[][] b, double[][] c) {
-		if (!ArrayChecker.isSameDimensions(a, b, c)) {
+		if (!ArrayChecker.isSameDim(a, b, c)) {
 			throw new IllegalArgumentException();
 		}
 
@@ -963,13 +982,14 @@ public class ArrayMath {
 	 *            input
 	 * @param b
 	 *            output
+	 * @return
 	 */
-	public static void normalize(double[] a, double[] b) {
-		scale(a, 1f / sum(a), b);
+	public static double normalize(double[] a, double[] b) {
+		return scale(a, 1f / sum(a), b);
 	}
 
-	public static void normalizeByL2Norm(double[] a, double[] b) {
-		scale(a, 1f / normL2(a), b);
+	public static double normalizeByL2Norm(double[] a, double[] b) {
+		return scale(a, 1f / normL2(a), b);
 	}
 
 	/**
@@ -1044,6 +1064,24 @@ public class ArrayMath {
 		return Math.sqrt(LA.dotProduct(x, x));
 	}
 
+	public static void outerProduct(double[] a, double[] b, double[][] c) {
+		int rowDim = a.length;
+		int colDim = b.length;
+		int[] dims = ArrayUtils.dimensions(c);
+
+		if (rowDim == dims[0] && colDim == dims[1]) {
+
+		} else {
+			throw new IllegalArgumentException();
+		}
+
+		for (int i = 0; i < a.length; i++) {
+			for (int j = 0; j < b.length; j++) {
+				c[i][j] = a[i] * b[j];
+			}
+		}
+	}
+
 	public static int[] over(double[] x, double cutoff, boolean includeCutoff) {
 		List<Integer> set = new ArrayList<Integer>();
 		for (int i = 0; i < x.length; i++) {
@@ -1059,7 +1097,7 @@ public class ArrayMath {
 		}
 
 		int[] ret = new int[set.size()];
-		ArrayUtils.copyAs(set, ret);
+		ArrayUtils.copy(set, ret);
 		return ret;
 	}
 
@@ -1071,37 +1109,44 @@ public class ArrayMath {
 	// return ret;
 	// }
 
-	public static void random(double[] x, double min, double max) {
+	public static double random(double min, double max, double[] x) {
 		Random random = new Random();
 		double range = max - min;
-
+		double sum = 0;
 		for (int i = 0; i < x.length; i++) {
 			x[i] = range * random.nextDouble() + min;
+			sum += x[i];
 		}
+		return sum;
 	}
 
-	public static void random(double[][] x, double min, double max) {
+	public static double random(double min, double max, double[][] x) {
+		double sum = 0;
 		for (int i = 0; i < x.length; i++) {
-			random(x[i], min, max);
+			sum += random(min, max, x[i]);
 		}
+		return sum;
 	}
 
-	public static void random(int[] x, int min, int max) {
+	public static int random(int min, int max, int[] x) {
 		Random random = new Random();
 		double range = max - min + 1;
+		int sum = 0;
 		for (int i = 0; i < x.length; i++) {
 			x[i] = (int) (range * random.nextDouble()) + min;
+			sum += x[i];
 		}
+		return sum;
 	}
 
-	public static void sample(double[] cumulated, int[] samples) {
+	public static void sample(double[] cumulated_probs, int[] samples) {
 		Random random = new Random();
-		double sum = cumulated[cumulated.length - 1];
+		double sum = cumulated_probs[cumulated_probs.length - 1];
 
 		for (int i = 0; i < samples.length; i++) {
 			double rv = sum * random.nextDouble();
-			for (int j = 0; j < cumulated.length; j++) {
-				if (rv <= cumulated[j]) {
+			for (int j = 0; j < cumulated_probs.length; j++) {
+				if (rv <= cumulated_probs[j]) {
 					samples[i] = j;
 					break;
 				}
@@ -1110,7 +1155,7 @@ public class ArrayMath {
 	}
 
 	public static void sample(int[] indexes, double[] values, int[] samples, boolean cumulate) {
-		if (!ArrayChecker.isSameDimension(indexes, values) || !ArrayChecker.isSameDimension(indexes, samples)) {
+		if (!ArrayChecker.isSameDim(indexes, values) || !ArrayChecker.isSameDim(indexes, samples)) {
 			throw new IllegalArgumentException();
 		}
 
@@ -1143,29 +1188,20 @@ public class ArrayMath {
 	 * @param a
 	 *            input
 	 * @param coef
-	 * @return
-	 */
-	public static double[] scale(double[] a, double coef) {
-		double[] ret = new double[a.length];
-		scale(a, coef, ret);
-		return ret;
-	}
-
-	/**
-	 * @param a
-	 *            input
-	 * @param coef
 	 * @param b
 	 *            output
+	 * @return
 	 */
-	public static void scale(double[] a, double coef, double[] b) {
-		if (!ArrayChecker.isSameDimension(a, b)) {
+	public static double scale(double[] a, double coef, double[] b) {
+		if (!ArrayChecker.isSameDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
-
+		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
 			b[i] = a[i] * coef;
+			sum += b[i];
 		}
+		return sum;
 	}
 
 	public static void simpleLinearRegression() {
@@ -1234,7 +1270,7 @@ public class ArrayMath {
 	 */
 	public static void substract(double[] a, double[] b, double[] c) {
 
-		if (!ArrayChecker.isSameDimension(a, b, c)) {
+		if (!ArrayChecker.isSameDim(a, b, c)) {
 			throw new IllegalArgumentException();
 		}
 
@@ -1294,7 +1330,7 @@ public class ArrayMath {
 	 *            output
 	 */
 	public static void sumColumns(double[][] a, double[] b) {
-		if (!ArrayChecker.isSameColumnDimension(a, b)) {
+		if (!ArrayChecker.isSameColumnDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 
@@ -1428,9 +1464,10 @@ public class ArrayMath {
 	 *            input
 	 * @param b
 	 *            output
+	 * @return
 	 */
-	public static void unitVector(double[] a, double[] b) {
-		scale(a, 1f / normL2(a), b);
+	public static double unitVector(double[] a, double[] b) {
+		return scale(a, 1f / normL2(a), b);
 	}
 
 	public static double variance(double[] x) {
@@ -1449,6 +1486,7 @@ public class ArrayMath {
 	}
 
 	public double sumAfterLogProb(double[] x) {
-		return sumLogProb(log(x));
+		log(x, x);
+		return sumLogProb(x);
 	}
 }

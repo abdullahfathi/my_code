@@ -75,13 +75,13 @@ public class IOUtils {
 		return file;
 	}
 
-	public static void copy(String inputFileName, String outputDirName) throws Exception {
-		createFolders(outputDirName);
+	public static void copy(String inFileName, String outDirName) throws Exception {
+		createFolders(outDirName);
 
 		InputStream is = null;
 		OutputStream os = null;
-		is = new FileInputStream(inputFileName);
-		os = new FileOutputStream(outputDirName);
+		is = new FileInputStream(inFileName);
+		os = new FileOutputStream(outDirName);
 		byte[] buffer = new byte[1024];
 		int length;
 		while ((length = is.read(buffer)) > 0) {
@@ -92,10 +92,10 @@ public class IOUtils {
 	}
 
 	public static void copyFolder(String srcDir, String desDir) throws Exception {
-		for (File inputFile : getFilesUnder(srcDir)) {
-			String path = inputFile.getPath();
+		for (File inFile : getFilesUnder(srcDir)) {
+			String path = inFile.getPath();
 			path = path.replace(srcDir, desDir);
-			copy(inputFile.getPath(), path);
+			copy(inFile.getPath(), path);
 		}
 	}
 
@@ -224,9 +224,9 @@ public class IOUtils {
 		System.out.println(text2);
 	}
 
-	public static void move(String inputFileName, String outputDirName) throws Exception {
-		copy(inputFileName, outputDirName);
-		new File(inputFileName).delete();
+	public static void move(String inFileName, String outDirName) throws Exception {
+		copy(inFileName, outDirName);
+		new File(inFileName).delete();
 	}
 
 	public static void moveFolder(String srcDir, String desDir) throws Exception {
@@ -321,6 +321,8 @@ public class IOUtils {
 	}
 
 	public static ObjectOutputStream openObjectOutputStream(String fileName) throws Exception {
+		System.out.printf("write at [%s].\n", fileName);
+
 		File file = new File(fileName);
 
 		File parent = file.getParentFile();

@@ -10,9 +10,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Maintains a two-way map between a set of objects and contiguous integers from
- * 0 to the number of objects. Use get(i) to look up object i, and
- * indexOf(object) to look up the index of an object.
+ * Maintains a two-way map between a set of objects and contiguous integers from 0 to the number of objects. Use get(i) to look up object i,
+ * and indexOf(object) to look up the index of an object.
  * 
  * @author Dan Klein
  */
@@ -104,8 +103,7 @@ public class Indexer<E> extends AbstractList<E> implements Serializable {
 	}
 
 	/**
-	 * Returns the index of the given object, or -1 if the object is not present
-	 * in the indexer.
+	 * Returns the index of the given object, or -1 if the object is not present in the indexer.
 	 * 
 	 * @param o
 	 * @return

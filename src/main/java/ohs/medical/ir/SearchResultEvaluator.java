@@ -10,7 +10,6 @@ import java.util.TreeSet;
 
 import org.apache.commons.math.stat.inference.TTestImpl;
 
-import cc.mallet.types.Metric;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.ir.eval.MetricType;
@@ -141,7 +140,7 @@ public class SearchResultEvaluator {
 		}
 	}
 
-	public static void evaluateForCBEEM() throws Exception {
+	public static void evaluateForJBICBEEM() throws Exception {
 		String[] resultDirNames = MIRPath.ResultDirNames;
 		String[] relDataFileNames = MIRPath.RelevanceFileNames;
 		String[] docMapFileNames = MIRPath.DocIdMapFileNames;
@@ -429,13 +428,11 @@ public class SearchResultEvaluator {
 		writer1.close();
 	}
 
-	public static void evaluate() throws Exception {
-		String[] resultDirNames = MIRPath.ResultDirNames;
-		String[] relDataFileNames = MIRPath.RelevanceFileNames;
-		String[] docMapFileNames = MIRPath.DocIdMapFileNames;
+	public static void evaluate(String[] resDirNames, String[] relDataFileNames, String[] docIdMapFileNames, String perfFileName,
+			String perfDetailFileName) throws Exception {
 
-		TextFileWriter writer1 = new TextFileWriter(MIRPath.PERFORMANCE_FILE);
-		TextFileWriter writer2 = new TextFileWriter(MIRPath.PERFORMANCE_DETAIL_FILE);
+		TextFileWriter writer1 = new TextFileWriter(perfFileName);
+		TextFileWriter writer2 = new TextFileWriter(perfDetailFileName);
 
 		StringBuffer sb = new StringBuffer();
 		sb.append("Collection\tQueries\tModel\tTop-K");
@@ -471,66 +468,71 @@ public class SearchResultEvaluator {
 
 		DeepMap<String, String, List<Performance>> perfMap = new DeepMap<String, String, List<Performance>>();
 
-		for (int i = 0; i < resultDirNames.length; i++) {
-			String resultDirName = resultDirNames[i];
+		for (int i = 0; i < resDirNames.length; i++) {
+			String resDirName = resDirNames[i];
 			String relFileName = relDataFileNames[i];
-			String docMapFileName = docMapFileNames[i];
+			String docMapFileName = docIdMapFileNames[i];
 			String collName = "";
 
 			{
-				File f = new File(resultDirName);
+				File f = new File(resDirName);
 				collName = f.getParentFile().getParentFile().getName();
 			}
 
-			StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(docMapFileName);
+			StrBidMap docIdMap = new StrBidMap();
+			if (docMapFileName != null && docMapFileName.length() > 0) {
+				docIdMap = DocumentIdMapper.readDocumentIdMap(docMapFileName);
+			}
 
 			StrCounterMap relData = RelevanceReader.readRelevances(relFileName);
-			relData = RelevanceReader.filter(relData, docIdMap);
+
+			if (docIdMap.size() > 0) {
+				relData = RelevanceReader.filter(relData, docIdMap);
+			}
 
 			PerformanceEvaluator pe = new PerformanceEvaluator();
 
-			File baselineFile = null;
+			File blFile = null;
 
-			TreeSet<File> resultFileSet = new TreeSet<File>();
+			TreeSet<File> resFileSet = new TreeSet<File>();
 
-			for (File resultFile : new File(resultDirName).listFiles()) {
-				String paramStr = resultFile.getName().replace(".txt", "");
+			for (File resFile : new File(resDirName).listFiles()) {
+				String paramStr = resFile.getName().replace(".txt", "");
 				String[] parts = paramStr.split("_");
 				String modelName = parts[0];
 
 				if (modelName.equals("qld")) {
-					baselineFile = resultFile;
+					blFile = resFile;
 				} else {
-					resultFileSet.add(resultFile);
+					resFileSet.add(resFile);
 				}
 			}
 
-			List<File> resultFiles = new ArrayList<File>();
-			resultFiles.add(baselineFile);
-			resultFiles.addAll(resultFileSet);
+			List<File> resFiles = new ArrayList<File>();
+			resFiles.add(blFile);
+			resFiles.addAll(resFileSet);
 
 			List<Performance> baselines = new ArrayList<Performance>();
 
-			for (int j = 0; j < resultFiles.size(); j++) {
-				File resultFile = resultFiles.get(j);
-				StrCounterMap resultData = DocumentIdMapper
-						.mapIndexIdsToDocIds(PerformanceEvaluator.readSearchResults(resultFile.getPath()), docIdMap);
+			for (int j = 0; j < resFiles.size(); j++) {
+				File resFile = resFiles.get(j);
 
-				String modelName = resultFile.getName();
+				StrCounterMap resData = PerformanceEvaluator.readSearchResults(resFile.getPath());
 
-				List<Performance> targets = pe.evalute(resultData, relData);
+				if (docIdMap.size() > 0) {
+					resData = DocumentIdMapper.mapIndexIdsToDocIds(resData, docIdMap);
+				}
+
+				String modelName = resFile.getName();
+
+				List<Performance> targets = pe.evalute(resData, relData);
 
 				if (j == 0) {
 					baselines = targets;
 				}
 
-				// if (hyperParameter.getMixtureForExpQueryModel() == 0 ||
-				// hyperParameter.getMixtureForExpQueryModel() == 1) {
-				// continue;
-				// }
-
 				writer2.write(String.format("Collection:\t%s\n", collName));
-				writer2.write(String.format("FileName:\t%s\n", resultFile.getName()));
+				writer2.write(String.format("FileName:\t%s\n", resFile.getName()));
 
 				NumberFormat nf = NumberFormat.getInstance();
 				nf.setMinimumFractionDigits(4);
@@ -541,7 +543,7 @@ public class SearchResultEvaluator {
 
 					{
 						StringBuffer sb2 = new StringBuffer();
-						sb2.append(String.format("%s\t%d\t%s\t%d", collName, resultData.keySet().size(), modelName, target.getTopN()));
+						sb2.append(String.format("%s\t%d\t%s\t%d", collName, resData.keySet().size(), modelName, target.getTopN()));
 
 						sb2.append(String.format("\t%d", (int) target.getTotalRelevant()));
 						sb2.append(String.format("\t%d", (int) target.getTotalRetrieved()));
@@ -552,12 +554,12 @@ public class SearchResultEvaluator {
 						sb2.append(String.format("\t%s", nf.format((target.getNDCG()))));
 
 						{
-							MetricType[] metricTypes = { MetricType.P, MetricType.AP, MetricType.NDCG };
+							MetricType[] mts = { MetricType.P, MetricType.AP, MetricType.NDCG };
 
-							for (int l = 0; l < metricTypes.length; l++) {
-								MetricType metricType = metricTypes[l];
-								Counter<String> c1 = baseline.getMetricQueryScores().getCounter(metricType);
-								Counter<String> c2 = target.getMetricQueryScores().getCounter(metricType);
+							for (int l = 0; l < mts.length; l++) {
+								MetricType mt = mts[l];
+								Counter<String> c1 = baseline.getMetricQueryScores().getCounter(mt);
+								Counter<String> c2 = target.getMetricQueryScores().getCounter(mt);
 								int size1 = c1.size();
 								int size2 = c2.size();
 
@@ -572,22 +574,22 @@ public class SearchResultEvaluator {
 								}
 
 								TTestImpl tt = new TTestImpl();
-								boolean isSignificantlyImproved1 = tt.pairedTTest(scores1, scores2, 0.05);
-								boolean isSignificantlyImproved2 = tt.pairedTTest(scores1, scores2, 0.01);
-								sb2.append(String.format("\t%s\t%s", isSignificantlyImproved1, isSignificantlyImproved2));
+								boolean improved1 = tt.pairedTTest(scores1, scores2, 0.05);
+								boolean improved2 = tt.pairedTTest(scores1, scores2, 0.01);
+								sb2.append(String.format("\t%s\t%s", improved1, improved2));
 							}
 						}
 
 						{
-							MetricType[] metricTypes = { MetricType.P, MetricType.AP, MetricType.NDCG };
+							MetricType[] mts = { MetricType.P, MetricType.AP, MetricType.NDCG };
 
 							NumberFormat nf2 = NumberFormat.getInstance();
 							nf2.setMinimumFractionDigits(6);
 
-							for (int l = 0; l < metricTypes.length; l++) {
-								MetricType metricType = metricTypes[l];
-								Counter<String> c1 = baseline.getMetricQueryScores().getCounter(metricType);
-								Counter<String> c2 = target.getMetricQueryScores().getCounter(metricType);
+							for (int l = 0; l < mts.length; l++) {
+								MetricType mt = mts[l];
+								Counter<String> c1 = baseline.getMetricQueryScores().getCounter(mt);
+								Counter<String> c2 = target.getMetricQueryScores().getCounter(mt);
 
 								double risk = 0;
 								double reward = 0;
@@ -620,21 +622,21 @@ public class SearchResultEvaluator {
 					}
 
 					{
-						MetricType[] types = new MetricType[] { MetricType.RETRIEVED, MetricType.RELEVANT, MetricType.RELEVANT_IN_RET,
+						MetricType[] mts = new MetricType[] { MetricType.RETRIEVED, MetricType.RELEVANT, MetricType.RELEVANT_IN_RET,
 								MetricType.RELEVANT_AT, MetricType.P, MetricType.AP, MetricType.NDCG };
 
 						StringBuffer sb3 = new StringBuffer();
 						sb3.append(String.format("Top-%d", target.getTopN()));
 						sb3.append("\nQID");
 
-						for (MetricType type : types) {
-							sb3.append("\t" + type);
+						for (MetricType mt : mts) {
+							sb3.append("\t" + mt);
 						}
 						sb3.append("\n");
 
-						CounterMap<String, MetricType> queryMetricValues = target.getMetricQueryScores().invert();
+						CounterMap<String, MetricType> qmvs = target.getMetricQueryScores().invert();
 
-						List<String> qids = new ArrayList<String>(new TreeSet<String>(queryMetricValues.keySet()));
+						List<String> qids = new ArrayList<String>(new TreeSet<String>(qmvs.keySet()));
 
 						BidMap<String, Integer> map = new BidMap<String, Integer>();
 
@@ -660,26 +662,26 @@ public class SearchResultEvaluator {
 							String qid = map.getKey(qId);
 							sb3.append(qid);
 
-							Counter<MetricType> metricValues = queryMetricValues.getCounter(qid);
+							Counter<MetricType> metricValues = qmvs.getCounter(qid);
 
-							for (int m = 0; m < types.length; m++) {
-								MetricType type = types[m];
+							for (int m = 0; m < mts.length; m++) {
+								MetricType type = mts[m];
 								double score = metricValues.getCount(type);
 								if (type == MetricType.P || type == MetricType.AP || type == MetricType.NDCG) {
 									sb3.append(String.format("\t%s", nf.format(score)));
 								} else {
 									sb3.append(String.format("\t%d", (int) score));
 								}
-								overallValues.incrementCount(types[m], score);
+								overallValues.incrementCount(mts[m], score);
 							}
 							sb3.append("\n");
 						}
 
 						sb3.append("Overall");
 
-						for (int l = 0; l < types.length; l++) {
-							MetricType type = types[l];
-							double score = overallValues.getCount(types[l]);
+						for (int l = 0; l < mts.length; l++) {
+							MetricType type = mts[l];
+							double score = overallValues.getCount(mts[l]);
 
 							if (type == MetricType.P || type == MetricType.AP || type == MetricType.NDCG) {
 								score /= qids.size();
@@ -701,8 +703,35 @@ public class SearchResultEvaluator {
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
-		// SearchResultEvaluator de = new SearchResultEvaluator();
-		SearchResultEvaluator.evaluate();
+
+		int evalType = 0;
+
+		if (evalType == 0) {
+
+			String[] resDirNames = MIRPath.ResultDirNames;
+			String[] relDataFileNames = MIRPath.RelevanceFileNames;
+			String[] docIdMapFileNames = MIRPath.DocIdMapFileNames;
+
+			String perfFileName = MIRPath.PERFORMANCE_FILE;
+			String perfDetailFileName = MIRPath.PERFORMANCE_DETAIL_FILE;
+
+			evaluate(resDirNames, relDataFileNames, docIdMapFileNames, perfFileName, perfDetailFileName);
+		} else if (evalType == 1) {
+			String[] resDirNames = MIRPath.ResultDirNames;
+
+			for (int i = 0; i < resDirNames.length; i++) {
+				resDirNames[i] = resDirNames[i].replace("result", "result_sent");
+			}
+
+			String[] relDataFileNames = MIRPath.RelevanceFileNames;
+			String[] docIdMapFileNames = MIRPath.DocIdMapFileNames;
+
+			String perfFileName = MIRPath.PERFORMANCE_FILE.replace("performance", "performance_sent");
+			String perfDetailFileName = MIRPath.PERFORMANCE_DETAIL_FILE.replace("performance_detail", "performance_detail_sent");
+
+			evaluate(resDirNames, relDataFileNames, docIdMapFileNames, perfFileName, perfDetailFileName);
+		}
+
 		System.out.println("process ends.");
 	}
 }

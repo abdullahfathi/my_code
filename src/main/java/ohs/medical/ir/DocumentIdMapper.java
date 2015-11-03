@@ -58,6 +58,7 @@ public class DocumentIdMapper {
 			ret.put(parts[0], parts[1]);
 		}
 		reader.close();
+		System.out.printf("read [%d] doc-id pairs at [%s].\n", ret.size(), fileName);
 		return ret;
 	}
 }

@@ -22,7 +22,7 @@ public class TopicEval {
 		}
 
 		int[] indexes = new int[labelSet.size()];
-		ArrayUtils.copyAs(labelSet, indexes);
+		ArrayUtils.copy(labelSet, indexes);
 
 		SparseVector label_answer = new SparseVector(indexes);
 		SparseVector label_predict = label_answer.copy();

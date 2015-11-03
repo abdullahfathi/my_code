@@ -60,8 +60,8 @@ public class VectorUtils {
 		int[] indexes = new int[indexList.size()];
 		double[] values = new double[valueList.size()];
 
-		ArrayUtils.copyAs(indexList, indexes);
-		ArrayUtils.copyAs(valueList, values);
+		ArrayUtils.copy(indexList, indexes);
+		ArrayUtils.copy(valueList, values);
 
 		x.setIndexes(indexes);
 		x.setValues(values);

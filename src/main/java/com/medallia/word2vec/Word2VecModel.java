@@ -182,7 +182,7 @@ public class Word2VecModel {
 		return fromThrift(thrift);
 	}
 
-	static Word2VecModel fromSerFile(String fileName) throws Exception {
+	public static Word2VecModel fromSerFile(String fileName) throws Exception {
 		List<String> vocab = Lists.newArrayList();
 		List<Double> vectors = Lists.newArrayList();
 
@@ -211,7 +211,7 @@ public class Word2VecModel {
 	 * @return {@link Word2VecModel} from the lines of the file in the text output format of the Word2Vec C open source project.
 	 */
 	@VisibleForTesting
-	static Word2VecModel fromTextFile(String filename, List<String> lines) throws IOException {
+	public static Word2VecModel fromTextFile(String filename, List<String> lines) throws IOException {
 		List<String> vocab = Lists.newArrayList();
 		List<Double> vectors = Lists.newArrayList();
 		int vocabSize = Integer.parseInt(lines.get(0).split(" ")[0]);
@@ -266,6 +266,10 @@ public class Word2VecModel {
 		this.vocab = ImmutableList.copyOf(vocab);
 		this.layerSize = layerSize;
 		this.vectors = vectors;
+	}
+
+	public int getLayerSize() {
+		return layerSize;
 	}
 
 	/**

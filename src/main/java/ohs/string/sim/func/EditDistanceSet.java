@@ -168,7 +168,7 @@ public class EditDistanceSet {
 		double ret = d[len_s][len_t];
 
 		double[][] b = new double[len_s + 1][len_t + 1];
-		ArrayUtils.copyAs(d, b);
+		ArrayUtils.copy(d, b);
 
 		System.out.println(ArrayUtils.toString(b));
 

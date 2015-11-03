@@ -264,20 +264,20 @@ public class RelevanceModelBuilder {
 		return ret;
 	}
 
-	public SparseVector getPositionalRelevanceModel(SparseVector qLM, WordCountBox wcb, SparseVector docScores) {
+	public SparseVector getPositionalRelevanceModel(SparseVector qlm, WordCountBox wcb, SparseVector docScores) {
 		double pi = Math.PI;
 		double sigma = 175;
-		double mixture_for_coll = 0.5;
+		double coll_mixture = 0.5;
 
 		int fb_type = 1;
 
 		IntCounter fbCounts = new IntCounter();
 
 		for (int i = 0; i < docScores.size(); i++) {
-			int docId = docScores.indexAtLoc(i);
+			int did = docScores.indexAtLoc(i);
 			double doc_score = docScores.valueAtLoc(i);
-			List<Integer> words = wcb.getDocWords().get(docId);
-			List<IntPair> locWords = PLMFunctions.getQueryLocsInDocument(qLM, words);
+			List<Integer> words = wcb.getDocWords().get(did);
+			List<IntPair> locWords = PlmUtils.getQueryLocsInDocument(qlm, words);
 
 			double real_doc_len = locWords.size();
 			double len_norm = Math.sqrt(2 * pi) * sigma;
@@ -288,7 +288,7 @@ public class RelevanceModelBuilder {
 			for (int j = 0; j < words.size(); j++) {
 				IntCounter c = new IntCounter();
 
-				for (int qw : qLM.indexes()) {
+				for (int qw : qlm.indexes()) {
 					c.incrementCount(qw, 0);
 				}
 
@@ -309,16 +309,16 @@ public class RelevanceModelBuilder {
 					double cnt_w_in_coll = wcb.getCollWordCounts().valueAlways(w);
 					double coll_cnt_sum = wcb.getCollectionCountSum();
 					double pr_w_in_coll = cnt_w_in_coll / coll_cnt_sum;
-					pr_w_in_doc = (1 - mixture_for_coll) * pr_w_in_doc + mixture_for_coll * pr_w_in_coll;
+					pr_w_in_doc = (1 - coll_mixture) * pr_w_in_doc + coll_mixture * pr_w_in_coll;
 					plm.setAtLoc(k, pr_w_in_doc);
 				}
 				plm.summation();
 
 				double div_sum = 0;
 
-				for (int k = 0; k < qLM.size(); k++) {
-					int w = qLM.indexAtLoc(k);
-					double pr_w_in_query = qLM.valueAtLoc(k);
+				for (int k = 0; k < qlm.size(); k++) {
+					int w = qlm.indexAtLoc(k);
+					double pr_w_in_query = qlm.valueAtLoc(k);
 					double pr_w_in_doc = plm.valueAlways(w);
 
 					if (pr_w_in_doc > 0) {
@@ -355,6 +355,10 @@ public class RelevanceModelBuilder {
 	}
 
 	public SparseVector getRelevanceModel(WordCountBox wcb, SparseVector docScores) throws IOException {
+		return getRelevanceModel(wcb, docScores, null);
+	}
+
+	public SparseVector getRelevanceModel(WordCountBox wcb, SparseVector docScores, SparseVector docPriors) throws IOException {
 		docScores.sortByValue();
 
 		SparseVector ret = new SparseVector(wcb.getCollWordCounts().size());
@@ -376,6 +380,9 @@ public class RelevanceModelBuilder {
 				double pr_w_in_doc = cnt_w_in_doc / cnt_sum_in_doc;
 				pr_w_in_doc = (1 - mixture_for_coll) * pr_w_in_doc + mixture_for_coll * pr_w_in_coll;
 				double doc_prior = 1;
+				if (docPriors != null) {
+					doc_prior = docPriors.valueAtLoc(k);
+				}
 				double pr_w_in_fb_model = doc_weight * pr_w_in_doc * doc_prior;
 
 				if (pr_w_in_fb_model > 0) {

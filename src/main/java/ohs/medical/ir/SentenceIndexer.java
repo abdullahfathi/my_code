@@ -54,10 +54,10 @@ public class SentenceIndexer {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 
-		new SentenceIndexer(MIRPath.TREC_CDS_SENTS_FILE, MIRPath.TREC_CDS_INDEX_SENT_DIR).index();
-		new SentenceIndexer(MIRPath.CLEF_EHEALTH_SENTS_FILE, MIRPath.CLEF_EHEALTH_INDEX_SENT_DIR).index();
-		new SentenceIndexer(MIRPath.OHSUMED_SENTS_FILE, MIRPath.OHSUMED_INDEX_SENT_DIR).index();
-		new SentenceIndexer(MIRPath.TREC_GENOMICS_SENTS_FILE, MIRPath.TREC_GENOMICS_INDEX_SENT_DIR).index();
+		// new SentenceIndexer(MIRPath.TREC_CDS_SENTS_FILE, MIRPath.TREC_CDS_INDEX_SENT_DIR).index();
+		// new SentenceIndexer(MIRPath.CLEF_EHEALTH_SENTS_FILE, MIRPath.CLEF_EHEALTH_INDEX_SENT_DIR).index();
+		// new SentenceIndexer(MIRPath.OHSUMED_SENTS_FILE, MIRPath.OHSUMED_INDEX_SENT_DIR).index();
+		// new SentenceIndexer(MIRPath.TREC_GENOMICS_SENTS_FILE, MIRPath.TREC_GENOMICS_INDEX_SENT_DIR).index();
 
 		System.out.println("process ends.");
 	}

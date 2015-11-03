@@ -216,19 +216,19 @@ public class SparseVector implements Vector {
 	}
 
 	public SparseVector copy() {
-		int[] newIndexes = ArrayUtils.copyOut(indexes);
-		double[] newValues = ArrayUtils.copyOut(values);
+		int[] newIndexes = ArrayUtils.copy(indexes);
+		double[] newValues = ArrayUtils.copy(values);
 		SparseVector ret = new SparseVector(newIndexes, newValues, label, dim);
 		ret.setSum(sum);
 		return ret;
 	}
 
 	public int[] copyIndexes() {
-		return ArrayUtils.copyOut(indexes);
+		return ArrayUtils.copy(indexes);
 	}
 
 	public double[] copyValues() {
-		return ArrayUtils.copyOut(values);
+		return ArrayUtils.copy(values);
 	}
 
 	public int dim() {
@@ -397,8 +397,8 @@ public class SparseVector implements Vector {
 		indexes = new int[indexList.size()];
 		values = new double[valueList.size()];
 
-		ArrayUtils.copyAs(indexList, indexes);
-		ArrayUtils.copyAs(valueList, values);
+		ArrayUtils.copy(indexList, indexes);
+		ArrayUtils.copy(valueList, values);
 	}
 
 	public void pruneExcept(final Set<Integer> toKeep) {
@@ -421,8 +421,8 @@ public class SparseVector implements Vector {
 		indexes = new int[indexList.size()];
 		values = new double[valueList.size()];
 
-		ArrayUtils.copyAs(indexList, indexes);
-		ArrayUtils.copyAs(valueList, values);
+		ArrayUtils.copy(indexList, indexes);
+		ArrayUtils.copy(valueList, values);
 	}
 
 	private int qPartition(int low, int high, boolean sortByIndex) {
@@ -541,8 +541,8 @@ public class SparseVector implements Vector {
 		indexes = new int[indexList.size()];
 		values = new double[valueList.size()];
 
-		ArrayUtils.copyAs(indexList, indexes);
-		ArrayUtils.copyAs(valueList, values);
+		ArrayUtils.copy(indexList, indexes);
+		ArrayUtils.copy(valueList, values);
 	}
 
 	public void reset() {

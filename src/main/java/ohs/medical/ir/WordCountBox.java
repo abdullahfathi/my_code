@@ -40,8 +40,7 @@ public class WordCountBox {
 		return ret;
 	}
 
-	public static WordCountBox getWordCountBox(IndexReader ir, SparseVector docScores, Indexer<String> wordIndexer)
-			throws Exception {
+	public static WordCountBox getWordCountBox(IndexReader ir, SparseVector docScores, Indexer<String> wordIndexer) throws Exception {
 		return getWordCountBox(ir, docScores, wordIndexer, IndexFieldName.CONTENT);
 	}
 
@@ -79,9 +78,13 @@ public class WordCountBox {
 				}
 
 				String word = bytesRef.utf8ToString();
-				if (word.startsWith("<N") && word.endsWith(">")) {
+				// if (word.startsWith("<N") && word.endsWith(">")) {
+				// continue;
+				// }
+				if (word.contains("<N")) {
 					continue;
 				}
+
 				int w = wordIndexer.getIndex(word);
 				int freq = postingsEnum.freq();
 				wcs.incrementCount(w, freq);

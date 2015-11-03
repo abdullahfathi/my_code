@@ -52,6 +52,7 @@ public class Word2VecExamples {
 		prop.setProperty("min_sent_size", "10");
 		prop.setProperty("max_sent_size", "100");
 		prop.setProperty("num_train_sents", "10000");
+		prop.setProperty("train_mode", "false");
 		return prop;
 	}
 
@@ -87,12 +88,10 @@ public class Word2VecExamples {
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 
-		// Word2VecModel model = Word2VecModel.fromGZippedTextFile("../../data/medical_ir/ohsumed/word2vec_model.ser.gz");
-		//
-		// interact(model.forSearch());
+		boolean isTrainMode = true;
+		Properties prop = getDefaultProp();
 
 		File propFile = new File("word2vec.prop");
-		Properties prop = getDefaultProp();
 
 		if (propFile.exists()) {
 			FileInputStream fis = new FileInputStream(propFile);
@@ -104,8 +103,14 @@ public class Word2VecExamples {
 			fos.close();
 		}
 
-		Word2VecExamples e = new Word2VecExamples(prop);
-		e.process();
+		if (Boolean.parseBoolean(prop.getProperty("train_mode"))) {
+			Word2VecExamples e = new Word2VecExamples(prop);
+			e.process();
+		} else {
+			Word2VecModel model = Word2VecModel.fromSerFile(prop.getProperty("output_file"));
+
+			interact(model.forSearch());
+		}
 
 		System.out.println("process ends.");
 	}
@@ -234,8 +239,8 @@ public class Word2VecExamples {
 		// if (!f.exists())
 		// throw new IllegalStateException("Please download and unzip the text8 example from http://mattmahoney.net/dc/text8.zip");
 
-		String inputFileName = prop.getProperty("input_file");
-		String outputFileName = prop.getProperty("output_file");
+		String inFileName = prop.getProperty("input_file");
+		String outFileName = prop.getProperty("output_file");
 		int min_freq = Integer.parseInt(prop.getProperty("min_freq"));
 		int num_threads = Integer.parseInt(prop.getProperty("threads"));
 		int window_size = Integer.parseInt(prop.getProperty("window_size"));
@@ -262,7 +267,7 @@ public class Word2VecExamples {
 		List<Integer[]> sents = new ArrayList<Integer[]>();
 		Vocabulary vocab = new Vocabulary();
 
-		readSentences(inputFileName, vocab, sents, min_sent_size, max_sent_size, num_train_sents);
+		readSentences(inFileName, vocab, sents, min_sent_size, max_sent_size, num_train_sents);
 
 		Word2VecTrainerBuilder builder = Word2VecModel.trainer();
 
@@ -299,7 +304,7 @@ public class Word2VecExamples {
 		// model.toBinFile(os);
 		// }
 
-		model.toTextFile(outputFileName);
+		model.toSerFile(outFileName);
 
 		// interact(model.forSearch());
 	}

@@ -107,7 +107,7 @@ class SearcherImpl implements Searcher {
 	 * @throws UnknownWordException
 	 *             If word is not in the model's vocabulary
 	 */
-	private double[] getVector(String word) throws UnknownWordException {
+	public double[] getVector(String word) {
 		double[] result = getVectorOrNull(word);
 		if (result == null) {
 			// throw new UnknownWordException(word);
@@ -142,5 +142,10 @@ class SearcherImpl implements Searcher {
 				return SearcherImpl.this.getMatches(target, maxMatches);
 			}
 		};
+	}
+
+	@Override
+	public Word2VecModel getModel() {
+		return model;
 	}
 }

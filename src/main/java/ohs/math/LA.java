@@ -151,7 +151,7 @@ public class LA {
 	 */
 	public static void colOrthonormalBasis(double[][] a, double[][] b) {
 
-		if (!ArrayChecker.isSameDimensions(a, b)) {
+		if (!ArrayChecker.isSameDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 
@@ -411,7 +411,7 @@ public class LA {
 	 * @return
 	 */
 	public static double distance(double[] a, double[] b) {
-		if (!ArrayChecker.isSameDimension(a, b)) {
+		if (!ArrayChecker.isSameDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 		double ret = 0;
@@ -424,7 +424,7 @@ public class LA {
 	}
 
 	public static double dotProduct(double[] a, double[] b) {
-		if (!ArrayChecker.isSameDimension(a, b)) {
+		if (!ArrayChecker.isSameDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 
@@ -482,7 +482,7 @@ public class LA {
 	 * @return
 	 */
 	public static double FrobeniusNorm(double[][] a, double[][] b) {
-		if (!ArrayChecker.isSameDimensions(a, b)) {
+		if (!ArrayChecker.isSameDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 
@@ -650,7 +650,7 @@ public class LA {
 	 */
 	public static void GramSchmidtProcess(double[][] a, double[][] b) {
 
-		if (!ArrayChecker.isSameDimensions(a, b)) {
+		if (!ArrayChecker.isSameDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 
@@ -794,7 +794,7 @@ public class LA {
 
 		double[][] identity = ArrayUtils.newIdentityMatrix(rowDim, 1);
 		double[][] ai = joinColumns(a, identity);
-		double[][] ia_inverse = ArrayUtils.copyOut(ai);
+		double[][] ia_inverse = ArrayUtils.copy(ai);
 
 		GaussElimination(ia_inverse);
 
@@ -806,7 +806,7 @@ public class LA {
 	}
 
 	public static double[][] joinColumns(double[] a, double[] b) {
-		if (!ArrayChecker.isSameDimension(a, b)) {
+		if (!ArrayChecker.isSameDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 
@@ -827,7 +827,7 @@ public class LA {
 	}
 
 	public static double[][] joinColumns(double[][] a, double[] b) {
-		if (!ArrayChecker.isSameRowDimension(a, b)) {
+		if (!ArrayChecker.isSameRowDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 
@@ -853,7 +853,7 @@ public class LA {
 	 * @return
 	 */
 	public static double[][] joinColumns(double[][] a, double[][] b) {
-		if (!ArrayChecker.isSameRowDimension(a, b)) {
+		if (!ArrayChecker.isSameRowDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 
@@ -1084,7 +1084,7 @@ public class LA {
 
 			inverse(a, b);
 
-			double[][] c = ArrayUtils.copyOut(a);
+			double[][] c = ArrayUtils.copy(a);
 
 			product(a, b, c);
 
@@ -1365,7 +1365,7 @@ public class LA {
 	 *            output
 	 */
 	public static void power(double[][] a, int k, double[][] b) {
-		if (!ArrayChecker.isSquare(a) || !ArrayChecker.isSameDimensions(a, b)) {
+		if (!ArrayChecker.isSquare(a) || !ArrayChecker.isSameDim(a, b)) {
 			throw new IllegalArgumentException("Invalid matrix power");
 		}
 
@@ -1409,11 +1409,15 @@ public class LA {
 	 *            input
 	 * @param c
 	 *            output
+	 * @return
 	 */
-	public static void product(double[][] a, double[] b, double[] c) {
+	public static double product(double[][] a, double[] b, double[] c) {
+		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
 			c[i] = dotProduct(a[i], b);
+			sum += c[i];
 		}
+		return sum;
 	}
 
 	/**
@@ -1550,7 +1554,7 @@ public class LA {
 	 * 
 	 */
 	public static void projectionAonB(double[] a, double[] b, double[] c) {
-		if (ArrayChecker.isSameDimension(a, b) && ArrayChecker.isSameDimension(b, c)) {
+		if (ArrayChecker.isSameDim(a, b) && ArrayChecker.isSameDim(b, c)) {
 
 		} else {
 			throw new IllegalArgumentException();
@@ -1596,7 +1600,7 @@ public class LA {
 	 * @return
 	 */
 	public static void QRalgorithm(double[][] a, double[][] b) {
-		if (!ArrayChecker.isSameDimensions(a, b)) {
+		if (!ArrayChecker.isSameDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 
@@ -1931,7 +1935,7 @@ public class LA {
 	 *            output
 	 */
 	public static void unitColumnVectors(double[][] a, double[][] b) {
-		if (!ArrayChecker.isSameDimensions(a, b)) {
+		if (!ArrayChecker.isSameDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 
@@ -1973,7 +1977,7 @@ public class LA {
 	}
 
 	public double[][] colBasis(double[][] a) {
-		double[][] b = ArrayUtils.copyOut(a);
+		double[][] b = ArrayUtils.copy(a);
 		int[] pivotColumns = GaussElimination(b);
 
 		double[][] c = new double[a.length][pivotColumns.length];
@@ -2017,7 +2021,7 @@ public class LA {
 	 */
 	public void eigenValues(double[][] a, double[][] b) {
 
-		if (!ArrayChecker.isSameDimensions(a, b)) {
+		if (!ArrayChecker.isSameDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 

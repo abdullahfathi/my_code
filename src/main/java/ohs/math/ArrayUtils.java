@@ -23,19 +23,13 @@ public class ArrayUtils {
 		System.arraycopy(a, 0, b, 0, a.length);
 	}
 
-	public static void copy(double[] a, double[][] b) {
-		if (sizeOfEntries(b) != a.length) {
-			throw new IllegalArgumentException();
-		}
-	}
-
 	public static void copy(double[] a, int[] b) {
 		for (int i = 0; i < a.length; i++) {
 			b[i] = (int) a[i];
 		}
 	}
 
-	public static void copy(double[][] a, double[] b) {
+	public static void copyMatrixToVector(double[][] a, double[] b) {
 		if (sizeOfEntries(a) != b.length) {
 			throw new IllegalArgumentException();
 		}
@@ -59,6 +53,14 @@ public class ArrayUtils {
 		}
 	}
 
+	public static double[][] copy(double[][] a) {
+		double[][] b = new double[a.length][];
+		for (int i = 0; i < a.length; i++) {
+			b[i] = copy(a[i]);
+		}
+		return b;
+	}
+
 	/**
 	 * @param a
 	 *            input
@@ -73,15 +75,21 @@ public class ArrayUtils {
 		System.arraycopy(a, 0, b, 0, a.length);
 	}
 
-	public static void copyAs(Collection<Double> x, double[] b) {
+	public static int[] copy(int[] a) {
+		int[] b = new int[a.length];
+		copy(a, b);
+		return b;
+	}
+
+	public static void copy(Collection<Double> a, double[] b) {
 		int loc = 0;
-		Iterator<Double> iter = x.iterator();
+		Iterator<Double> iter = a.iterator();
 		while (iter.hasNext()) {
 			b[loc++] = iter.next();
 		}
 	}
 
-	public static void copyAs(Collection<Float> a, float[] b) {
+	public static void copy(Collection<Float> a, float[] b) {
 		int loc = 0;
 		Iterator<Float> iter = a.iterator();
 		while (iter.hasNext()) {
@@ -89,7 +97,7 @@ public class ArrayUtils {
 		}
 	}
 
-	public static void copyAs(Collection<Integer> a, int[] b) {
+	public static void copy(Collection<Integer> a, int[] b) {
 		if (a.size() > 0) {
 			int loc = 0;
 			Iterator<Integer> iter = a.iterator();
@@ -99,24 +107,18 @@ public class ArrayUtils {
 		}
 	}
 
-	public static void copyAs(double[] a, List<Double> b) {
+	public static void copy(double[] a, List<Double> b) {
 		for (int i = 0; i < a.length; i++) {
 			b.add(a[i]);
 		}
 	}
 
-	public static void copyAs(double[][] a, int[][] b) {
+	public static void copy(double[][] a, int[][] b) {
 		for (int i = 0; i < a.length; i++) {
 			for (int j = 0; j < a[i].length; j++) {
 				b[i][j] = (int) a[i][j];
 			}
 		}
-	}
-
-	public static double[] copyAs(int[] a) {
-		double[] ret = new double[a.length];
-		copyAs(a, ret);
-		return ret;
 	}
 
 	public static void copyAs(int[] a, double[] b) {
@@ -125,35 +127,23 @@ public class ArrayUtils {
 		}
 	}
 
-	public static void copyAs(int[] a, Integer[] b) {
-		for (int i = 0; i < a.length; i++) {
-			b[i] = new Integer(a[i]);
-		}
-	}
-
-	public static void copyAs(int[] a, List<Integer> b) {
+	public static void copy(int[] a, List<Integer> b) {
 		for (int i = 0; i < a.length; i++) {
 			b.add(a[i]);
 		}
 	}
 
-	public static void copyAs(int[] a, Set<Integer> b) {
+	public static void copy(int[] a, Set<Integer> b) {
 		for (int value : a) {
 			b.add(value);
 		}
 	}
 
-	public static void copyAs(int[][] a, double[][] b) {
+	public static void copy(int[][] a, double[][] b) {
 		for (int i = 0; i < a.length; i++) {
 			for (int j = 0; j < a[i].length; j++) {
 				b[i][j] = a[i][j];
 			}
-		}
-	}
-
-	public static void copyAs(Integer[] a, int[] b) {
-		for (int i = 0; i < a.length; i++) {
-			b[i] = a[i].intValue();
 		}
 	}
 
@@ -191,7 +181,7 @@ public class ArrayUtils {
 	 *            column index of matrix b
 	 */
 	public static void copyColumn(double[][] a, int a_col, double[][] b, int b_col) {
-		if (!ArrayChecker.isSameDimensions(a, b)) {
+		if (!ArrayChecker.isSameDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 
@@ -202,7 +192,7 @@ public class ArrayUtils {
 		}
 	}
 
-	public static double[] copyOut(double[] x) {
+	public static double[] copy(double[] x) {
 		double[] ret = new double[x.length];
 		copy(x, ret);
 		return ret;
@@ -215,34 +205,10 @@ public class ArrayUtils {
 	 * @param end
 	 * @return
 	 */
-	public static double[] copyOut(double[] a, int start, int end) {
+	public static double[] copySub(double[] a, int start, int end) {
 		int size = end - start;
 		double[] ret = new double[size];
 		System.arraycopy(a, start, ret, 0, size);
-		return ret;
-	}
-
-	public static double[][] copyOut(double[][] x) {
-		double[][] ret = new double[x.length][];
-		for (int i = 0; i < ret.length; i++) {
-			ret[i] = copyOut(x[i]);
-		}
-		return ret;
-	}
-
-	public static float[] copyOut(float[] x) {
-		float[] ret = new float[x.length];
-		copy(x, ret);
-		return ret;
-	}
-
-	/**
-	 * @param x
-	 * @return
-	 */
-	public static int[] copyOut(int[] x) {
-		int[] ret = new int[x.length];
-		copy(x, ret);
 		return ret;
 	}
 
@@ -371,7 +337,7 @@ public class ArrayUtils {
 		}
 
 		int[] ret = new int[set.size()];
-		copyAs(set, ret);
+		copy(set, ret);
 		return ret;
 	}
 
@@ -383,7 +349,7 @@ public class ArrayUtils {
 			}
 		}
 		int[] ret = new int[set.size()];
-		copyAs(set, ret);
+		copy(set, ret);
 		return ret;
 	}
 
@@ -445,7 +411,7 @@ public class ArrayUtils {
 	}
 
 	public static List<Integer>[] splitInOrder(List<Integer> indexList, double[] proportions) {
-		DenseVector fold_prop = new DenseVector(copyOut(proportions));
+		DenseVector fold_prop = new DenseVector(copy(proportions));
 		fold_prop.normalizeAfterSummation();
 
 		DenseVector fold_maxIndex = fold_prop.copy();

@@ -182,7 +182,7 @@ public class LibSvmWrapper implements Serializable {
 	}
 
 	public String evalute(List<SparseVector> testData) {
-		SparseVector label_correct = new SparseVector(ArrayUtils.copyOut(model.label));
+		SparseVector label_correct = new SparseVector(ArrayUtils.copy(model.label));
 
 		SparseVector label_answer = label_correct.copy();
 		SparseVector label_predict = label_correct.copy();
