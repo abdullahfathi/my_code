@@ -86,7 +86,7 @@ class Word2VecTrainer {
 				model = neuralNetworkConfig.createTrainer(vocab, huffmanNodes, listener).train(sents);
 			}
 
-			return new Word2VecModel(vocab.getWords(), model.layerSize(), Doubles.concat(model.vectors()));
+			return new Word2VecModel(vocab.getWords(), model.layerSize(), model.vectors());
 		}
 	}
 }

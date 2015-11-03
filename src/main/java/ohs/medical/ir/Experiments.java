@@ -48,8 +48,8 @@ public class Experiments {
 		// e.searchSentsByQLD();
 		// e.searchSentsByKLDFB();
 
-		e.searchByKldFbWordVectors();
-		// e.searchByKldFbWordVectorExp();
+		// e.searchByKldFbWordVectors();
+		e.searchByKldFbWordVectorExp();
 
 		System.out.println("process ends.");
 	}
@@ -281,12 +281,19 @@ public class Experiments {
 
 				for (int k = 0; k < num_ret_docs; k++) {
 					double[] dwv1 = dwvs[k];
+					sims[k][k] = 1;
+
 					for (int l = k + 1; l < num_ret_docs; l++) {
 						double[] dwv2 = dwvs[l];
 						double cosine = ArrayMath.cosine(dwv1, dwv2);
 						sims[k][l] = cosine;
 						sims[l][k] = cosine;
 					}
+				}
+
+				for (int k = 0; k < num_ret_docs; k++) {
+					double[] sim = ArrayUtils.copy(sims[k]);
+					ArrayMath.sortByValues(sim);
 				}
 
 				ArrayMath.normalizeColumns(sims);
@@ -320,14 +327,9 @@ public class Experiments {
 	public void searchByKldFbWordVectors() throws Exception {
 		System.out.println("search by KLD FB Word Vectors.");
 
-		Searcher vSearcher = Word2VecModel.fromSerFile("../../data/medical_ir/trec_genomics/word2vec_model.ser.gz").forSearch();
+		Searcher vSearcher = Word2VecModel.fromSerFile("../../data/medical_ir/ohsumed/word2vec_model.ser.gz").forSearch();
 
 		for (int i = 0; i < queryFileNames.length; i++) {
-
-			if (i > 0) {
-				break;
-			}
-
 			List<BaseQuery> bqs = QueryReader.readQueries(queryFileNames[i]);
 			IndexSearcher is = iss[i];
 			IndexReader ir = is.getIndexReader();

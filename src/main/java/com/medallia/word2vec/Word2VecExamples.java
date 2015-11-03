@@ -70,16 +70,6 @@ public class Word2VecExamples {
 		}
 	}
 
-	/** Loads a model and allows user to find similar words */
-	public static void loadModel() throws IOException, TException, UnknownWordException {
-		final Word2VecModel model;
-		try (ProfilingTimer timer = ProfilingTimer.create(LOG, "Loading model")) {
-			String json = Common.readFileToString(new File("text8.model"));
-			model = Word2VecModel.fromThrift(ThriftUtils.deserializeJson(new Word2VecModelThrift(), json));
-		}
-		interact(model.forSearch());
-	}
-
 	/**
 	 * Runs the example
 	 * 

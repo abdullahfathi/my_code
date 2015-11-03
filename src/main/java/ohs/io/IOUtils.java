@@ -546,6 +546,16 @@ public class IOUtils {
 		return new HashSet<String>(readLines(fileName));
 	}
 
+	public static List<String> readStrings(ObjectInputStream ois) throws Exception {
+		List<String> ret = new ArrayList<String>();
+		int size = ois.readInt();
+		for (int i = 0; i < size; i++) {
+			String s = readString(ois);
+			ret.add(s);
+		}
+		return ret;
+	}
+
 	public static String readString(ObjectInputStream ois) throws Exception {
 		int size = ois.readInt();
 		StringBuffer sb = new StringBuffer(size);

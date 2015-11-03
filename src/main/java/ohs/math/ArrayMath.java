@@ -6,6 +6,8 @@ import java.util.Random;
 
 import org.apache.commons.math.stat.inference.TTestImpl;
 
+import ohs.matrix.SparseVector;
+
 /**
  * @author Heung-Seon Oh
  * 
@@ -111,6 +113,71 @@ public class ArrayMath {
 
 	public static int argMax(double[] x) {
 		return argMax(x, 0, x.length);
+	}
+
+	public static void sortByValues(double[] a, int[] b) {
+		for (int i = 0; i < a.length; i++) {
+			b[i] = i;
+		}
+		quicksort(b, a);
+	}
+
+	public static int[] sortByValues(double[] a) {
+		int[] b = new int[a.length];
+		sortByValues(a, b);
+		return b;
+	}
+
+	private static int qPartition(int[] indexes, double[] values, int low, int high) {
+		// First element
+		// int pivot = a[low];
+
+		// Middle element
+		// int middle = (low + high) / 2;
+
+		int i = low - 1;
+		int j = high + 1;
+
+		// descending order
+		int randomIndex = (int) (Math.random() * (high - low)) + low;
+		double pivotValue = values[randomIndex];
+
+		while (i < j) {
+			i++;
+			while (values[i] > pivotValue) {
+				i++;
+			}
+
+			j--;
+			while (values[j] < pivotValue) {
+				j--;
+			}
+
+			if (i < j) {
+				int temp1 = indexes[i];
+				int temp2 = indexes[j];
+				indexes[i] = temp2;
+				indexes[j] = temp1;
+
+				double temp3 = values[i];
+				double temp4 = values[j];
+				values[i] = temp4;
+				values[j] = temp3;
+			}
+		}
+		return j;
+	}
+
+	private static void qSort(int[] indexes, double[] values, int low, int high) {
+		if (low >= high)
+			return;
+		int p = qPartition(indexes, values, low, high);
+		qSort(indexes, values, low, p);
+		qSort(indexes, values, p + 1, high);
+	}
+
+	public static void quicksort(int[] indexes, double[] values) {
+		qSort(indexes, values, 0, indexes.length - 1);
 	}
 
 	public static int argMax(double[] x, int start, int end) {

@@ -1,11 +1,11 @@
 package com.medallia.word2vec;
 
-import java.nio.DoubleBuffer;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.primitives.Doubles;
 import com.medallia.word2vec.util.Pair;
@@ -36,17 +36,16 @@ class SearcherImpl implements Searcher {
 
 	private final NormalizedWord2VecModel model;
 
-	private final ImmutableMap<String, Integer> word2vectorOffset;
+	private final Map<String, Integer> word2vectorOffset;
 
 	SearcherImpl(final NormalizedWord2VecModel model) {
 		this.model = model;
 
-		final ImmutableMap.Builder<String, Integer> result = ImmutableMap.builder();
-		for (int i = 0; i < model.vocab.size(); i++) {
-			result.put(model.vocab.get(i), i * model.layerSize);
-		}
+		word2vectorOffset = new HashMap<String, Integer>();
 
-		word2vectorOffset = result.build();
+		for (int i = 0; i < model.vocab.size(); i++) {
+			word2vectorOffset.put(model.vocab.get(i), i);
+		}
 	}
 
 	SearcherImpl(final Word2VecModel model) {
@@ -55,8 +54,8 @@ class SearcherImpl implements Searcher {
 
 	private double calculateDistance(double[] otherVec, double[] vec) {
 		double d = 0;
-		for (int a = 0; a < model.layerSize; a++)
-			d += vec[a] * otherVec[a];
+		for (int i = 0; i < model.layerSize; i++)
+			d += vec[i] * otherVec[i];
 		return d;
 	}
 
@@ -122,11 +121,7 @@ class SearcherImpl implements Searcher {
 		if (index == null)
 			return null;
 
-		final DoubleBuffer vectors = model.vectors.duplicate();
-		double[] result = new double[model.layerSize];
-		vectors.position(index);
-		vectors.get(result);
-		return result;
+		return model.vectors[index];
 	}
 
 	@Override
