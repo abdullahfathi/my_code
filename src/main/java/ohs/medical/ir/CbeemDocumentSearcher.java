@@ -68,7 +68,7 @@ public class CbeemDocumentSearcher {
 		num_colls = iss.length;
 	}
 
-	private SparseVector[] computeRelevanceModels() throws IOException {
+	private SparseVector[] getRelevanceModels() throws IOException {
 		double[] cnt_sum_in_each_coll = getCollWordCountSums();
 		double cnt_sum_in_all_colls = ArrayMath.sum(cnt_sum_in_each_coll);
 
@@ -145,7 +145,7 @@ public class CbeemDocumentSearcher {
 		return ret;
 	}
 
-	private SparseVector score(int colId, SparseVector qLM) {
+	private SparseVector score(int colId, SparseVector qlm) {
 		double[] cnt_sum_in_each_coll = getCollWordCountSums();
 		double cnt_sum_in_all_colls = ArrayMath.sum(cnt_sum_in_each_coll);
 
@@ -157,9 +157,9 @@ public class CbeemDocumentSearcher {
 
 		SparseVector ret = new SparseVector(docWordCountBox.rowSize());
 
-		for (int i = 0; i < qLM.size(); i++) {
-			int w = qLM.indexAtLoc(i);
-			double pr_w_in_query = qLM.valueAtLoc(i);
+		for (int i = 0; i < qlm.size(); i++) {
+			int w = qlm.indexAtLoc(i);
+			double pr_w_in_query = qlm.valueAtLoc(i);
 
 			double[] cnt_w_in_each_coll = new double[num_colls];
 			double cnt_w_in_all_colls = 0;
@@ -228,6 +228,9 @@ public class CbeemDocumentSearcher {
 			// if (i == colId) {
 			// searchQuery = expSearchQuery;
 			// }
+
+			int top_k = i == colId ? hp.getTopK() : 100;
+
 			collDocScores[i] = SearcherUtils.search(q, iss[i], hp.getTopK());
 		}
 
@@ -237,14 +240,14 @@ public class CbeemDocumentSearcher {
 		return ret;
 	}
 
-	public void search(int colId, List<BaseQuery> bqs, List<SparseVector> queryDocRels, String resultFileName, String logFileName)
+	public void search(int colId, List<BaseQuery> bqs, List<SparseVector> queryDocRels, String resFileName, String logFileName)
 			throws Exception {
 		if (logFileName != null) {
 			logWriter = new TextFileWriter(logFileName);
 			makeLog = true;
 		}
 
-		TextFileWriter writer = new TextFileWriter(resultFileName);
+		TextFileWriter writer = new TextFileWriter(resFileName);
 
 		for (int i = 0; i < bqs.size(); i++) {
 			BaseQuery bq = bqs.get(i);
@@ -276,7 +279,7 @@ public class CbeemDocumentSearcher {
 			}
 		}
 
-		SparseVector[] rms = computeRelevanceModels();
+		SparseVector[] rms = getRelevanceModels();
 
 		double[] mixture_for_each_coll_rm = new double[num_colls];
 

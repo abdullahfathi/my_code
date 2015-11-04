@@ -34,17 +34,17 @@ public class VectorMath {
 		addAfterScale(a, b, 1, 1, c);
 	}
 
-	public static SparseVector add(Vector[] vs) {
-		double[] coefs = new double[vs.length];
+	public static SparseVector add(Vector[] as) {
+		double[] coefs = new double[as.length];
 		ArrayUtils.setAll(coefs, 1);
-		return addAfterScale(vs, coefs);
+		return addAfterScale(as, coefs);
 	}
 
-	public static SparseVector addAfterScale(Vector a, Vector b, double aCoef, double bCoef) {
-		return addAfterScale(new Vector[] { a, b }, new double[] { aCoef, bCoef });
+	public static SparseVector addAfterScale(Vector a, Vector b, double ac, double bc) {
+		return addAfterScale(new Vector[] { a, b }, new double[] { ac, bc });
 	}
 
-	public static void addAfterScale(Vector a, Vector b, double aCoef, double bCoef, Vector c) {
+	public static void addAfterScale(Vector a, Vector b, double ac, double bc, Vector c) {
 		if (VectorChecker.isSameDimension(a, b) && VectorChecker.isSameDimension(b, c)) {
 
 		} else {
@@ -52,7 +52,7 @@ public class VectorMath {
 		}
 
 		if (isSparse(c)) {
-			SparseVector sv = addAfterScale(a, b, aCoef, bCoef);
+			SparseVector sv = addAfterScale(a, b, ac, bc);
 			c.setIndexes(sv.indexes());
 			c.setValues(sv.values());
 			c.setSum(sv.sum());
@@ -60,25 +60,25 @@ public class VectorMath {
 			for (int i = 0; i < a.size(); i++) {
 				int index = a.indexAtLoc(i);
 				double value = a.valueAtLoc(i);
-				c.increment(index, aCoef * value);
+				c.increment(index, ac * value);
 			}
 
 			for (int i = 0; i < b.size(); i++) {
 				int index = b.indexAtLoc(i);
 				double value = b.valueAtLoc(i);
-				c.increment(index, aCoef * value);
+				c.increment(index, ac * value);
 			}
 		}
 	}
 
-	public static SparseVector addAfterScale(Vector[] vs, double[] coefs) {
+	public static SparseVector addAfterScale(Vector[] as, double[] coefs) {
 		Counter<Integer> c = new Counter<Integer>();
-		for (int i = 0; i < vs.length; i++) {
-			Vector v = vs[i];
+		for (int i = 0; i < as.length; i++) {
+			Vector a = as[i];
 			double coef = coefs[i];
-			for (int j = 0; j < v.size(); j++) {
-				int index = v.indexAtLoc(j);
-				double value = v.valueAtLoc(j);
+			for (int j = 0; j < a.size(); j++) {
+				int index = a.indexAtLoc(j);
+				double value = a.valueAtLoc(j);
 				c.incrementCount(index, coef * value);
 			}
 		}
@@ -397,39 +397,17 @@ public class VectorMath {
 	public static void main(String[] args) {
 		System.out.println("process begins.");
 
-		int[] indexes = { 0, 2, 3, 4, 5 };
-		double[] values = { 2, 2, 2, 2, 2 };
+		int[] indexes = ArrayUtils.enumerate(10);
+		double[] values = ArrayMath.random(0f, 1f, 10);
 
-		int[] indexes2 = { 1, 3, 4, 7, 8 };
-		double[] values2 = { 2, 2, 0, 0, 1, };
+		SparseVector sv = new SparseVector(indexes, values, 0);
+		sv.sortByValue();
+		System.out.println(sv.toString());
+		sv.sortByIndex();
+		;
+		System.out.println(sv.toString());
 
 		Vector x1 = new SparseVector(indexes, values, -1);
-		Vector x2 = new SparseVector(indexes2, values2, -1);
-		Vector x3 = new SparseVector(0);
-
-		x1.summation();
-		x2.summation();
-
-		x1.setDim(10);
-		x2.setDim(10);
-		x3.setDim(10);
-
-		pointwiseMultiply(x1, x2, x3);
-
-		System.out.println(x3);
-
-		System.out.println(x1.toString());
-		System.out.println(x2.toString());
-		System.out.println();
-
-		// System.out.println(cosine(x1, x2, true));
-
-		System.out.println(x1.toString());
-		System.out.println(x2.toString());
-
-		// dist1.summation();
-		// dist2.summation();
-
 		System.out.println("process ends.");
 
 	}

@@ -29,29 +29,29 @@ public class KLDivergenceScorer {
 		return logBuf.toString();
 	}
 
-	public SparseVector score(WordCountBox wcb, SparseVector qLM) {
+	public SparseVector score(WordCountBox wcb, SparseVector qlm) {
 		SparseVector ret = new SparseVector(wcb.getDocWordCounts().rowSize());
 
 		for (int i = 0; i < wcb.getDocWordCounts().rowSize(); i++) {
 			int docId = wcb.getDocWordCounts().indexAtRowLoc(i);
-			SparseVector wordCounts = wcb.getDocWordCounts().rowAtLoc(i);
+			SparseVector wcs = wcb.getDocWordCounts().rowAtLoc(i);
 			double div_sum = 0;
 
-			for (int j = 0; j < qLM.size(); j++) {
-				int w = qLM.indexAtLoc(j);
-				double prob_w_in_query = qLM.valueAtLoc(j);
+			for (int j = 0; j < qlm.size(); j++) {
+				int w = qlm.indexAtLoc(j);
+				double pr_w_in_query = qlm.valueAtLoc(j);
 				double cnt_w_in_coll = wcb.getCollWordCounts().valueAlways(w);
-				double prob_w_in_coll = cnt_w_in_coll / wcb.getCollectionCountSum();
+				double pr_w_in_coll = cnt_w_in_coll / wcb.getCollectionCountSum();
 
-				double cnt_w_in_doc = wordCounts.valueAlways(w);
-				double cnt_sum_in_doc = wordCounts.sum();
+				double cnt_w_in_doc = wcs.valueAlways(w);
+				double cnt_sum_in_doc = wcs.sum();
 				double mixture_for_coll = dirichlet_prior / (cnt_sum_in_doc + dirichlet_prior);
-				double prob_w_in_doc = cnt_w_in_doc / cnt_sum_in_doc;
+				double pr_w_in_doc = cnt_w_in_doc / cnt_sum_in_doc;
 
-				prob_w_in_doc = (1 - mixture_for_coll) * prob_w_in_doc + mixture_for_coll * prob_w_in_coll;
+				pr_w_in_doc = (1 - mixture_for_coll) * pr_w_in_doc + mixture_for_coll * pr_w_in_coll;
 
-				if (prob_w_in_doc > 0) {
-					div_sum += prob_w_in_query * Math.log(prob_w_in_query / prob_w_in_doc);
+				if (pr_w_in_doc > 0) {
+					div_sum += pr_w_in_query * Math.log(pr_w_in_query / pr_w_in_doc);
 				}
 			}
 
@@ -97,19 +97,19 @@ public class KLDivergenceScorer {
 
 				for (int k = 0; k < qLM.size(); k++) {
 					int w = qLM.indexAtLoc(k);
-					double prob_w_in_query = qLM.valueAtLoc(k);
+					double pr_w_in_query = qLM.valueAtLoc(k);
 					double cnt_w_in_coll = wcb.getCollWordCounts().valueAlways(w);
-					double prob_w_in_coll = cnt_w_in_coll / wcb.getCollectionCountSum();
+					double pr_w_in_coll = cnt_w_in_coll / wcb.getCollectionCountSum();
 
 					double cnt_w_in_psg = psgWordCounts.valueAlways(w);
 					double cnt_sum_in_psg = psgWordCounts.sum();
 					double mixture_for_coll = dirichlet_prior / (cnt_sum_in_psg + dirichlet_prior);
-					double prob_w_in_doc = cnt_w_in_psg / cnt_sum_in_psg;
+					double pr_w_in_doc = cnt_w_in_psg / cnt_sum_in_psg;
 
-					prob_w_in_doc = (1 - mixture_for_coll) * prob_w_in_doc + mixture_for_coll * prob_w_in_coll;
+					pr_w_in_doc = (1 - mixture_for_coll) * pr_w_in_doc + mixture_for_coll * pr_w_in_coll;
 
-					if (prob_w_in_doc > 0) {
-						div_sum += prob_w_in_query * Math.log(prob_w_in_query / prob_w_in_doc);
+					if (pr_w_in_doc > 0) {
+						div_sum += pr_w_in_query * Math.log(pr_w_in_query / pr_w_in_doc);
 					}
 				}
 
@@ -170,11 +170,11 @@ public class KLDivergenceScorer {
 
 				for (int k = 0; k < plm.size(); k++) {
 					int w = plm.indexAtLoc(k);
-					double prob_w_in_doc = plm.valueAtLoc(k);
+					double pr_w_in_doc = plm.valueAtLoc(k);
 					double mixture_for_coll = dirichlet_prior / (dirichlet_prior + psg_len);
-					double prob_w_in_coll = wcb.getCollWordCounts().valueAlways(w) / wcb.getCollectionCountSum();
-					prob_w_in_doc = (1 - mixture_for_coll) * prob_w_in_doc + mixture_for_coll * prob_w_in_coll;
-					plm.setAtLoc(k, prob_w_in_doc);
+					double pr_w_in_coll = wcb.getCollWordCounts().valueAlways(w) / wcb.getCollectionCountSum();
+					pr_w_in_doc = (1 - mixture_for_coll) * pr_w_in_doc + mixture_for_coll * pr_w_in_coll;
+					plm.setAtLoc(k, pr_w_in_doc);
 				}
 				plm.summation();
 
@@ -182,10 +182,10 @@ public class KLDivergenceScorer {
 
 				for (int k = 0; k < qLM.size(); k++) {
 					int w = qLM.indexAtLoc(k);
-					double prob_w_in_q = qLM.valueAtLoc(k);
-					double prob_w_in_doc = plm.valueAlways(w);
-					if (prob_w_in_doc > 0) {
-						div_sum += prob_w_in_q * Math.log(prob_w_in_q / prob_w_in_doc);
+					double pr_w_in_q = qLM.valueAtLoc(k);
+					double pr_w_in_doc = plm.valueAlways(w);
+					if (pr_w_in_doc > 0) {
+						div_sum += pr_w_in_q * Math.log(pr_w_in_q / pr_w_in_doc);
 					}
 				}
 
@@ -222,19 +222,19 @@ public class KLDivergenceScorer {
 
 				for (int j = 0; j < qLM.size(); j++) {
 					int w = qLM.indexAtLoc(j);
-					double prob_w_in_query = qLM.valueAtLoc(j);
+					double pr_w_in_query = qLM.valueAtLoc(j);
 					double cnt_w_in_coll = wcb.getCollWordCounts().valueAlways(w);
-					double prob_w_in_coll = cnt_w_in_coll / wcb.getCollectionCountSum();
+					double pr_w_in_coll = cnt_w_in_coll / wcb.getCollectionCountSum();
 
 					double cnt_w_in_doc = wordCounts.valueAlways(w);
 					double cnt_sum_in_doc = wordCounts.sum();
 					double mixture_for_coll = dirichlet_prior / (cnt_sum_in_doc + dirichlet_prior);
-					double prob_w_in_doc = cnt_w_in_doc / cnt_sum_in_doc;
+					double pr_w_in_doc = cnt_w_in_doc / cnt_sum_in_doc;
 
-					prob_w_in_doc = (1 - mixture_for_coll) * prob_w_in_doc + mixture_for_coll * prob_w_in_coll;
+					pr_w_in_doc = (1 - mixture_for_coll) * pr_w_in_doc + mixture_for_coll * pr_w_in_coll;
 
-					if (prob_w_in_doc > 0) {
-						div_sum += prob_w_in_query * Math.log(prob_w_in_query / prob_w_in_doc);
+					if (pr_w_in_doc > 0) {
+						div_sum += pr_w_in_query * Math.log(pr_w_in_query / pr_w_in_doc);
 					}
 				}
 
@@ -269,19 +269,19 @@ public class KLDivergenceScorer {
 
 					for (int k = 0; k < qLM.size(); k++) {
 						int w = qLM.indexAtLoc(k);
-						double prob_w_in_query = qLM.valueAtLoc(k);
+						double pr_w_in_query = qLM.valueAtLoc(k);
 						double cnt_w_in_coll = wcb.getCollWordCounts().valueAlways(w);
-						double prob_w_in_coll = cnt_w_in_coll / wcb.getCollectionCountSum();
+						double pr_w_in_coll = cnt_w_in_coll / wcb.getCollectionCountSum();
 
 						double cnt_w_in_psg = psgWordCounts.valueAlways(w);
 						double cnt_sum_in_psg = psgWordCounts.sum();
 						double mixture_for_coll = dirichlet_prior / (cnt_sum_in_psg + dirichlet_prior);
-						double prob_w_in_doc = cnt_w_in_psg / cnt_sum_in_psg;
+						double pr_w_in_doc = cnt_w_in_psg / cnt_sum_in_psg;
 
-						prob_w_in_doc = (1 - mixture_for_coll) * prob_w_in_doc + mixture_for_coll * prob_w_in_coll;
+						pr_w_in_doc = (1 - mixture_for_coll) * pr_w_in_doc + mixture_for_coll * pr_w_in_coll;
 
-						if (prob_w_in_doc > 0) {
-							div_sum += prob_w_in_query * Math.log(prob_w_in_query / prob_w_in_doc);
+						if (pr_w_in_doc > 0) {
+							div_sum += pr_w_in_query * Math.log(pr_w_in_query / pr_w_in_doc);
 						}
 					}
 

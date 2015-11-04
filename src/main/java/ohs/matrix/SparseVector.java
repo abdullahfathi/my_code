@@ -11,6 +11,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import ohs.io.IOUtils;
+import ohs.math.ArrayMath;
 import ohs.math.ArrayUtils;
 import ohs.types.Counter;
 import ohs.types.Indexer;
@@ -184,17 +185,7 @@ public class SparseVector implements Vector {
 	}
 
 	public int argMaxLoc() {
-		int loc = -1;
-		double max = -Double.MAX_VALUE;
-
-		for (int i = 0; i < size(); i++) {
-			double value = valueAtLoc(i);
-			if (value > max) {
-				max = value;
-				loc = i;
-			}
-		}
-		return loc;
+		return ArrayMath.argMax(values);
 	}
 
 	public int argMin() {
@@ -202,17 +193,7 @@ public class SparseVector implements Vector {
 	}
 
 	public int argMinLoc() {
-		int loc = -1;
-		double min = Double.MAX_VALUE;
-
-		for (int i = 0; i < size(); i++) {
-			double value = valueAtLoc(i);
-			if (value < min) {
-				min = value;
-				loc = i;
-			}
-		}
-		return loc;
+		return ArrayMath.argMin(values);
 	}
 
 	public SparseVector copy() {
@@ -235,8 +216,8 @@ public class SparseVector implements Vector {
 		return dim;
 	}
 
-	public void increment(int index, double value) {
-		int loc = location(index);
+	public void increment(int i, double value) {
+		int loc = location(i);
 		if (loc > -1) {
 			values[loc] += value;
 			sum += value;
@@ -244,10 +225,7 @@ public class SparseVector implements Vector {
 	}
 
 	public void incrementAll(double value) {
-		for (int i = 0; i < values.length; i++) {
-			values[i] += value;
-			sum += value;
-		}
+		sum = ArrayMath.add(values, value, values);
 	}
 
 	public void incrementAtLoc(int loc, double value) {
@@ -255,8 +233,8 @@ public class SparseVector implements Vector {
 		sum += value;
 	}
 
-	public void incrementAtLoc(int loc, int index, double value) {
-		indexes[loc] = index;
+	public void incrementAtLoc(int loc, int i, double value) {
+		indexes[loc] = i;
 		values[loc] += value;
 		sum += value;
 	}
@@ -334,26 +312,15 @@ public class SparseVector implements Vector {
 	}
 
 	public void normalize() {
-		double new_sum = 0;
-		for (int i = 0; i < values.length; i++) {
-			values[i] /= sum;
-			new_sum += values[i];
-		}
-		sum = new_sum;
+		sum = ArrayMath.normalize(values, values);
 	}
 
 	public void normalizeAfterSummation() {
-		summation();
-		normalize();
+		sum = ArrayMath.scale(values, ArrayMath.sum(values), values);
 	}
 
 	public void normalizeByL2Norm() {
-		double norm = 0;
-		for (int i = 0; i < values.length; i++) {
-			norm += (values[i] * values[i]);
-		}
-		norm = Math.sqrt(norm);
-		scale(1f / norm);
+		sum = ArrayMath.normalizeByL2Norm(values, values);
 	}
 
 	public double prob(int index) {
@@ -423,72 +390,6 @@ public class SparseVector implements Vector {
 
 		ArrayUtils.copy(indexList, indexes);
 		ArrayUtils.copy(valueList, values);
-	}
-
-	private int qPartition(int low, int high, boolean sortByIndex) {
-		// First element
-		// int pivot = a[low];
-
-		// Middle element
-		// int middle = (low + high) / 2;
-
-		int i = low - 1;
-		int j = high + 1;
-
-		if (sortByIndex) {
-			// ascending order
-			int randomIndex = (int) (Math.random() * (high - low)) + low;
-			int pivotValue = indexes[randomIndex];
-
-			while (i < j) {
-				i++;
-				while (indexes[i] < pivotValue) {
-					i++;
-				}
-
-				j--;
-				while (indexes[j] > pivotValue) {
-					j--;
-				}
-
-				if (i < j) {
-					swap(i, j);
-				}
-			}
-		} else {
-			// descending order
-			int randomIndex = (int) (Math.random() * (high - low)) + low;
-			double pivotValue = values[randomIndex];
-
-			while (i < j) {
-				i++;
-				while (values[i] > pivotValue) {
-					i++;
-				}
-
-				j--;
-				while (values[j] < pivotValue) {
-					j--;
-				}
-
-				if (i < j) {
-					swap(i, j);
-				}
-			}
-		}
-		return j;
-	}
-
-	private void qSort(int low, int high, boolean sortByIndex) {
-		if (low >= high)
-			return;
-		int p = qPartition(low, high, sortByIndex);
-		qSort(low, p, sortByIndex);
-		qSort(p + 1, high, sortByIndex);
-	}
-
-	private void quicksort(boolean sortByIndex) {
-		qSort(0, indexes.length - 1, sortByIndex);
 	}
 
 	public int[] rankedIndexes() {
@@ -561,45 +462,47 @@ public class SparseVector implements Vector {
 	}
 
 	public void scale(double factor) {
-		sum = 0;
-		for (int i = 0; i < size(); i++) {
-			values[i] = values[i] * factor;
-			sum += values[i];
-		}
+		sum = ArrayMath.scale(values, factor, values);
 	}
 
-	public void scale(int index, double factor) {
-		int loc = location(index);
+	@Override
+	public void scale(int i, double factor) {
+		int loc = location(i);
 		if (loc > -1) {
 			scaleAtLoc(loc, factor);
 		}
 	}
 
+	@Override
 	public void scaleAtLoc(int loc, double factor) {
-		double newValue = values[loc] * factor;
-		double diff = newValue - values[loc];
-		values[loc] = newValue;
-		sum += diff;
+		double old = values[loc];
+		values[loc] *= factor;
+
 	}
 
-	public void set(int index, double value) {
-		int loc = location(index);
+	@Override
+	public void scaleAtLoc(int loc, int i, double factor) {
+		indexes[loc] = i;
+		values[loc] *= factor;
+	}
+
+	public void set(int i, double value) {
+		int loc = location(i);
 		if (loc > -1) {
 			setAtLoc(loc, value);
 		}
 	}
 
 	public void setAll(double value) {
-		Arrays.fill(values, value);
-		sum = (values.length * value);
+		sum = ArrayUtils.setAll(values, value);
 	}
 
 	public void setAtLoc(int loc, double value) {
 		values[loc] = value;
 	}
 
-	public void setAtLoc(int loc, int index, double value) {
-		indexes[loc] = index;
+	public void setAtLoc(int loc, int i, double value) {
+		indexes[loc] = i;
 		values[loc] = value;
 	}
 
@@ -628,25 +531,20 @@ public class SparseVector implements Vector {
 	}
 
 	public int sizeOfNonzero() {
-		int ret = 0;
-		for (int i = 0; i < values.length; i++) {
-			if (values[i] != 0) {
-				ret++;
-			}
-		}
-		return ret;
+		return ArrayUtils.sizeOfNonzeros(values);
 	}
 
 	public void sortByIndex() {
-		quicksort(true);
+		ArrayUtils.quickSort(indexes, values, true);
 	}
 
 	public void sortByValue() {
-		sortByValue(true);
+		ArrayUtils.quickSort(indexes, values, false);
 	}
 
 	public void sortByValue(boolean descending) {
-		quicksort(false);
+		ArrayUtils.quickSort(indexes, values, false);
+
 		if (!descending) {
 			reverse();
 		}
@@ -657,22 +555,12 @@ public class SparseVector implements Vector {
 	}
 
 	public void summation() {
-		sum = 0;
-		for (int i = 0; i < values.length; i++) {
-			sum += values[i];
-		}
+		sum = ArrayMath.sum(values);
 	}
 
 	private void swap(int i, int j) {
-		int temp1 = indexes[i];
-		int temp2 = indexes[j];
-		indexes[i] = temp2;
-		indexes[j] = temp1;
-
-		double temp3 = values[i];
-		double temp4 = values[j];
-		values[i] = temp4;
-		values[j] = temp3;
+		ArrayUtils.swap(indexes, i, j);
+		ArrayUtils.swap(values, i, j);
 	}
 
 	public DenseVector toDenseVector() {

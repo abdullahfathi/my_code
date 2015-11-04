@@ -380,6 +380,7 @@ public class RelevanceModelBuilder {
 				double pr_w_in_doc = cnt_w_in_doc / cnt_sum_in_doc;
 				pr_w_in_doc = (1 - mixture_for_coll) * pr_w_in_doc + mixture_for_coll * pr_w_in_coll;
 				double doc_prior = 1;
+
 				if (docPriors != null) {
 					doc_prior = docPriors.valueAtLoc(k);
 				}

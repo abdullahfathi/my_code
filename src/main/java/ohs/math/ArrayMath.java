@@ -58,19 +58,19 @@ public class ArrayMath {
 	/**
 	 * @param a
 	 * @param b
-	 * @param coef_a
-	 * @param coef_b
+	 * @param ac
+	 * @param bc
 	 * @param c
 	 *            output
 	 * @return
 	 */
-	public static double addAfterScale(double[] a, double b, double coef_a, double coef_b, double[] c) {
+	public static double addAfterScale(double[] a, double b, double ac, double bc, double[] c) {
 		if (!ArrayChecker.isSameDim(a, c)) {
 			throw new IllegalArgumentException();
 		}
 		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
-			c[i] = coef_a * a[i] + coef_b * b;
+			c[i] = ac * a[i] + bc * b;
 			sum += c[i];
 		}
 		return sum;
@@ -79,55 +79,55 @@ public class ArrayMath {
 	/**
 	 * @param a
 	 * @param b
-	 * @param coef_a
-	 * @param coef_b
+	 * @param ac
+	 * @param bc
 	 * @param c
 	 *            output
 	 * @return
 	 */
-	public static double addAfterScale(double[] a, double[] b, double coef_a, double coef_b, double[] c) {
+	public static double addAfterScale(double[] a, double[] b, double ac, double bc, double[] c) {
 		if (!ArrayChecker.isSameDim(a, b, c)) {
 			throw new IllegalArgumentException();
 		}
 		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
-			c[i] = coef_a * a[i] + coef_b * b[i];
+			c[i] = ac * a[i] + bc * b[i];
 			sum += c[i];
 		}
 		return sum;
 	}
 
-	public static double addAfterScale(double[] a, double[] b, double[] coef_a, double[] coef_b, double[] c) {
-		if (ArrayChecker.isSameDim(a, b, c) && ArrayChecker.isSameDim(c, coef_a, coef_b)) {
+	public static double addAfterScale(double[] a, double[] b, double[] ac, double[] bc, double[] c) {
+		if (ArrayChecker.isSameDim(a, b, c) && ArrayChecker.isSameDim(c, ac, bc)) {
 
 		} else {
 			throw new IllegalArgumentException();
 		}
 		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
-			c[i] = a[i] * coef_a[i] + b[i] * coef_b[i];
+			c[i] = a[i] * ac[i] + b[i] * bc[i];
 			sum += c[i];
 		}
 		return sum;
 	}
 
-	public static int argMax(double[] x) {
-		return argMax(x, 0, x.length);
+	public static int argMax(double[] a) {
+		return argMax(a, 0, a.length);
 	}
 
-	public static int argMax(double[] x, int start, int end) {
-		int ret = argMinMax(x, start, end)[1];
+	public static int argMax(double[] a, int start, int end) {
+		int ret = argMinMax(a, start, end)[1];
 		return ret;
 	}
 
-	public static int[] argMax(double[][] x) {
+	public static int[] argMax(double[][] a) {
 		int[] ret = { -1, -1 };
 		double max = -Double.MAX_VALUE;
 
-		for (int i = 0; i < x.length; i++) {
-			for (int j = 0; j < x[i].length; j++) {
-				if (x[i][j] > max) {
-					max = x[i][j];
+		for (int i = 0; i < a.length; i++) {
+			for (int j = 0; j < a[i].length; j++) {
+				if (a[i][j] > max) {
+					max = a[i][j];
 					ret[0] = i;
 					ret[1] = j;
 				}
@@ -363,28 +363,29 @@ public class ArrayMath {
 		return covariance(a, b, mean_of_a, mean_of_b);
 	}
 
-	public static double covariance(double[] a, double[] b, double mean_of_a, double mean_of_b) {
+	public static double covariance(double[] a, double[] b, double mean_a, double mean_b) {
 		double ret = 0;
 		for (int i = 0; i < a.length; i++) {
-			ret += (a[i] - mean_of_a) * (b[i] - mean_of_b);
+			ret += (a[i] - mean_a) * (b[i] - mean_b);
 		}
 		double n = a.length - 1; // unbiased estimator.
 		ret /= n;
 		return ret;
 	}
 
-	public static void cumulate(double[] in, double[] out) {
+	public static double cumulate(double[] a, double[] b) {
 		double sum = 0;
-		for (int i = 0; i < in.length; i++) {
-			sum += in[i];
-			out[i] = sum;
+		for (int i = 0; i < a.length; i++) {
+			sum += a[i];
+			b[i] = sum;
 		}
+		return sum;
 	}
 
-	public static void distribute(double[] in, double sum, double[] out) {
-		normalize(in);
-		for (int i = 0; i < in.length; i++) {
-			out[i] = in[i] * sum;
+	public static void distribute(double[] a, double sum, double[] b) {
+		normalize(a);
+		for (int i = 0; i < a.length; i++) {
+			b[i] = a[i] * sum;
 		}
 	}
 
@@ -393,11 +394,11 @@ public class ArrayMath {
 	 *            Column-normalized transition probabilities
 	 * @param cents
 	 * @param max_iter
-	 * @param min_distance
+	 * @param min_dist
 	 * @param damping_factor
 	 * @return
 	 */
-	public static void doRandomWalk(double[][] trans_probs, double[] cents, int max_iter, double min_distance, double damping_factor) {
+	public static void doRandomWalk(double[][] trans_probs, double[] cents, int max_iter, double min_dist, double damping_factor) {
 		if (!ArrayChecker.isProductable(trans_probs, cents)) {
 			throw new IllegalArgumentException();
 		}
@@ -424,7 +425,7 @@ public class ArrayMath {
 
 			System.out.printf("%d: %s - %s = %s\n", i + 1, old_dist, dist, old_dist - dist);
 
-			if (dist < min_distance) {
+			if (dist < min_dist) {
 				break;
 			}
 
@@ -947,9 +948,7 @@ public class ArrayMath {
 		}
 
 		for (int i = 0; i < a.length; i++) {
-			for (int j = 0; j < a[i].length; j++) {
-				c[i][j] = a[i][j] * b[i][j];
-			}
+			multiply(a[i], b[i], c[i]);
 		}
 	}
 
@@ -966,17 +965,19 @@ public class ArrayMath {
 	 *            input / output
 	 * @param high
 	 * @param low
+	 * @return
 	 */
-	public static void normalize(double[] a, double high, double low) {
+	public static double normalize(double[] a, double high, double low) {
 		double[] minMax = minMax(a);
 		double min = minMax[0];
 		double max = minMax[1];
-
+		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
-			double value = a[i];
-			double newValue = low + ((high - low) / (max - min)) * (value - min);
-			a[i] = newValue;
+			double v = a[i];
+			a[i] = low + ((high - low) / (max - min)) * (v - min);
+			sum += a[i];
 		}
+		return sum;
 	}
 
 	/**
@@ -999,14 +1000,15 @@ public class ArrayMath {
 	 *            input
 	 * @param b
 	 *            output
+	 * @return
 	 */
-	public static void normalizeBySigmoid(double[] a, double[] b) {
+	public static double normalizeBySigmoid(double[] a, double[] b) {
 		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
 			b[i] = FuncMath.sigmoid(a[i]);
 			sum += b[i];
 		}
-		scale(b, 1f / sum, b);
+		return scale(b, 1f / sum, b);
 	}
 
 	/**
@@ -1130,6 +1132,18 @@ public class ArrayMath {
 		return sum;
 	}
 
+	public static double[] random(double min, double max, int size) {
+		double[] x = new double[size];
+		random(min, max, x);
+		return x;
+	}
+
+	public static int[] random(int min, int max, int size) {
+		int[] x = new int[size];
+		random(min, max, x);
+		return x;
+	}
+
 	public static int random(int min, int max, int[] x) {
 		Random random = new Random();
 		double range = max - min + 1;
@@ -1161,24 +1175,20 @@ public class ArrayMath {
 			throw new IllegalArgumentException();
 		}
 
-		double[] temp = values;
+		double[] x = values;
 
 		if (cumulate) {
-			temp = new double[values.length];
-			double sum = 0;
-			for (int i = 0; i < values.length; i++) {
-				sum += values[i];
-				temp[i] = sum;
-			}
+			x = new double[values.length];
+			cumulate(values, x);
 		}
 
 		Random random = new Random();
-		double sum = temp[temp.length - 1];
+		double sum = x[x.length - 1];
 
 		for (int i = 0; i < samples.length; i++) {
 			double rv = sum * random.nextDouble();
-			for (int j = 0; j < temp.length; j++) {
-				if (rv <= temp[j]) {
+			for (int j = 0; j < x.length; j++) {
+				if (rv <= x[j]) {
 					samples[i] = indexes[i];
 					break;
 				}
@@ -1189,18 +1199,18 @@ public class ArrayMath {
 	/**
 	 * @param a
 	 *            input
-	 * @param coef
+	 * @param ac
 	 * @param b
 	 *            output
 	 * @return
 	 */
-	public static double scale(double[] a, double coef, double[] b) {
+	public static double scale(double[] a, double ac, double[] b) {
 		if (!ArrayChecker.isSameDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
 		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
-			b[i] = a[i] * coef;
+			b[i] = a[i] * ac;
 			sum += b[i];
 		}
 		return sum;
@@ -1270,15 +1280,11 @@ public class ArrayMath {
 	 * @param c
 	 *            output
 	 */
-	public static void substract(double[] a, double[] b, double[] c) {
-
+	public static double substract(double[] a, double[] b, double[] c) {
 		if (!ArrayChecker.isSameDim(a, b, c)) {
 			throw new IllegalArgumentException();
 		}
-
-		for (int i = 0; i < a.length; i++) {
-			c[i] = a[i] - b[i];
-		}
+		return addAfterScale(a, b, 1, -1, c);
 	}
 
 	/**

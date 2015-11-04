@@ -19,13 +19,13 @@ public interface Vector extends Serializable {
 
 	public int dim();
 
-	public void increment(int index, double value);
+	public void increment(int i, double v);
 
-	public void incrementAll(double value);
+	public void incrementAll(double v);
 
-	public void incrementAtLoc(int loc, double value);
+	public void incrementAtLoc(int loc, double v);
 
-	public void incrementAtLoc(int loc, int index, double value);
+	public void incrementAtLoc(int loc, int i, double v);
 
 	public int indexAtLoc(int loc);
 
@@ -63,17 +63,19 @@ public interface Vector extends Serializable {
 
 	public void scale(double factor);
 
-	public void scale(int index, double factor);
+	public void scale(int i, double factor);
 
 	public void scaleAtLoc(int loc, double factor);
 
-	public void set(int index, double value);
+	public void scaleAtLoc(int loc, int i, double factor);
 
-	public void setAll(double value);
+	public void set(int i, double v);
 
-	public void setAtLoc(int loc, double value);
+	public void setAll(double v);
 
-	public void setAtLoc(int loc, int index, double value);
+	public void setAtLoc(int loc, double v);
+
+	public void setAtLoc(int loc, int i, double v);
 
 	public void setDim(int dim);
 

@@ -13,6 +13,7 @@ import java.util.Set;
 
 import ohs.io.IOUtils;
 import ohs.math.ArrayMath;
+import ohs.math.ArrayUtils;
 
 public class DenseVector implements Vector {
 	/**
@@ -146,29 +147,11 @@ public class DenseVector implements Vector {
 	}
 
 	public int argMax() {
-		int index = -1;
-		double max = Double.MIN_VALUE;
-		for (int i = 0; i < size(); i++) {
-			double value = values[i];
-			if (value > max) {
-				max = value;
-				index = i;
-			}
-		}
-		return index;
+		return ArrayMath.argMax(values);
 	}
 
 	public int argMin() {
-		int index = -1;
-		double min = Double.MAX_VALUE;
-		for (int i = 0; i < size(); i++) {
-			double value = values[i];
-			if (value < min) {
-				min = value;
-				index = i;
-			}
-		}
-		return index;
+		return ArrayMath.argMin(values);
 	}
 
 	public void clear() {
@@ -177,9 +160,7 @@ public class DenseVector implements Vector {
 	}
 
 	public DenseVector copy() {
-		double[] newValues = new double[values.length];
-		System.arraycopy(values, 0, newValues, 0, values.length);
-		DenseVector ret = new DenseVector(newValues, label);
+		DenseVector ret = new DenseVector(ArrayUtils.copy(values), label);
 		ret.setSum(sum);
 		return ret;
 	}
@@ -188,23 +169,20 @@ public class DenseVector implements Vector {
 		return size();
 	}
 
-	public void increment(int index, double value) {
-		values[index] += value;
+	public void increment(int i, double value) {
+		values[i] += value;
 		sum += value;
 	}
 
-	public void incrementAll(double value) {
-		for (int i = 0; i < values.length; i++) {
-			values[i] += value;
-			sum += value;
-		}
+	public void incrementAll(double increment) {
+		sum = ArrayMath.add(values, increment, values);
 	}
 
 	public void incrementAtLoc(int loc, double value) {
 		increment(loc, value);
 	}
 
-	public void incrementAtLoc(int loc, int index, double value) {
+	public void incrementAtLoc(int loc, int i, double value) {
 		new UnsupportedOperationException("unsupported");
 	}
 
@@ -262,21 +240,17 @@ public class DenseVector implements Vector {
 	}
 
 	public void normalize() {
-		for (int i = 0; i < values.length; i++) {
-			values[i] /= sum;
-		}
-		sum = 1;
+		sum = ArrayMath.scale(values, 1f / sum, values);
 	}
 
 	public void normalizeAfterSummation() {
-		summation();
-		normalize();
+		sum = ArrayMath.sum(values);
+		sum = ArrayMath.scale(values, 1f / sum, values);
 	}
 
 	@Override
 	public void normalizeByL2Norm() {
-		ArrayMath.normalizeByL2Norm(values, values);
-		summation();
+		sum = ArrayMath.normalizeByL2Norm(values, values);
 	}
 
 	public double prob(int index) {
@@ -329,37 +303,37 @@ public class DenseVector implements Vector {
 	}
 
 	public void scale(double factor) {
-		for (int i = 0; i < values.length; i++) {
-			scale(i, factor);
-		}
+		ArrayMath.scale(values, factor, values);
 	}
 
-	public void scale(int index, double factor) {
-		double newValue = values[index] * factor;
-		double diff = newValue - values[index];
-		values[index] = newValue;
-		sum += diff;
+	@Override
+	public void scale(int i, double factor) {
+		values[i] *= factor;
 	}
 
+	@Override
 	public void scaleAtLoc(int loc, double factor) {
 		scale(loc, factor);
 	}
 
-	public void set(int index, double value) {
-		values[index] = value;
+	public void scaleAtLoc(int loc, int i, double factor) {
+		new UnsupportedOperationException("unsupported");
+	}
+
+	public void set(int i, double value) {
+		values[i] = value;
 	}
 
 	public void setAll(double value) {
-		Arrays.fill(values, value);
-		sum = (values.length * value);
+		sum = ArrayUtils.setAll(values, value);
 	}
 
 	public void setAtLoc(int loc, double value) {
 		set(loc, value);
 	}
 
-	public void setAtLoc(int loc, int index, double value) {
-		if (loc != index) {
+	public void setAtLoc(int loc, int i, double value) {
+		if (loc != i) {
 			new IllegalArgumentException("different index");
 		}
 		setAtLoc(loc, value);
@@ -407,10 +381,7 @@ public class DenseVector implements Vector {
 	}
 
 	public void summation() {
-		sum = 0;
-		for (int i = 0; i < values.length; i++) {
-			sum += values[i];
-		}
+		sum = ArrayMath.sum(values);
 	}
 
 	public SparseVector toSparseVector() {

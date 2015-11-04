@@ -7,138 +7,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 import ohs.matrix.DenseVector;
 
 public class ArrayUtils {
-
-	/**
-	 * @param a
-	 *            input
-	 * @param b
-	 *            output
-	 */
-	public static void copy(double[] a, double[] b) {
-		System.arraycopy(a, 0, b, 0, a.length);
-	}
-
-	public static void copy(double[] a, int[] b) {
-		for (int i = 0; i < a.length; i++) {
-			b[i] = (int) a[i];
-		}
-	}
-
-	public static int[] rankedIndexes(double[] a) {
-		int[] b = new int[a.length];
-		a = ArrayUtils.copy(a);
-		quicksort(b, a);
-		return b;
-	}
-
-	private static int qPartition(int[] indexes, double[] values, int low, int high) {
-		// First element
-		// int pivot = a[low];
-
-		// Middle element
-		// int middle = (low + high) / 2;
-
-		int i = low - 1;
-		int j = high + 1;
-
-		// descending order
-		int randomIndex = (int) (Math.random() * (high - low)) + low;
-		double pivotValue = values[randomIndex];
-
-		while (i < j) {
-			i++;
-			while (values[i] > pivotValue) {
-				i++;
-			}
-
-			j--;
-			while (values[j] < pivotValue) {
-				j--;
-			}
-
-			if (i < j) {
-				int temp1 = indexes[i];
-				int temp2 = indexes[j];
-				indexes[i] = temp2;
-				indexes[j] = temp1;
-
-				double temp3 = values[i];
-				double temp4 = values[j];
-				values[i] = temp4;
-				values[j] = temp3;
-			}
-		}
-		return j;
-	}
-
-	private static void qSort(int[] indexes, double[] values, int low, int high) {
-		if (low >= high)
-			return;
-		int p = qPartition(indexes, values, low, high);
-		qSort(indexes, values, low, p);
-		qSort(indexes, values, p + 1, high);
-	}
-
-	public static void quicksort(int[] indexes, double[] values) {
-		qSort(indexes, values, 0, indexes.length - 1);
-	}
-
-	public static void copyMatrixToVector(double[][] a, double[] b) {
-		if (sizeOfEntries(a) != b.length) {
-			throw new IllegalArgumentException();
-		}
-
-		for (int i = 0, k = 0; i < a.length; i++) {
-			for (int j = 0; j < a[i].length; j++) {
-				b[k++] = a[i][j];
-			}
-		}
-	}
-
-	/**
-	 * @param a
-	 *            input
-	 * @param b
-	 *            output
-	 */
-	public static void copy(double[][] a, double[][] b) {
-		for (int i = 0; i < a.length; i++) {
-			copy(a[i], b[i]);
-		}
-	}
-
-	public static double[][] copy(double[][] a) {
-		double[][] b = new double[a.length][];
-		for (int i = 0; i < a.length; i++) {
-			b[i] = copy(a[i]);
-		}
-		return b;
-	}
-
-	/**
-	 * @param a
-	 *            input
-	 * @param b
-	 *            output
-	 */
-	public static void copy(float[] a, float[] b) {
-		System.arraycopy(a, 0, b, 0, a.length);
-	}
-
-	public static void copy(int[] a, int[] b) {
-		System.arraycopy(a, 0, b, 0, a.length);
-	}
-
-	public static int[] copy(int[] a) {
-		int[] b = new int[a.length];
-		copy(a, b);
-		return b;
-	}
 
 	public static void copy(Collection<Double> a, double[] b) {
 		int loc = 0;
@@ -156,6 +30,48 @@ public class ArrayUtils {
 		}
 	}
 
+	public static double random(double min, double max, double[] x) {
+		Random random = new Random();
+		double range = max - min;
+		double sum = 0;
+		for (int i = 0; i < x.length; i++) {
+			x[i] = range * random.nextDouble() + min;
+			sum += x[i];
+		}
+		return sum;
+	}
+
+	public static double[] random(double min, double max, int size) {
+		double[] x = new double[size];
+		random(min, max, x);
+		return x;
+	}
+
+	public static double random(double min, double max, double[][] x) {
+		double sum = 0;
+		for (int i = 0; i < x.length; i++) {
+			sum += random(min, max, x[i]);
+		}
+		return sum;
+	}
+
+	public static int[] random(int min, int max, int size) {
+		int[] x = new int[size];
+		random(min, max, x);
+		return x;
+	}
+
+	public static int random(int min, int max, int[] x) {
+		Random random = new Random();
+		double range = max - min + 1;
+		int sum = 0;
+		for (int i = 0; i < x.length; i++) {
+			x[i] = (int) (range * random.nextDouble()) + min;
+			sum += x[i];
+		}
+		return sum;
+	}
+
 	public static void copy(Collection<Integer> a, int[] b) {
 		if (a.size() > 0) {
 			int loc = 0;
@@ -166,9 +82,51 @@ public class ArrayUtils {
 		}
 	}
 
+	public static double[] copy(double[] a) {
+		double[] ret = new double[a.length];
+		copy(a, ret);
+		return ret;
+	}
+
+	/**
+	 * @param a
+	 *            input
+	 * @param b
+	 *            output
+	 */
+	public static void copy(double[] a, double[] b) {
+		System.arraycopy(a, 0, b, 0, a.length);
+	}
+
+	public static void copy(double[] a, int[] b) {
+		for (int i = 0; i < a.length; i++) {
+			b[i] = (int) a[i];
+		}
+	}
+
 	public static void copy(double[] a, List<Double> b) {
 		for (int i = 0; i < a.length; i++) {
 			b.add(a[i]);
+		}
+	}
+
+	public static double[][] copy(double[][] a) {
+		double[][] b = new double[a.length][];
+		for (int i = 0; i < a.length; i++) {
+			b[i] = copy(a[i]);
+		}
+		return b;
+	}
+
+	/**
+	 * @param a
+	 *            input
+	 * @param b
+	 *            output
+	 */
+	public static void copy(double[][] a, double[][] b) {
+		for (int i = 0; i < a.length; i++) {
+			copy(a[i], b[i]);
 		}
 	}
 
@@ -180,10 +138,24 @@ public class ArrayUtils {
 		}
 	}
 
-	public static void copyAs(int[] a, double[] b) {
-		for (int i = 0; i < a.length; i++) {
-			b[i] = a[i];
-		}
+	/**
+	 * @param a
+	 *            input
+	 * @param b
+	 *            output
+	 */
+	public static void copy(float[] a, float[] b) {
+		System.arraycopy(a, 0, b, 0, a.length);
+	}
+
+	public static int[] copy(int[] a) {
+		int[] b = new int[a.length];
+		copy(a, b);
+		return b;
+	}
+
+	public static void copy(int[] a, int[] b) {
+		System.arraycopy(a, 0, b, 0, a.length);
 	}
 
 	public static void copy(int[] a, List<Integer> b) {
@@ -206,6 +178,12 @@ public class ArrayUtils {
 		}
 	}
 
+	public static void copyAs(int[] a, double[] b) {
+		for (int i = 0; i < a.length; i++) {
+			b[i] = a[i];
+		}
+	}
+
 	public static void copyColumn(double[] a, double[][] b, int b_col) {
 		int[] dims = dimensions(b);
 
@@ -216,30 +194,30 @@ public class ArrayUtils {
 
 	/**
 	 * @param a
-	 * @param a_col
+	 * @param aj
 	 * @param b
 	 *            output
 	 */
-	public static void copyColumn(double[][] a, int a_col, double[] b) {
+	public static void copyColumn(double[][] a, int aj, double[] b) {
 		if (a.length != b.length) {
 			throw new IllegalArgumentException();
 		}
 		for (int i = 0; i < a.length; i++) {
-			b[i] = a[i][a_col];
+			b[i] = a[i][aj];
 		}
 	}
 
 	/**
 	 * @param a
 	 *            input
-	 * @param a_col
+	 * @param aj
 	 *            column index of matrix a
 	 * @param b
 	 *            output
-	 * @param b_col
+	 * @param bj
 	 *            column index of matrix b
 	 */
-	public static void copyColumn(double[][] a, int a_col, double[][] b, int b_col) {
+	public static void copyColumn(double[][] a, int aj, double[][] b, int bj) {
 		if (!ArrayChecker.isSameDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
@@ -247,14 +225,41 @@ public class ArrayUtils {
 		int rowDim = a.length;
 		int colDim = a[0].length;
 		for (int i = 0; i < rowDim; i++) {
-			b[i][b_col] = a[i][a_col];
+			b[i][bj] = a[i][aj];
 		}
 	}
 
-	public static double[] copy(double[] x) {
-		double[] ret = new double[x.length];
-		copy(x, ret);
-		return ret;
+	public static void copyMatrixToVector(double[][] a, double[] b) {
+		if (sizeOfEntries(a) != b.length) {
+			throw new IllegalArgumentException();
+		}
+
+		for (int i = 0, k = 0; i < a.length; i++) {
+			for (int j = 0; j < a[i].length; j++) {
+				b[k++] = a[i][j];
+			}
+		}
+	}
+
+	public static void copyRow(double[] a, double[][] b, int bi) {
+		int colDim = b[0].length;
+		for (int i = 0; i < colDim; i++) {
+			b[bi][i] = a[i];
+		}
+	}
+
+	public static void copyRow(double[][] a, int ai, double[] b) {
+		int colDim = a[0].length;
+		for (int i = 0; i < colDim; i++) {
+			b[i] = a[ai][i];
+		}
+	}
+
+	public static void copyRow(double[][] a, int ai, double[][] b, int bi) {
+		int colDim = a[0].length;
+		for (int j = 0; j < colDim; j++) {
+			b[bi][j] = a[ai][j];
+		}
 	}
 
 	/**
@@ -271,32 +276,39 @@ public class ArrayUtils {
 		return ret;
 	}
 
-	public static void copyRow(double[] a, double[][] b, int b_row) {
-		int colDim = b[0].length;
-		for (int i = 0; i < colDim; i++) {
-			b[b_row][i] = a[i];
-		}
-	}
-
-	public static void copyRow(double[][] a, int a_row, double[] b) {
-		int colDim = a[0].length;
-		for (int i = 0; i < colDim; i++) {
-			b[i] = a[a_row][i];
-		}
-	}
-
-	public static void copyRow(double[][] a, int a_row, double[][] b, int b_row) {
-		int colDim = a[0].length;
-		for (int i = 0; i < colDim; i++) {
-			b[b_row][i] = a[a_row][i];
-		}
-	}
-
 	public static int[] dimensions(double[][] a) {
 		int[] ret = new int[2];
 		ret[0] = a.length;
 		ret[1] = a[0].length;
 		return ret;
+	}
+
+	public static void enumerate(double[] a, double start, double increment) {
+		for (int i = 0; i < a.length; i++) {
+			a[i] = start + i * increment;
+		}
+	}
+
+	public static int[] enumerate(int size) {
+		return enumerate(size, 0, 1);
+	}
+
+	public static double[] enumerate(int size, double start, double increment) {
+		double[] a = new double[size];
+		enumerate(a, start, increment);
+		return a;
+	}
+
+	public static int[] enumerate(int size, int start, int increment) {
+		int[] a = new int[size];
+		enumerate(a, 0, 1);
+		return a;
+	}
+
+	public static void enumerate(int[] a, int start, int increment) {
+		for (int i = 0; i < a.length; i++) {
+			a[i] = start + i * increment;
+		}
 	}
 
 	public static NumberFormat getDoubleNumberFormat(int num_fractions) {
@@ -325,11 +337,11 @@ public class ArrayUtils {
 		System.out.println("process ends.");
 	}
 
-	public static int maxColumnSize(int[][] x) {
+	public static int maxColumnSize(int[][] a) {
 		int ret = 0;
-		for (int i = 0; i < x.length; i++) {
-			if (x[i].length > ret) {
-				ret = x[i].length;
+		for (int i = 0; i < a.length; i++) {
+			if (a[i].length > ret) {
+				ret = a[i].length;
 			}
 		}
 		return ret;
@@ -412,15 +424,101 @@ public class ArrayUtils {
 		return ret;
 	}
 
-	public static void reverse(int[] x) {
-		int mid = x.length / 2;
+	public static void quickSort(int[] indexes, double[] values, boolean sortByIndex) {
+		if (indexes.length != values.length) {
+			throw new IllegalArgumentException();
+		}
+
+		quickSortHere(indexes, values, 0, indexes.length - 1, sortByIndex);
+	}
+
+	private static void quickSortHere(int[] indexes, double[] values, int low, int high, boolean sortByIndex) {
+		if (low >= high)
+			return;
+		int p = quickSortPartition(indexes, values, low, high, sortByIndex);
+		quickSortHere(indexes, values, low, p, sortByIndex);
+		quickSortHere(indexes, values, p + 1, high, sortByIndex);
+	}
+
+	private static int quickSortPartition(int[] indexes, double[] values, int low, int high, boolean sortByIndex) {
+		// First element
+		// int pivot = a[low];
+
+		// Middle element
+		// int middle = (low + high) / 2;
+
+		int i = low - 1;
+		int j = high + 1;
+
+		if (sortByIndex) {
+			// ascending order
+			int randomIndex = (int) (Math.random() * (high - low)) + low;
+			int pivotValue = indexes[randomIndex];
+
+			while (i < j) {
+				i++;
+				while (indexes[i] < pivotValue) {
+					i++;
+				}
+
+				j--;
+				while (indexes[j] > pivotValue) {
+					j--;
+				}
+
+				if (i < j) {
+					swap(indexes, i, j);
+					swap(values, i, j);
+				}
+			}
+		} else {
+			// descending order
+			int randomIndex = (int) (Math.random() * (high - low)) + low;
+			double pivotValue = values[randomIndex];
+
+			while (i < j) {
+				i++;
+				while (values[i] > pivotValue) {
+					i++;
+				}
+
+				j--;
+				while (values[j] < pivotValue) {
+					j--;
+				}
+
+				if (i < j) {
+					swap(indexes, i, j);
+					swap(values, i, j);
+				}
+			}
+		}
+		return j;
+	}
+
+	public static void reverse(double[] a) {
+		int mid = a.length / 2;
 		for (int i = 0; i < mid; i++) {
-			swap(x, i, x.length - 1 - i);
+			swap(a, i, a.length - 1 - i);
 		}
 	}
 
-	public static void setAll(double[] a, double value) {
+	public static void reverse(int[] a) {
+		int mid = a.length / 2;
+		for (int i = 0; i < mid; i++) {
+			swap(a, i, a.length - 1 - i);
+		}
+	}
+
+	public static void set(double[] a, double value, int start, int end) {
+		for (int i = start; i < end && i < a.length; i++) {
+			a[i] = value;
+		}
+	}
+
+	public static double setAll(double[] a, double value) {
 		Arrays.fill(a, value);
+		return value * a.length;
 	}
 
 	public static int sizeOfEntries(double[][] a) {
@@ -428,41 +526,35 @@ public class ArrayUtils {
 		return dims[0] * dims[1];
 	}
 
-	public static int sizeOfNonzero(double[] x) {
+	public static int sizeOfNonzeros(double[] a) {
 		int ret = 0;
 
-		for (int i = 0; i < x.length; i++) {
-			if (x[i] != 0) {
+		for (int i = 0; i < a.length; i++) {
+			if (a[i] != 0) {
 				ret++;
 			}
 		}
 		return ret;
 	}
 
-	public static int sizeOfNonzero(int[] x) {
+	public static int sizeOfNonzeros(int[] a) {
 		int ret = 0;
-		for (int i = 0; i < x.length; i++) {
-			if (x[i] != 0) {
+		for (int i = 0; i < a.length; i++) {
+			if (a[i] != 0) {
 				ret++;
 			}
 		}
 		return ret;
 	}
 
-	public static void sort(double[] a, boolean descending) {
-		Arrays.sort(a);
-
-		if (descending) {
-			int middle = a.length / 2;
-			for (int i = 0; i < middle; i++) {
-				int j = a.length - 1 - i;
-				swap(a, i, j);
-			}
-		}
+	public static int[] sort(double[] a) {
+		int[] b = enumerate(a.length);
+		quickSort(b, a, false);
+		return b;
 	}
 
-	public static List<Integer>[] split(List<Integer> indexList, int numFolds) {
-		double[] proportions = new double[numFolds];
+	public static List<Integer>[] split(List<Integer> indexList, int num_folds) {
+		double[] proportions = new double[num_folds];
 		for (int i = 0; i < proportions.length; i++) {
 			proportions[i] = 1f / proportions.length;
 		}
@@ -508,33 +600,33 @@ public class ArrayUtils {
 		return ret;
 	}
 
-	public static void swap(double[] x, int index1, int index2) {
-		double value1 = x[index1];
-		double value2 = x[index2];
-		x[index1] = value2;
-		x[index2] = value1;
+	public static void swap(double[] x, int i, int j) {
+		double v1 = x[i];
+		double v2 = x[j];
+		x[i] = v2;
+		x[j] = v1;
 	}
 
-	public static void swap(int[] x, int index1, int index2) {
-		int value1 = x[index1];
-		int value2 = x[index2];
-		x[index1] = value2;
-		x[index2] = value1;
+	public static void swap(int[] x, int i, int j) {
+		int v2 = x[i];
+		int v1 = x[j];
+		x[i] = v1;
+		x[j] = v2;
 	}
 
-	public static void swapColumns(double[][] x, int index1, int index2) {
-		for (int i = 0; i < x.length; i++) {
-			double temp = x[i][index1];
-			x[i][index1] = x[i][index2];
-			x[i][index2] = temp;
+	public static void swapColumns(double[][] x, int i, int j) {
+		for (int k = 0; k < x.length; k++) {
+			double temp = x[k][i];
+			x[k][i] = x[k][j];
+			x[k][j] = temp;
 		}
 	}
 
-	public static void swapRows(double[][] x, int index1, int index2) {
-		for (int i = 0; i < x[0].length; i++) {
-			double temp = x[index1][i];
-			x[index1][i] = x[index2][i];
-			x[index2][i] = temp;
+	public static void swapRows(double[][] x, int i, int j) {
+		for (int k = 0; k < x[0].length; k++) {
+			double temp = x[i][k];
+			x[i][k] = x[j][k];
+			x[j][k] = temp;
 		}
 	}
 
