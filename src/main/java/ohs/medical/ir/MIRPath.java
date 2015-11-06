@@ -84,6 +84,8 @@ public class MIRPath {
 
 	public static final String CLEF_EHEALTH_SENTS_FILE = CLEF_EHEALTH_DIR + "sents.txt.gz";
 
+	public static final String CLEF_EHEALTH_SENTS_STEM_FILE = CLEF_EHEALTH_DIR + "sents_stem.txt.gz";
+
 	public static final String CLEF_EHEALTH_COL_FILE_2 = CLEF_EHEALTH_DIR + "collection_2.txt";
 
 	public static final String CLEF_EHEALTH_VALID_DOC_NO_FILE = CLEF_EHEALTH_DIR + "cds-docnos.txt";
@@ -154,6 +156,8 @@ public class MIRPath {
 	public static final String TREC_CDS_COL_XML_FILE = TREC_CDS_DIR + "collection_xml.txt.gz";
 
 	public static final String TREC_CDS_SENTS_FILE = TREC_CDS_DIR + "sents.txt.gz";
+
+	public static final String TREC_CDS_SENTS_STEM_FILE = TREC_CDS_DIR + "sents_stem.txt.gz";
 
 	public static final String TREC_CDS_COL_LOG_FILE = TREC_CDS_DIR + "collection_log.txt";
 
@@ -233,6 +237,8 @@ public class MIRPath {
 
 	public static final String TREC_GENOMICS_SENTS_FILE = TREC_GENOMICS_DIR + "sents.txt.gz";
 
+	public static final String TREC_GENOMICS_SENTS_STEM_FILE = TREC_GENOMICS_DIR + "sents_stem.txt.gz";
+
 	public static final String TREC_GENOMICS_QUERY_DIR = TREC_GENOMICS_DIR + "query/";
 
 	public static final String TREC_GENOMICS_INDEX_DIR = TREC_GENOMICS_DIR + "index/";
@@ -274,6 +280,8 @@ public class MIRPath {
 	public static final String OHSUMED_COL_FILE = OHSUMED_DIR + "collection.txt.gz";
 
 	public static final String OHSUMED_SENTS_FILE = OHSUMED_DIR + "sents.txt.gz";
+
+	public static final String OHSUMED_SENTS_STEM_FILE = OHSUMED_DIR + "sents_stem.txt.gz";
 
 	public static final String OHSUMED_QUERY_DIR = OHSUMED_DIR + "query/";
 
@@ -352,6 +360,12 @@ public class MIRPath {
 	public static final String[] QueryDocFileNames = { TREC_CDS_QUERY_DOC_FILE, CLEF_EHEALTH_QUERY_DOC_FILE, OHSUMED_QUERY_DOC_FILE,
 			TREC_GENOMICS_QUERY_DOC_FILE };
 
-	public static final String[] CollDirs = { TREC_CDS_DIR, CLEF_EHEALTH_DIR, OHSUMED_DIR, TREC_GENOMICS_DIR };
+	public static final String[] TaskDirs = { TREC_CDS_DIR, CLEF_EHEALTH_DIR, OHSUMED_DIR, TREC_GENOMICS_DIR };
+
+	public static final String[] SentFileNames = { TREC_CDS_SENTS_FILE, CLEF_EHEALTH_SENTS_FILE, OHSUMED_SENTS_FILE,
+			TREC_GENOMICS_SENTS_FILE };
+
+	public static final String[] SentStemFileNames = { TREC_CDS_SENTS_STEM_FILE, CLEF_EHEALTH_SENTS_STEM_FILE, OHSUMED_SENTS_STEM_FILE,
+			TREC_GENOMICS_SENTS_STEM_FILE };
 
 }

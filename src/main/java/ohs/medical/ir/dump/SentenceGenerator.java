@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
@@ -20,11 +21,13 @@ import org.apache.lucene.store.FSDirectory;
 import ohs.io.IOUtils;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
+import ohs.lucene.common.AnalyzerUtils;
 import ohs.lucene.common.IndexFieldName;
 import ohs.lucene.common.MedicalEnglishAnalyzer;
 import ohs.lucene.common.MyTextField;
 import ohs.medical.ir.MIRPath;
 import ohs.medical.ir.NLPUtils;
+import ohs.utils.StrUtils;
 
 /**
  * Construct an inverted index with source document collection.
@@ -70,8 +73,10 @@ public class SentenceGenerator {
 		SentenceGenerator di = new SentenceGenerator();
 		// di.generateForTrecCds();
 		// di.generateForClefEHealth();
-		di.generateForOhsumed();
+		// di.generateForOhsumed();
 		// di.generateForTrecGenomics();
+
+		di.doStemming();
 
 		System.out.println("process ends.");
 	}
@@ -80,11 +85,33 @@ public class SentenceGenerator {
 
 	}
 
+	public void doStemming() throws Exception {
+		String[] sentFileNames = MIRPath.SentFileNames;
+		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
+
+		for (int i = 0; i < sentFileNames.length; i++) {
+			TextFileReader reader = new TextFileReader(sentFileNames[i]);
+			TextFileWriter writer = new TextFileWriter(MIRPath.SentStemFileNames[i]);
+
+			while (reader.hasNext()) {
+				String[] parts = reader.next().split("\t");
+				String docId = parts[0];
+				String no = parts[1];
+				String sent = parts[2];
+				List<String> words = AnalyzerUtils.getWords(sent, analyzer);
+				sent = StrUtils.join(" ", words);
+				String output = String.format("%s\t%s\t%s", docId, no, sent);
+				writer.write(output + "\n");
+			}
+			reader.close();
+			writer.close();
+		}
+	}
+
 	public void generateForClefEHealth() throws Exception {
 		System.out.println("generate for CLEF eHealth.");
 
 		TextFileWriter writer = new TextFileWriter(MIRPath.CLEF_EHEALTH_SENTS_FILE);
-
 		TextFileReader reader = new TextFileReader(MIRPath.CLEF_EHEALTH_COL_FILE);
 		reader.setPrintNexts(false);
 
@@ -205,7 +232,6 @@ public class SentenceGenerator {
 
 	public void generateForTrecGenomics() throws Exception {
 		TextFileWriter writer = new TextFileWriter(MIRPath.TREC_GENOMICS_SENTS_FILE);
-
 		TextFileReader reader = new TextFileReader(MIRPath.TREC_GENOMICS_COL_FILE);
 		reader.setPrintNexts(false);
 

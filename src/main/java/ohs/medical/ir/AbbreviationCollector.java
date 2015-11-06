@@ -125,7 +125,7 @@ public class AbbreviationCollector {
 	}
 
 	public static void filter() {
-		String[] collDirs = MIRPath.CollDirs;
+		String[] collDirs = MIRPath.TaskDirs;
 
 		for (int i = 0; i < collDirs.length; i++) {
 			String inputFileName = collDirs[i] + "abbrs_group.txt";
@@ -251,7 +251,7 @@ public class AbbreviationCollector {
 	public static void group() {
 
 		String[] abbrFileNames = MIRPath.AbbrFileNames;
-		String[] collDirs = MIRPath.CollDirs;
+		String[] collDirs = MIRPath.TaskDirs;
 
 		for (int i = 0; i < abbrFileNames.length; i++) {
 			// if (!abbrFileNames[i].contains("clef")) {

@@ -116,8 +116,7 @@ public class ArrayMath {
 	}
 
 	public static int argMax(double[] a, int start, int end) {
-		int ret = argMinMax(a, start, end)[1];
-		return ret;
+		return argMinMax(a, start, end)[1];
 	}
 
 	public static int[] argMax(double[][] a) {
@@ -410,20 +409,36 @@ public class ArrayMath {
 		double[] old_cents = ArrayUtils.copy(cents);
 		double old_dist = Double.MAX_VALUE;
 
-		for (int i = 0; i < max_iter; i++) {
-			double sum1 = LA.product(trans_probs, old_cents, cents);
-			double sum2 = addAfterScale(cents, uniform_cent, 1 - damping_factor, damping_factor, cents);
+		double tran_prob = 0;
+		double dot_product = 0;
+
+		for (int m = 0; m < max_iter; m++) {
+			double sum = 0;
+			for (int i = 0; i < trans_probs.length; i++) {
+				dot_product = 0;
+				for (int j = 0; j < trans_probs[i].length; j++) {
+					tran_prob = (1 - damping_factor) * trans_probs[i][j] + damping_factor * uniform_cent;
+					dot_product += tran_prob * cents[j];
+				}
+				cents[i] = dot_product;
+				sum += cents[i];
+			}
+
+			scale(cents, 1f / sum, cents);
+
+			// double sum1 = LA.product(trans_probs, old_cents, cents);
+			// double sum2 = addAfterScale(cents, uniform_cent, 1 - damping_factor, damping_factor, cents);
 
 			// for (int j = 0; j < cents.length; j++) {
 			// cents[j] = damping_factor * uniform_cent + (1 - damping_factor) * cents[j];
 			// sum += cents[j];
 			// }
 
-			scale(cents, 1f / sum2, cents);
+			// scale(cents, 1f / sum2, cents);
 
 			double dist = euclideanDistance(old_cents, cents);
 
-			System.out.printf("%d: %s - %s = %s\n", i + 1, old_dist, dist, old_dist - dist);
+			System.out.printf("%d: %s - %s = %s\n", m + 1, old_dist, dist, old_dist - dist);
 
 			if (dist < min_dist) {
 				break;
@@ -494,14 +509,6 @@ public class ArrayMath {
 				b[i] = Math.exp(a[i]);
 			}
 		}
-	}
-
-	public static double geometricMean(double[] x) {
-		double logSum = 0;
-		for (int i = 0; i < x.length; i++) {
-			logSum += Math.log(x[i]);
-		}
-		return Math.exp(logSum / x.length);
 	}
 
 	public static double jensenShannonDivergence(double[] a, double[] b) {
@@ -687,6 +694,45 @@ public class ArrayMath {
 		System.out.println("process begins.");
 
 		{
+			double[][] a = new double[][] { { 0.5, 0.5, 0 }, { 0.5, 0, 1 }, { 0, 0.5, 0 } };
+			double[] answer = new double[] { 2 / 5f, 2 / 5f, 1 / 5f };
+			normalize(answer);
+
+			double[] cents = new double[3];
+			ArrayUtils.setAll(cents, 1);
+			doRandomWalk(a, cents, 400, 0.0000000001, 0);
+
+			System.out.printf("answer:   \t%s\n", ArrayUtils.toString(answer));
+			System.out.printf("estimated:\t%s\n", ArrayUtils.toString(cents));
+			System.out.println();
+		}
+
+		{
+			// double[][] a = new double[][] { { 0.5, 0.5, 0 }, { 0.5, 0, 1 }, { 0, 0.5, 0 } };
+			double[][] a = new double[][] { { 0.5, 0.5, 0 }, { 0.5, 0, 0 }, { 0, 0.5, 1 } };
+			double[][] b = ArrayUtils.newMatrix(3, 1f / 3);
+
+			double[][] c = new double[3][3];
+
+			for (int i = 0; i < a.length; i++) {
+				addAfterScale(a[i], b[i], 0.8, 0.2, c[i]);
+			}
+
+			System.out.println(ArrayUtils.toString(c));
+			System.out.println();
+
+			double[] answer = new double[] { 7 / 11f, 5 / 11f, 21 / 11f };
+			normalize(answer);
+
+			double[] cents = new double[3];
+			ArrayUtils.setAll(cents, 1);
+			doRandomWalk(a, cents, 400, 0.0000000001, 0.2);
+
+			System.out.printf("answer:   \t%s\n", ArrayUtils.toString(answer));
+			System.out.printf("estimated:\t%s\n", ArrayUtils.toString(cents));
+		}
+
+		{
 			double[] probs = new double[100];
 			int[] samples = new int[probs.length];
 
@@ -842,6 +888,7 @@ public class ArrayMath {
 		}
 
 		System.out.println("process ends.");
+
 	}
 
 	public static double max(double[] x) {
@@ -849,13 +896,13 @@ public class ArrayMath {
 	}
 
 	public static double max(double[][] x) {
-		int[] index = argMax(x);
-		int row = index[0];
-		int col = index[1];
+		int[] idx = argMax(x);
+		int i = idx[0];
+		int j = idx[1];
 
 		double ret = 0;
-		if (row > 0 && col > 0) {
-			ret = x[row][col];
+		if (i > 0 && j > 0) {
+			ret = x[i][j];
 		}
 		return ret;
 	}
@@ -874,6 +921,35 @@ public class ArrayMath {
 
 	public static double mean(double[] x) {
 		return sum(x) / x.length;
+	}
+
+	public static double geometricMean(double[] a) {
+		return Math.pow(product(a), 1f / a.length);
+	}
+
+	public static double harmonicMean(double[] a) {
+		double inverse_sum = 0;
+		for (int i = 0; i < a.length; i++) {
+			inverse_sum += 1f / a[i];
+		}
+		return a.length * (1f / inverse_sum);
+	}
+
+	public static double pow(double[] a, double b, double[] c) {
+		double sum = 0;
+		for (int i = 0; i < a.length; i++) {
+			c[i] = Math.pow(a[i], b);
+			sum += c[i];
+		}
+		return sum;
+	}
+
+	public static double product(double[] a) {
+		double ret = 0;
+		for (int i = 0; i < a.length; i++) {
+			ret *= a[i];
+		}
+		return ret;
 	}
 
 	public static double min(double[] x) {

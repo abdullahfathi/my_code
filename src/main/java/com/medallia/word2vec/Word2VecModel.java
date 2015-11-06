@@ -134,10 +134,14 @@ public class Word2VecModel {
 		return layerSize;
 	}
 
+	public double[][] getVectors() {
+		return vectors;
+	}
+
 	/**
 	 * @return Vocabulary
 	 */
-	public Iterable<String> getVocab() {
+	public List<String> getVocab() {
 		return vocab;
 	}
 

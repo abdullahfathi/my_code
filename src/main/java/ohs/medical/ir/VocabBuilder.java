@@ -1,5 +1,9 @@
 package ohs.medical.ir;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Fields;
 import org.apache.lucene.index.MultiFields;
 import org.apache.lucene.index.PostingsEnum;
@@ -46,14 +50,46 @@ public class VocabBuilder {
 		IOUtils.write(outputFileName, c);
 	}
 
+	public static void build2(String indexDirName, String outputFileName) throws Exception {
+		System.out.printf("read [%s]\n", indexDirName);
+
+		Counter<String> docFreqs = new Counter<String>();
+
+		IndexSearcher is = SearcherUtils.getIndexSearcher(indexDirName);
+
+		for (int i = 0; i < is.getIndexReader().maxDoc(); i++) {
+			Document doc = is.doc(i);
+			String content = doc.get(IndexFieldName.CONTENT).toLowerCase();
+			String[] words = content.split("[\\s\\W]+");
+			Set<String> uniqueWords = new HashSet<String>();
+
+			for (String word : words) {
+				uniqueWords.add(word);
+			}
+
+			for (String word : uniqueWords) {
+				docFreqs.incrementCount(word, 1);
+			}
+		}
+
+		docFreqs.setCount("#docs#", is.getIndexReader().maxDoc());
+
+		IOUtils.write(outputFileName, docFreqs);
+	}
+
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 
 		// for (int i = 0; i < MIRPath.IndexDirNames.length; i++) {
 		// build(MIRPath.IndexDirNames[i], MIRPath.VocFileNames[i]);
 		// }
-		//
+
 		// merge(MIRPath.VocFileNames, MIRPath.VOCAB_FILE);
+
+		// for (int i = 0; i < MIRPath.TaskDirs.length; i++) {
+		// String outputFileName = MIRPath.TaskDirs[i] + "vocab2.txt";
+		// build2(MIRPath.IndexDirNames[i], outputFileName);
+		// }
 
 		System.out.println("process ends.");
 	}

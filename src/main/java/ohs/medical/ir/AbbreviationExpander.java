@@ -17,7 +17,7 @@ import ohs.utils.StrUtils;
 public class AbbreviationExpander {
 
 	public static void main(String[] args) throws Exception {
-		String[] collDirs = MIRPath.CollDirs;
+		String[] collDirs = MIRPath.TaskDirs;
 
 		for (int i = 0; i < collDirs.length; i++) {
 			String inputFileName = collDirs[i] + "abbrs_filter.txt";
