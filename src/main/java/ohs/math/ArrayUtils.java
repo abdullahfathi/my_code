@@ -30,48 +30,6 @@ public class ArrayUtils {
 		}
 	}
 
-	public static double random(double min, double max, double[] x) {
-		Random random = new Random();
-		double range = max - min;
-		double sum = 0;
-		for (int i = 0; i < x.length; i++) {
-			x[i] = range * random.nextDouble() + min;
-			sum += x[i];
-		}
-		return sum;
-	}
-
-	public static double[] random(double min, double max, int size) {
-		double[] x = new double[size];
-		random(min, max, x);
-		return x;
-	}
-
-	public static double random(double min, double max, double[][] x) {
-		double sum = 0;
-		for (int i = 0; i < x.length; i++) {
-			sum += random(min, max, x[i]);
-		}
-		return sum;
-	}
-
-	public static int[] random(int min, int max, int size) {
-		int[] x = new int[size];
-		random(min, max, x);
-		return x;
-	}
-
-	public static int random(int min, int max, int[] x) {
-		Random random = new Random();
-		double range = max - min + 1;
-		int sum = 0;
-		for (int i = 0; i < x.length; i++) {
-			x[i] = (int) (range * random.nextDouble()) + min;
-			sum += x[i];
-		}
-		return sum;
-	}
-
 	public static void copy(Collection<Integer> a, int[] b) {
 		if (a.size() > 0) {
 			int loc = 0;
@@ -154,6 +112,12 @@ public class ArrayUtils {
 		return b;
 	}
 
+	public static void copy(int[] a, double[] b) {
+		for (int i = 0; i < a.length; i++) {
+			b[i] = a[i];
+		}
+	}
+
 	public static void copy(int[] a, int[] b) {
 		System.arraycopy(a, 0, b, 0, a.length);
 	}
@@ -175,12 +139,6 @@ public class ArrayUtils {
 			for (int j = 0; j < a[i].length; j++) {
 				b[i][j] = a[i][j];
 			}
-		}
-	}
-
-	public static void copy(int[] a, double[] b) {
-		for (int i = 0; i < a.length; i++) {
-			b[i] = a[i];
 		}
 	}
 
@@ -229,38 +187,6 @@ public class ArrayUtils {
 		}
 	}
 
-	public static double reshape(double[][] a, double[] b) {
-		if (sizeOfEntries(a) != b.length) {
-			throw new IllegalArgumentException();
-		}
-
-		double sum = 0;
-		for (int i = 0, k = 0; i < a.length; i++) {
-			for (int j = 0; j < a[i].length; j++) {
-				b[k] = a[i][j];
-				sum += b[k];
-				k++;
-			}
-		}
-		return sum;
-	}
-
-	public static double reshape(double[] a, double[][] b) {
-		if (sizeOfEntries(b) != a.length) {
-			throw new IllegalArgumentException();
-		}
-		double sum = 0;
-		for (int i = 0, k = 0; i < a.length; i++) {
-			for (int j = 0; j < b[i].length; j++) {
-				b[i][j] = a[k];
-				sum += a[k];
-				k++;
-			}
-		}
-
-		return sum;
-	}
-
 	public static void copyRow(double[] a, double[][] b, int bi) {
 		int colDim = b[0].length;
 		for (int i = 0; i < colDim; i++) {
@@ -282,6 +208,19 @@ public class ArrayUtils {
 		}
 	}
 
+	public static double copySubarray(double[] a, double[] b, int start, int end) {
+		int size = end - start;
+		if (size != a.length) {
+			throw new IllegalArgumentException();
+		}
+		double sum = 0;
+		for (int i = start, j = 0; i < end; i++, j++) {
+			b[i] = a[j];
+			sum += b[i];
+		}
+		return sum;
+	}
+
 	public static double[] copySubarray(double[] a, int start, int end) {
 		int size = end - start;
 		double[] ret = new double[size];
@@ -298,82 +237,6 @@ public class ArrayUtils {
 		for (int i = start, j = 0; i < end; i++, j++) {
 			b[j] = a[i];
 			sum += b[j];
-		}
-		return sum;
-	}
-
-	public static int singleIndex(int[] dims, int[] indexes) {
-		if (!ArrayChecker.isSameDim(dims, indexes)) {
-			throw new IllegalArgumentException();
-		}
-
-		int ret = 0;
-		int base = 1;
-
-		for (int i = dims.length - 1; i >= 0; i--) {
-			if (indexes[i] >= dims[i]) {
-				throw new IllegalArgumentException();
-			}
-			if (i == dims.length - 1) {
-				ret += indexes[i];
-			} else {
-				base *= dims[i + 1];
-				ret += base * indexes[i];
-			}
-		}
-		return ret;
-	}
-
-	public static int[] multipleIndexes(int singleIndex, int[] dims) {
-		int[] ret = new int[dims.length];
-		multipleIndexes(singleIndex, dims, ret);
-		return ret;
-	}
-
-	public static void multipleIndexes(int singleIndex, int[] dims, int[] indexes) {
-		if (!ArrayChecker.isSameDim(dims, indexes)) {
-			throw new IllegalArgumentException();
-		}
-
-		int ret = 0;
-		int base = 1;
-		for (int i = dims.length - 1; i >= 0; i--) {
-			if (i != dims.length - 1) {
-				base *= dims[i + 1];
-			}
-		}
-
-		int quotient = 0;
-		int remainer = 0;
-
-		for (int i = 0; i < dims.length - 1; i++) {
-			if (singleIndex >= base) {
-				quotient = singleIndex / base;
-				remainer = (singleIndex - quotient * base);
-				singleIndex = remainer;
-			}
-
-			if (i == dims.length - 2) {
-				indexes[i] = quotient;
-				indexes[i + 1] = remainer;
-			} else {
-				indexes[i] = quotient;
-			}
-
-			base /= dims[i + 1];
-		}
-
-	}
-
-	public static double copySubarray(double[] a, double[] b, int start, int end) {
-		int size = end - start;
-		if (size != a.length) {
-			throw new IllegalArgumentException();
-		}
-		double sum = 0;
-		for (int i = start, j = 0; i < end; i++, j++) {
-			b[i] = a[j];
-			sum += b[i];
 		}
 		return sum;
 	}
@@ -489,6 +352,47 @@ public class ArrayUtils {
 			}
 		}
 		return ret;
+	}
+
+	public static int[] multipleIndexes(int singleIndex, int[] dims) {
+		int[] ret = new int[dims.length];
+		multipleIndexes(singleIndex, dims, ret);
+		return ret;
+	}
+
+	public static void multipleIndexes(int singleIndex, int[] dims, int[] indexes) {
+		if (!ArrayChecker.isSameDim(dims, indexes)) {
+			throw new IllegalArgumentException();
+		}
+
+		int ret = 0;
+		int base = 1;
+		for (int i = dims.length - 1; i >= 0; i--) {
+			if (i != dims.length - 1) {
+				base *= dims[i + 1];
+			}
+		}
+
+		int quotient = 0;
+		int remainer = 0;
+
+		for (int i = 0; i < dims.length - 1; i++) {
+			if (singleIndex >= base) {
+				quotient = singleIndex / base;
+				remainer = (singleIndex - quotient * base);
+				singleIndex = remainer;
+			}
+
+			if (i == dims.length - 2) {
+				indexes[i] = quotient;
+				indexes[i + 1] = remainer;
+			} else {
+				indexes[i] = quotient;
+			}
+
+			base /= dims[i + 1];
+		}
+
 	}
 
 	public static double[] newArray(double... array) {
@@ -640,6 +544,86 @@ public class ArrayUtils {
 		return j;
 	}
 
+	// public static double random(double min, double max, double[] x) {
+	// Random random = new Random();
+	// double range = max - min;
+	// double sum = 0;
+	// for (int i = 0; i < x.length; i++) {
+	// x[i] = range * random.nextDouble() + min;
+	// sum += x[i];
+	// }
+	// return sum;
+	// }
+	//
+	// public static double random(double min, double max, double[][] x) {
+	// double sum = 0;
+	// for (int i = 0; i < x.length; i++) {
+	// sum += random(min, max, x[i]);
+	// }
+	// return sum;
+	// }
+	//
+	// public static double[] random(double min, double max, int size) {
+	// double[] x = new double[size];
+	// random(min, max, x);
+	// return x;
+	// }
+	//
+	// public static double[][] random(double min, double max, int rows, int columns) {
+	// double[][] x = new double[rows][columns];
+	// random(min, max, x);
+	// return x;
+	// }
+	//
+	// public static int[] random(int min, int max, int size) {
+	// int[] x = new int[size];
+	// random(min, max, x);
+	// return x;
+	// }
+	//
+	// public static int random(int min, int max, int[] x) {
+	// Random random = new Random();
+	// double range = max - min + 1;
+	// int sum = 0;
+	// for (int i = 0; i < x.length; i++) {
+	// x[i] = (int) (range * random.nextDouble()) + min;
+	// sum += x[i];
+	// }
+	// return sum;
+	// }
+
+	public static double reshape(double[] a, double[][] b) {
+		if (sizeOfEntries(b) != a.length) {
+			throw new IllegalArgumentException();
+		}
+		double sum = 0;
+		for (int i = 0, k = 0; i < a.length; i++) {
+			for (int j = 0; j < b[i].length; j++) {
+				b[i][j] = a[k];
+				sum += a[k];
+				k++;
+			}
+		}
+
+		return sum;
+	}
+
+	public static double reshape(double[][] a, double[] b) {
+		if (sizeOfEntries(a) != b.length) {
+			throw new IllegalArgumentException();
+		}
+
+		double sum = 0;
+		for (int i = 0, k = 0; i < a.length; i++) {
+			for (int j = 0; j < a[i].length; j++) {
+				b[k] = a[i][j];
+				sum += b[k];
+				k++;
+			}
+		}
+		return sum;
+	}
+
 	public static void reverse(double[] a) {
 		int mid = a.length / 2;
 		for (int i = 0; i < mid; i++) {
@@ -663,6 +647,28 @@ public class ArrayUtils {
 	public static double setAll(double[] a, double value) {
 		Arrays.fill(a, value);
 		return value * a.length;
+	}
+
+	public static int singleIndex(int[] dims, int[] indexes) {
+		if (!ArrayChecker.isSameDim(dims, indexes)) {
+			throw new IllegalArgumentException();
+		}
+
+		int ret = 0;
+		int base = 1;
+
+		for (int i = dims.length - 1; i >= 0; i--) {
+			if (indexes[i] >= dims[i]) {
+				throw new IllegalArgumentException();
+			}
+			if (i == dims.length - 1) {
+				ret += indexes[i];
+			} else {
+				base *= dims[i + 1];
+				ret += base * indexes[i];
+			}
+		}
+		return ret;
 	}
 
 	public static int sizeOfEntries(double[][] a) {
@@ -778,10 +784,6 @@ public class ArrayUtils {
 		return toString(x, x.length, false, false, getDoubleNumberFormat(4));
 	}
 
-	public static String toString(int[] x) {
-		return toString(x, x.length, false, false);
-	}
-
 	public static String toString(double[] x, int num_print, boolean sparse, boolean vertical, NumberFormat nf) {
 		StringBuffer sb = new StringBuffer();
 
@@ -798,25 +800,6 @@ public class ArrayUtils {
 		} else {
 			for (int i = 0; i < x.length && i < num_print; i++) {
 				sb.append(String.format("%s%s", delim, nf.format(x[i])));
-			}
-		}
-		return sb.toString().trim();
-	}
-
-	public static String toString(int[] x, int num_print, boolean sparse, boolean vertical) {
-		StringBuffer sb = new StringBuffer();
-		String delim = "\t";
-		if (vertical) {
-			delim = "\n";
-		}
-
-		if (sparse) {
-			for (int i = 0; i < x.length && i < num_print; i++) {
-				sb.append(String.format("%s%d:%s", delim, i, x[i]));
-			}
-		} else {
-			for (int i = 0; i < x.length && i < num_print; i++) {
-				sb.append(String.format("%s%s", delim, x[i]));
 			}
 		}
 		return sb.toString().trim();
@@ -882,6 +865,29 @@ public class ArrayUtils {
 			}
 		}
 
+		return sb.toString().trim();
+	}
+
+	public static String toString(int[] x) {
+		return toString(x, x.length, false, false);
+	}
+
+	public static String toString(int[] x, int num_print, boolean sparse, boolean vertical) {
+		StringBuffer sb = new StringBuffer();
+		String delim = "\t";
+		if (vertical) {
+			delim = "\n";
+		}
+
+		if (sparse) {
+			for (int i = 0; i < x.length && i < num_print; i++) {
+				sb.append(String.format("%s%d:%s", delim, i, x[i]));
+			}
+		} else {
+			for (int i = 0; i < x.length && i < num_print; i++) {
+				sb.append(String.format("%s%s", delim, x[i]));
+			}
+		}
 		return sb.toString().trim();
 	}
 

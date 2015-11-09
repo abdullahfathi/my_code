@@ -522,6 +522,18 @@ public class ArrayMath {
 		return scale(b, 1f / sum, b);
 	}
 
+	public static double sigmoid(double[] a, double[] b) {
+		if (!ArrayChecker.isSameDim(a, b)) {
+			throw new IllegalArgumentException();
+		}
+		double sum = 0;
+		for (int i = 0; i < a.length; i++) {
+			b[i] = CommonFuncs.sigmoid(a[i]);
+			sum += b[i];
+		}
+		return sum;
+	}
+
 	public static double jensenShannonDivergence(double[] a, double[] b) {
 		if (!ArrayChecker.isSameDim(a, b)) {
 			throw new IllegalArgumentException();
@@ -1218,6 +1230,12 @@ public class ArrayMath {
 	// return ret;
 	// }
 
+	public static double[][] random(double min, double max, int rows, int columns) {
+		double[][] x = new double[rows][columns];
+		random(min, max, x);
+		return x;
+	}
+
 	public static double random(double min, double max, double[] x) {
 		Random random = new Random();
 		double range = max - min;
@@ -1247,6 +1265,30 @@ public class ArrayMath {
 		int[] x = new int[size];
 		random(min, max, x);
 		return x;
+	}
+
+	public static double abs(double[] a, double[] b) {
+		if (!ArrayChecker.isSameDim(a, b)) {
+			throw new IllegalArgumentException();
+		}
+		double sum = 0;
+		for (int i = 0; i < a.length; i++) {
+			b[i] = Math.abs(a[i]);
+			sum += b[i];
+		}
+		return sum;
+	}
+
+	public static double round(double[] a, double[] b) {
+		if (!ArrayChecker.isSameDim(a, b)) {
+			throw new IllegalArgumentException();
+		}
+		double sum = 0;
+		for (int i = 0; i < a.length; i++) {
+			b[i] = Math.round(a[i]);
+			sum += b[i];
+		}
+		return sum;
 	}
 
 	public static int random(int min, int max, int[] x) {

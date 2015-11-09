@@ -1481,14 +1481,12 @@ public class LA {
 		int bRowDim = b.length;
 		int bColDim = b[0].length;
 
-		double[] aRow; // row i of A
 		double[] bColumn = new double[bRowDim]; // column j of B
 
 		for (int j = 0; j < bColDim; j++) {
 			ArrayUtils.copyColumn(b, j, bColumn);
 			for (int i = 0; i < aRowDim; i++) {
-				aRow = a[i];
-				c[i][j] = dotProduct(aRow, bColumn);
+				c[i][j] = dotProduct(a[i], bColumn);
 			}
 		}
 	}
