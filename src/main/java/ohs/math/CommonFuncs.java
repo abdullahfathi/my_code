@@ -4,7 +4,7 @@ package ohs.math;
  * @author Heung-Seon Oh
  * 
  */
-public class FuncMath {
+public class CommonFuncs {
 	public static final double LOG_2_OF_E = 1f / Math.log(2);
 
 	public static final double SQUARE_ROOT_OF_TWO_PI = Math.sqrt(2 * Math.PI);
@@ -105,9 +105,8 @@ public class FuncMath {
 	/**
 	 * Maths.java in mallet
 	 * 
-	 * Copied as the "classic" method from Catherine Loader. Fast and Accurate
-	 * Computation of Binomial Probabilities. 2001. (This is not the fast and
-	 * accurate version.)
+	 * Copied as the "classic" method from Catherine Loader. Fast and Accurate Computation of Binomial Probabilities. 2001. (This is not the
+	 * fast and accurate version.)
 	 * 
 	 * Computes p(x;n,p) where x~B(n,p)
 	 * 
@@ -265,8 +264,7 @@ public class FuncMath {
 	}
 
 	/**
-	 * Gerlof Bouma, Normalized (Pointwise) Mutual Information in Collocation
-	 * Extraction
+	 * Gerlof Bouma, Normalized (Pointwise) Mutual Information in Collocation Extraction
 	 * 
 	 * @param count_x
 	 * @param count_y

@@ -879,7 +879,7 @@ public class ArrayChecker {
 	public static boolean isValidRealNumbers(double[] a) {
 		for (int i = 0; i < a.length; i++) {
 			if (Double.isNaN(a[i]) || Double.isInfinite(a[i]) || Double.POSITIVE_INFINITY == a[i] || Double.NEGATIVE_INFINITY == a[i]) {
-				return false;
+				throw new IllegalArgumentException(String.format("invalid value [%d] at a[%d]\n", a[i], i));
 			}
 		}
 		return true;

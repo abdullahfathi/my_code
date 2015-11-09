@@ -245,7 +245,7 @@ public class EditDistanceSet {
 		String b = "ABC";
 		//
 		// for (int i = 0; i < 10; i++) {
-		// System.out.printf("%d\t%s\t%s\n", i, FuncMath.sigmoid(-i), 1f / Math.log(1 + i + 1));
+		// System.out.printf("%d\t%s\t%s\n", i, CommonFuncs.sigmoid(-i), 1f / Math.log(1 + i + 1));
 		// }
 
 		System.out.println(getEditDistance(a, b, false));

@@ -247,7 +247,7 @@ public class ProximityRelevanceModelBuilder {
 				prob_w_in_doc = (1 - mixture_for_coll) * prob_w_in_doc + mixture_for_coll * prob_w_in_coll;
 				double doc_prior = 1;
 				// double fb_weight = fbProxes.sum();
-				// local_weight = FuncMath.sigmoid(local_weight);
+				// local_weight = CommonFuncs.sigmoid(local_weight);
 				double prob_w_in_fb_model = doc_weight * prob_w_in_doc * doc_prior * local_weight;
 
 				if (prob_w_in_fb_model > 0) {

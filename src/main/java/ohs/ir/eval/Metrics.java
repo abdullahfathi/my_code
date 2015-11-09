@@ -3,7 +3,7 @@ package ohs.ir.eval;
 import java.util.List;
 
 import ohs.math.ArrayUtils;
-import ohs.math.FuncMath;
+import ohs.math.CommonFuncs;
 import ohs.types.Counter;
 
 public class Metrics {
@@ -79,7 +79,7 @@ public class Metrics {
 		for (int i = 0; i < gains.length; i++) {
 			double rank = i + 1;
 			// double discount_factor = log2 / Math.log(1 + rank);
-			double discount_factor = 1 / FuncMath.log2(1 + rank);
+			double discount_factor = 1 / CommonFuncs.log2(1 + rank);
 			double dg = discount_factor * gains[i];
 			dcg += dg;
 			dcgs[i] = dcg;

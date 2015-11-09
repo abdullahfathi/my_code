@@ -187,7 +187,7 @@ public class DocumentPriorEstimator {
 			double log_prob_sum = ArrayMath.sumLogProb(log_probs);
 
 			ArrayMath.add(log_probs, -log_prob_sum, log_probs);
-			ArrayMath.exponentiate(log_probs, false, log_probs);
+			ArrayMath.exponentiate(log_probs, log_probs);
 
 			docPriors.normalizeAfterSummation();
 

@@ -161,10 +161,10 @@ public class VectorMath {
 				double posterior = (tf + 1d) / (docLength + 1);
 				double termFrequency = term_countInBG.value(termId);
 				double InvPriorCollection = numberOfTokens / termFrequency;
-				double norm = tf * FuncMath.log2(posterior / prior);
-				double weight = norm * (tf * (-FuncMath.log2(prior * InvPriorCollection)) +
+				double norm = tf * CommonFuncs.log2(posterior / prior);
+				double weight = norm * (tf * (-CommonFuncs.log2(prior * InvPriorCollection)) +
 
-				(tf + 1d) * (+FuncMath.log2(posterior * InvPriorCollection)) + 0.5 * FuncMath.log2(posterior / prior));
+				(tf + 1d) * (+CommonFuncs.log2(posterior * InvPriorCollection)) + 0.5 * CommonFuncs.log2(posterior / prior));
 				x.setAtLoc(j, weight);
 			}
 			unitVector(x);

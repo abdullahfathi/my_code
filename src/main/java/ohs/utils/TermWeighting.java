@@ -7,7 +7,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import ohs.math.ArrayMath;
-import ohs.math.FuncMath;
+import ohs.math.CommonFuncs;
 import ohs.math.VectorMath;
 import ohs.matrix.DenseVector;
 import ohs.matrix.SparseVector;
@@ -200,8 +200,8 @@ public class TermWeighting {
 				}
 
 				N00 = N - (N11 + N01 + N10);
-				double chisquare = FuncMath.chisquare(N11, N10, N01, N00);
-				double rf = FuncMath.log2(2 + N11 / (Math.max(1, N01)));
+				double chisquare = CommonFuncs.chisquare(N11, N10, N01, N00);
+				double rf = CommonFuncs.log2(2 + N11 / (Math.max(1, N01)));
 				term_rf.setAtLoc(loc++, termId, rf);
 			}
 

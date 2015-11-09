@@ -413,7 +413,7 @@ public class ArrayMath {
 		double dot_product = 0;
 
 		for (int m = 0; m < max_iter; m++) {
-			double sum = 0;
+			double sum1 = 0;
 			for (int i = 0; i < trans_probs.length; i++) {
 				dot_product = 0;
 				for (int j = 0; j < trans_probs[i].length; j++) {
@@ -421,10 +421,10 @@ public class ArrayMath {
 					dot_product += tran_prob * cents[j];
 				}
 				cents[i] = dot_product;
-				sum += cents[i];
+				sum1 += cents[i];
 			}
 
-			scale(cents, 1f / sum, cents);
+			double sum2 = scale(cents, 1f / sum1, cents);
 
 			// double sum1 = LA.product(trans_probs, old_cents, cents);
 			// double sum2 = addAfterScale(cents, uniform_cent, 1 - damping_factor, damping_factor, cents);
@@ -469,23 +469,27 @@ public class ArrayMath {
 		double ret = 0;
 		for (int i = 0; i < a.length; i++) {
 			if (a[i] > 0 && a[i] < 1) {
-				ret += a[i] * FuncMath.log2(a[i]);
+				ret += a[i] * CommonFuncs.log2(a[i]);
 			}
 		}
 		return -ret;
 	}
 
 	public static double euclideanDistance(double[] a, double[] b) {
-		return Math.sqrt(euclideanDistanceSquared(a, b));
+		return Math.sqrt(sumSquaredDifferences(a, b));
 	}
 
-	public static double euclideanDistanceSquared(double[] a, double[] b) {
-		double ret = 0;
-		for (int i = 0; i < a.length; i++) {
-			double diff = a[i] - b[i];
-			ret += diff * diff;
+	public static double sumSquaredDifferences(double[] a, double[] b) {
+		if (!ArrayChecker.isSameDim(a, b)) {
+			throw new IllegalArgumentException();
 		}
-		return ret;
+		double sum = 0;
+		double diff = 0;
+		for (int i = 0; i < a.length; i++) {
+			diff = a[i] - b[i];
+			sum += diff * diff;
+		}
+		return sum;
 	}
 
 	/**
@@ -494,21 +498,28 @@ public class ArrayMath {
 	 * @param normalizeByMax
 	 * @param b
 	 *            output
+	 * @return
 	 */
-	public static void exponentiate(double[] a, boolean normalizeByMax, double[] b) {
-
-		if (normalizeByMax) {
-			double max = max(a);
-			double sum = 0;
-			for (int i = 0; i < a.length; i++) {
-				sum += (b[i] = Math.exp(a[i] - max));
-			}
-			scale(b, 1f / sum, b);
-		} else {
-			for (int i = 0; i < a.length; i++) {
-				b[i] = Math.exp(a[i]);
-			}
+	public static double exponentiate(double[] a, double[] b) {
+		double sum = 0;
+		for (int i = 0; i < a.length; i++) {
+			b[i] = Math.exp(a[i]);
+			sum += b[i];
 		}
+		return sum;
+	}
+
+	public static double softmax(double[] a, double[] b) {
+		if (!ArrayChecker.isSameDim(a, b)) {
+			throw new IllegalArgumentException();
+		}
+		double max = max(a);
+		double sum = 0;
+		for (int i = 0; i < a.length; i++) {
+			b[i] = Math.exp(a[i] - max);
+			sum += b[i];
+		}
+		return scale(b, 1f / sum, b);
 	}
 
 	public static double jensenShannonDivergence(double[] a, double[] b) {
@@ -589,9 +600,9 @@ public class ArrayMath {
 			}
 			ret += a[i] * Math.log(a[i] / b[i]);
 		}
-		return ret * FuncMath.LOG_2_OF_E; // moved this division out of the
-											// loop
-											// -DM
+		return ret * CommonFuncs.LOG_2_OF_E; // moved this division out of the
+												// loop
+												// -DM
 	}
 
 	/**
@@ -692,6 +703,24 @@ public class ArrayMath {
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
+
+		{
+			double a = Double.MAX_VALUE;
+			System.out.println(a);
+
+			double b = Double.MAX_VALUE + 100;
+			double c = Double.MAX_VALUE + Double.MAX_VALUE - 10;
+			if (a == b) {
+				System.out.println(true);
+			}
+
+			if (a == c) {
+				System.out.println(true);
+			}
+
+			System.out.println();
+
+		}
 
 		{
 			double[][] a = new double[][] { { 0.5, 0.5, 0 }, { 0.5, 0, 1 }, { 0, 0.5, 0 } };
@@ -1081,7 +1110,7 @@ public class ArrayMath {
 	public static double normalizeBySigmoid(double[] a, double[] b) {
 		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
-			b[i] = FuncMath.sigmoid(a[i]);
+			b[i] = CommonFuncs.sigmoid(a[i]);
 			sum += b[i];
 		}
 		return scale(b, 1f / sum, b);

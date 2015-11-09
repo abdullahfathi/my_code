@@ -121,7 +121,7 @@ public class ProximityScorer {
 
 			double avg_mean_dist = ArrayMath.mean(values);
 			double score = 1 / (avg_mean_dist + 1);
-			// double score = FuncMath.log2(0.3 + Math.exp(-avg_mean_dist));
+			// double score = CommonFuncs.log2(0.3 + Math.exp(-avg_mean_dist));
 			ret.incrementAtLoc(i, docId, score);
 		}
 

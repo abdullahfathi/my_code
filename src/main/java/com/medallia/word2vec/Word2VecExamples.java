@@ -164,6 +164,11 @@ public class Word2VecExamples {
 			}
 
 			String[] parts = reader.next().split("\t");
+
+			if (parts.length != 3) {
+				continue;
+			}
+
 			String sent = parts[2];
 			String[] words = sent.split(" ");
 

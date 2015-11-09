@@ -178,17 +178,17 @@ public class ArrayUtils {
 		}
 	}
 
-	public static void copyAs(int[] a, double[] b) {
+	public static void copy(int[] a, double[] b) {
 		for (int i = 0; i < a.length; i++) {
 			b[i] = a[i];
 		}
 	}
 
-	public static void copyColumn(double[] a, double[][] b, int b_col) {
+	public static void copyColumn(double[] a, double[][] b, int bj) {
 		int[] dims = dimensions(b);
 
 		for (int i = 0; i < dims[0]; i++) {
-			b[i][b_col] = a[i];
+			b[i][bj] = a[i];
 		}
 	}
 
@@ -229,16 +229,36 @@ public class ArrayUtils {
 		}
 	}
 
-	public static void copyMatrixToVector(double[][] a, double[] b) {
+	public static double reshape(double[][] a, double[] b) {
 		if (sizeOfEntries(a) != b.length) {
 			throw new IllegalArgumentException();
 		}
 
+		double sum = 0;
 		for (int i = 0, k = 0; i < a.length; i++) {
 			for (int j = 0; j < a[i].length; j++) {
-				b[k++] = a[i][j];
+				b[k] = a[i][j];
+				sum += b[k];
+				k++;
 			}
 		}
+		return sum;
+	}
+
+	public static double reshape(double[] a, double[][] b) {
+		if (sizeOfEntries(b) != a.length) {
+			throw new IllegalArgumentException();
+		}
+		double sum = 0;
+		for (int i = 0, k = 0; i < a.length; i++) {
+			for (int j = 0; j < b[i].length; j++) {
+				b[i][j] = a[k];
+				sum += a[k];
+				k++;
+			}
+		}
+
+		return sum;
 	}
 
 	public static void copyRow(double[] a, double[][] b, int bi) {
@@ -262,18 +282,100 @@ public class ArrayUtils {
 		}
 	}
 
-	/**
-	 * @param a
-	 *            input
-	 * @param start
-	 * @param end
-	 * @return
-	 */
-	public static double[] copySub(double[] a, int start, int end) {
+	public static double[] copySubarray(double[] a, int start, int end) {
 		int size = end - start;
 		double[] ret = new double[size];
-		System.arraycopy(a, start, ret, 0, size);
+		copySubarray(a, start, end, ret);
 		return ret;
+	}
+
+	public static double copySubarray(double[] a, int start, int end, double[] b) {
+		int size = end - start;
+		if (size != b.length) {
+			throw new IllegalArgumentException();
+		}
+		double sum = 0;
+		for (int i = start, j = 0; i < end; i++, j++) {
+			b[j] = a[i];
+			sum += b[j];
+		}
+		return sum;
+	}
+
+	public static int singleIndex(int[] dims, int[] indexes) {
+		if (!ArrayChecker.isSameDim(dims, indexes)) {
+			throw new IllegalArgumentException();
+		}
+
+		int ret = 0;
+		int base = 1;
+
+		for (int i = dims.length - 1; i >= 0; i--) {
+			if (indexes[i] >= dims[i]) {
+				throw new IllegalArgumentException();
+			}
+			if (i == dims.length - 1) {
+				ret += indexes[i];
+			} else {
+				base *= dims[i + 1];
+				ret += base * indexes[i];
+			}
+		}
+		return ret;
+	}
+
+	public static int[] multipleIndexes(int singleIndex, int[] dims) {
+		int[] ret = new int[dims.length];
+		multipleIndexes(singleIndex, dims, ret);
+		return ret;
+	}
+
+	public static void multipleIndexes(int singleIndex, int[] dims, int[] indexes) {
+		if (!ArrayChecker.isSameDim(dims, indexes)) {
+			throw new IllegalArgumentException();
+		}
+
+		int ret = 0;
+		int base = 1;
+		for (int i = dims.length - 1; i >= 0; i--) {
+			if (i != dims.length - 1) {
+				base *= dims[i + 1];
+			}
+		}
+
+		int quotient = 0;
+		int remainer = 0;
+
+		for (int i = 0; i < dims.length - 1; i++) {
+			if (singleIndex >= base) {
+				quotient = singleIndex / base;
+				remainer = (singleIndex - quotient * base);
+				singleIndex = remainer;
+			}
+
+			if (i == dims.length - 2) {
+				indexes[i] = quotient;
+				indexes[i + 1] = remainer;
+			} else {
+				indexes[i] = quotient;
+			}
+
+			base /= dims[i + 1];
+		}
+
+	}
+
+	public static double copySubarray(double[] a, double[] b, int start, int end) {
+		int size = end - start;
+		if (size != a.length) {
+			throw new IllegalArgumentException();
+		}
+		double sum = 0;
+		for (int i = start, j = 0; i < end; i++, j++) {
+			b[i] = a[j];
+			sum += b[i];
+		}
+		return sum;
 	}
 
 	public static int[] dimensions(double[][] a) {
@@ -329,12 +431,54 @@ public class ArrayUtils {
 		System.out.println("process begins.");
 
 		{
+			int[] dims = { 3, 2, 3 };
+			int[] indexes = { 0, 1, 2 };
+
+			int singleIndex = singleIndex(dims, indexes);
+
+			int[] indexes2 = multipleIndexes(singleIndex, dims);
+
+			System.out.println(toString(indexes));
+			System.out.println(singleIndex);
+			System.out.println(toString(indexes2));
+
+			int iii = 0;
+
+			if (iii == 0) {
+				return;
+			}
+		}
+
+		{
 			double[][] x = { { Double.NaN, Double.POSITIVE_INFINITY }, { Double.NEGATIVE_INFINITY, 10.25 } };
 
 			System.out.println(toString(x));
 		}
 
+		{
+			int[] dims = { 2, 2, 3, 3 };
+			int[] indexes = { 1, 1, 2, 1 };
+			int singleIndex = singleIndex(dims, indexes);
+
+			int[] indexes2 = multipleIndexes(singleIndex, dims);
+
+			System.out.println(toString(indexes));
+			System.out.println(toString(indexes2));
+		}
+
+		{
+			int[] dims = { 2, 2, 3, 3 };
+			int[] indexes = { 0, 1, 2, 0 };
+			int singleIndex = singleIndex(dims, indexes);
+
+			int[] indexes2 = multipleIndexes(singleIndex, dims);
+
+			System.out.println(toString(indexes));
+			System.out.println(toString(indexes2));
+		}
+
 		System.out.println("process ends.");
+
 	}
 
 	public static int maxColumnSize(int[][] a) {
@@ -634,6 +778,10 @@ public class ArrayUtils {
 		return toString(x, x.length, false, false, getDoubleNumberFormat(4));
 	}
 
+	public static String toString(int[] x) {
+		return toString(x, x.length, false, false);
+	}
+
 	public static String toString(double[] x, int num_print, boolean sparse, boolean vertical, NumberFormat nf) {
 		StringBuffer sb = new StringBuffer();
 
@@ -650,6 +798,25 @@ public class ArrayUtils {
 		} else {
 			for (int i = 0; i < x.length && i < num_print; i++) {
 				sb.append(String.format("%s%s", delim, nf.format(x[i])));
+			}
+		}
+		return sb.toString().trim();
+	}
+
+	public static String toString(int[] x, int num_print, boolean sparse, boolean vertical) {
+		StringBuffer sb = new StringBuffer();
+		String delim = "\t";
+		if (vertical) {
+			delim = "\n";
+		}
+
+		if (sparse) {
+			for (int i = 0; i < x.length && i < num_print; i++) {
+				sb.append(String.format("%s%d:%s", delim, i, x[i]));
+			}
+		} else {
+			for (int i = 0; i < x.length && i < num_print; i++) {
+				sb.append(String.format("%s%s", delim, x[i]));
 			}
 		}
 		return sb.toString().trim();
