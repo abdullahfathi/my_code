@@ -1481,14 +1481,27 @@ public class LA {
 		int bRowDim = b.length;
 		int bColDim = b[0].length;
 
-		double[] bColumn = new double[bRowDim]; // column j of B
+		double[] bc = new double[bRowDim]; // column j of B
 
 		for (int j = 0; j < bColDim; j++) {
-			ArrayUtils.copyColumn(b, j, bColumn);
+			ArrayUtils.copyColumn(b, j, bc);
 			for (int i = 0; i < aRowDim; i++) {
-				c[i][j] = dotProduct(a[i], bColumn);
+				c[i][j] = dotProduct(a[i], bc);
 			}
 		}
+	}
+
+	public static double[][] product(double[][] a, double[][] b) {
+		if (!ArrayChecker.isProductable(a, b)) {
+			throw new IllegalArgumentException();
+		}
+
+		int[] dimA = ArrayUtils.dimensions(a);
+		int[] dimB = ArrayUtils.dimensions(a);
+		double[][] c = new double[dimA[0]][dimB[1]];
+		product(a, b, c);
+		return c;
+
 	}
 
 	/**

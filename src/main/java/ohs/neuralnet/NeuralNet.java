@@ -1,5 +1,6 @@
 package ohs.neuralnet;
 
+import edu.stanford.nlp.parser.shiftreduce.ShiftReduceTrainOptions.TrainingMethod;
 import ohs.math.ArrayMath;
 import ohs.math.ArrayUtils;
 import ohs.math.LA;
@@ -23,11 +24,20 @@ public class NeuralNet {
 		double[] ys = ArrayMath.random(0f, 1, 100);
 		ArrayMath.round(ys, ys);
 
+		nn.train(xs, ys);
+
 	}
 
 	public NeuralNet() {
 		W1 = new double[param.getNumHiddenNeurons()][param.getNumInputNeurons()];
-		W1 = new double[param.getNumOutputNeurons()][param.getNumHiddenNeurons()];
+		W2 = new double[param.getNumOutputNeurons()][param.getNumHiddenNeurons()];
+		b1 = new double[param.getNumHiddenNeurons()];
+		b2 = new double[param.getNumOutputNeurons()];
+
+		ArrayMath.random(0, 1, W1);
+		ArrayMath.random(0, 1, W2);
+		ArrayMath.random(0, 1, b1);
+		ArrayMath.random(0, 1, b2);
 	}
 
 	public void train(double[][] xs, double[] ys) {
@@ -39,12 +49,12 @@ public class NeuralNet {
 		double[] yh = new double[param.getNumOutputNeurons()];
 
 		for (int i = 0; i < xs.length; i++) {
-			LA.product(W1, xs[i], z1);
+			ArrayMath.product(W1, xs[i], z1);
 			ArrayMath.add(z1, b1, z1);
 			ArrayMath.sigmoid(z1, h);
 
-			LA.product(W2, h, z2);
-			ArrayMath.add(z2, b1, z2);
+			ArrayMath.product(W2, h, z2);
+			ArrayMath.add(z2, b2, z2);
 			ArrayMath.softmax(z2, yh);
 			ArrayUtils.copy(yh, yhs[i]);
 		}

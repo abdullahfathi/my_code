@@ -27,6 +27,27 @@ public class Word2VecSearcher {
 		}
 	}
 
+	public double[][] getVectors() {
+		return vectors;
+	}
+
+	public double[] getVector(String word) {
+		int w = wordIndexer.indexOf(word);
+		double[] ret = null;
+		if (w > -1) {
+			ret = vectors[w];
+		}
+		return ret;
+	}
+
+	public Indexer<String> getWordIndexer() {
+		return wordIndexer;
+	}
+
+	public int getLayerSize() {
+		return layerSize;
+	}
+
 	public Counter<String> search(String word) {
 		Counter<String> ret = new Counter<String>();
 

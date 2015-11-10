@@ -340,19 +340,20 @@ public class ArrayMath {
 	}
 
 	public static double cosine(double[] a, double[] b) {
+		if (!ArrayChecker.isSameDim(a, b)) {
+			throw new IllegalArgumentException();
+		}
+
 		double norm1 = 0;
 		double norm2 = 0;
 		double dotProduct = 0;
-
 		for (int i = 0; i < a.length; i++) {
-			dotProduct += a[i] * b[i];
+			dotProduct += (a[i] * b[i]);
 			norm1 += a[i] * a[i];
 			norm2 += b[i] * b[i];
 		}
-
 		norm1 = Math.sqrt(norm1);
 		norm2 = Math.sqrt(norm2);
-
 		return cosine(dotProduct, norm1, norm2);
 	}
 
@@ -466,11 +467,16 @@ public class ArrayMath {
 	}
 
 	public static double entropy(double[] a) {
+		return crossEntropy(a, a);
+	}
+
+	public static double crossEntropy(double[] a, double[] b) {
+		if (!ArrayChecker.isSameDim(a, b)) {
+			throw new IllegalArgumentException();
+		}
 		double ret = 0;
 		for (int i = 0; i < a.length; i++) {
-			if (a[i] > 0 && a[i] < 1) {
-				ret += a[i] * CommonFuncs.log2(a[i]);
-			}
+			ret += (a[i] * Math.log(b[i]));
 		}
 		return -ret;
 	}
@@ -993,6 +999,58 @@ public class ArrayMath {
 		return ret;
 	}
 
+	public static void product(double[] a, double[][] b, double[] c) {
+		double[][] aa = new double[1][];
+		aa[0] = a;
+
+		double[][] cc = new double[1][];
+		cc[0] = c;
+
+		product(aa, b, cc);
+	}
+
+	public static double product(double[][] a, double[] b, double[] c) {
+		double sum = 0;
+		for (int i = 0; i < a.length; i++) {
+			c[i] = dotProduct(a[i], b);
+			sum += c[i];
+		}
+		return sum;
+	}
+
+	public static void product(double[][] a, double[][] b, double[][] c) {
+		if (!ArrayChecker.isProductable(a, b, c)) {
+			throw new IllegalArgumentException();
+		}
+
+		int aRowDim = a.length;
+		int aColDim = a[0].length;
+		int bRowDim = b.length;
+		int bColDim = b[0].length;
+
+		double[] bc = new double[bRowDim]; // column j of B
+
+		for (int j = 0; j < bColDim; j++) {
+			ArrayUtils.copyColumn(b, j, bc);
+			for (int i = 0; i < aRowDim; i++) {
+				c[i][j] = dotProduct(a[i], bc);
+			}
+		}
+	}
+
+	public static double[][] product(double[][] a, double[][] b) {
+		if (!ArrayChecker.isProductable(a, b)) {
+			throw new IllegalArgumentException();
+		}
+
+		int[] dimA = ArrayUtils.dimensions(a);
+		int[] dimB = ArrayUtils.dimensions(a);
+		double[][] c = new double[dimA[0]][dimB[1]];
+		product(a, b, c);
+		return c;
+
+	}
+
 	public static double min(double[] x) {
 		return x[argMin(x, 0, x.length)];
 	}
@@ -1131,8 +1189,9 @@ public class ArrayMath {
 	/**
 	 * @param a
 	 *            input / output
+	 * @return
 	 */
-	public static void normalizeColumns(double[][] a) {
+	public static double[] normalizeColumns(double[][] a) {
 		double[] columnSums = sumColumns(a);
 
 		for (int i = 0; i < a.length; i++) {
@@ -1143,6 +1202,7 @@ public class ArrayMath {
 				}
 			}
 		}
+		return columnSums;
 	}
 
 	/**
@@ -1182,7 +1242,7 @@ public class ArrayMath {
 	 * @return
 	 */
 	public static double normL2(double[] x) {
-		return Math.sqrt(LA.dotProduct(x, x));
+		return Math.sqrt(dotProduct(x, x));
 	}
 
 	public static void outerProduct(double[] a, double[] b, double[][] c) {
@@ -1484,16 +1544,18 @@ public class ArrayMath {
 	 * @param b
 	 *            output
 	 */
-	public static void sumColumns(double[][] a, double[] b) {
+	public static double sumColumns(double[][] a, double[] b) {
 		if (!ArrayChecker.isSameColumnDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
-
+		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
 			for (int j = 0; j < a[i].length; j++) {
 				b[j] += a[i][j];
+				sum += b[j];
 			}
 		}
+		return sum;
 	}
 
 	/**
@@ -1599,28 +1661,18 @@ public class ArrayMath {
 		return ret;
 	}
 
-	/**
-	 * @param a
-	 * @param b
-	 *            output
-	 */
-	public static void sumRows(double[][] a, double[] b) {
+	public static double sumRows(double[][] a, double[] b) {
 		if (a.length != b.length) {
 			throw new IllegalArgumentException();
 		}
-
+		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
 			b[i] = sum(a[i]);
+			sum += b[i];
 		}
+		return sum;
 	}
 
-	/**
-	 * @param a
-	 *            input
-	 * @param b
-	 *            output
-	 * @return
-	 */
 	public static double unitVector(double[] a, double[] b) {
 		return scale(a, 1f / normL2(a), b);
 	}

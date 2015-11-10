@@ -39,7 +39,7 @@ public class Word2VecExamples {
 	public static Properties getDefaultProp() throws IOException {
 		Properties prop = new Properties();
 		prop.setProperty("input_file", "../../data/medical_ir/ohsumed/sents.txt.gz");
-		prop.setProperty("output_file", "../../data/medical_ir/ohsumed/word2vec_model.ser.gz");
+		prop.setProperty("output_file", "../../data/medical_ir/ohsumed/word2vec_model_stem.ser.gz");
 		prop.setProperty("network_type", "cbow");
 		prop.setProperty("threads", "100");
 		prop.setProperty("min_freq", "5");

@@ -14,30 +14,40 @@ import ohs.matrix.DenseVector;
 
 public class ArrayUtils {
 
-	public static void copy(Collection<Double> a, double[] b) {
+	public static double copy(Collection<Double> a, double[] b) {
 		int loc = 0;
 		Iterator<Double> iter = a.iterator();
+		double sum = 0;
 		while (iter.hasNext()) {
-			b[loc++] = iter.next();
+			b[loc] = iter.next();
+			sum += b[loc];
+			loc++;
 		}
+		return sum;
 	}
 
-	public static void copy(Collection<Float> a, float[] b) {
+	public static double copy(Collection<Float> a, float[] b) {
 		int loc = 0;
 		Iterator<Float> iter = a.iterator();
+		double sum = 0;
 		while (iter.hasNext()) {
-			b[loc++] = iter.next();
+			b[loc] = iter.next();
+			sum += b[loc];
+			loc++;
 		}
+		return sum;
 	}
 
-	public static void copy(Collection<Integer> a, int[] b) {
-		if (a.size() > 0) {
-			int loc = 0;
-			Iterator<Integer> iter = a.iterator();
-			while (iter.hasNext()) {
-				b[loc++] = iter.next();
-			}
+	public static int copy(Collection<Integer> a, int[] b) {
+		int sum = 0;
+		int loc = 0;
+		Iterator<Integer> iter = a.iterator();
+		while (iter.hasNext()) {
+			b[loc] = iter.next();
+			sum += b[loc];
+			loc++;
 		}
+		return sum;
 	}
 
 	public static double[] copy(double[] a) {
@@ -46,26 +56,31 @@ public class ArrayUtils {
 		return ret;
 	}
 
-	/**
-	 * @param a
-	 *            input
-	 * @param b
-	 *            output
-	 */
-	public static void copy(double[] a, double[] b) {
-		System.arraycopy(a, 0, b, 0, a.length);
+	public static double copy(double[] a, double[] b) {
+		double sum = 0;
+		for (int i = 0; i < a.length; i++) {
+			b[i] = a[i];
+			sum += b[i];
+		}
+		return sum;
 	}
 
-	public static void copy(double[] a, int[] b) {
+	public static int copy(double[] a, int[] b) {
+		int sum = 0;
 		for (int i = 0; i < a.length; i++) {
 			b[i] = (int) a[i];
+			sum += b[i];
 		}
+		return sum;
 	}
 
-	public static void copy(double[] a, List<Double> b) {
+	public static double copy(double[] a, List<Double> b) {
+		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
 			b.add(a[i]);
+			sum += a[i];
 		}
+		return sum;
 	}
 
 	public static double[][] copy(double[][] a) {
@@ -76,34 +91,32 @@ public class ArrayUtils {
 		return b;
 	}
 
-	/**
-	 * @param a
-	 *            input
-	 * @param b
-	 *            output
-	 */
-	public static void copy(double[][] a, double[][] b) {
+	public static double copy(double[][] a, double[][] b) {
+		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
-			copy(a[i], b[i]);
+			sum += copy(a[i], b[i]);
 		}
+		return sum;
 	}
 
-	public static void copy(double[][] a, int[][] b) {
+	public static int copy(double[][] a, int[][] b) {
+		int sum = 0;
 		for (int i = 0; i < a.length; i++) {
 			for (int j = 0; j < a[i].length; j++) {
 				b[i][j] = (int) a[i][j];
+				sum += b[i][j];
 			}
 		}
+		return sum;
 	}
 
-	/**
-	 * @param a
-	 *            input
-	 * @param b
-	 *            output
-	 */
-	public static void copy(float[] a, float[] b) {
-		System.arraycopy(a, 0, b, 0, a.length);
+	public static double copy(float[] a, float[] b) {
+		double sum = 0;
+		for (int i = 0; i < a.length; i++) {
+			b[i] = a[i];
+			sum += b[i];
+		}
+		return sum;
 	}
 
 	public static int[] copy(int[] a) {
@@ -112,100 +125,99 @@ public class ArrayUtils {
 		return b;
 	}
 
-	public static void copy(int[] a, double[] b) {
+	public static double copy(int[] a, double[] b) {
+		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
 			b[i] = a[i];
+			sum += b[i];
 		}
+		return sum;
 	}
 
-	public static void copy(int[] a, int[] b) {
-		System.arraycopy(a, 0, b, 0, a.length);
+	public static int copy(int[] a, int[] b) {
+		int sum = 0;
+		for (int i = 0; i < a.length; i++) {
+			b[i] = a[i];
+			sum += b[i];
+		}
+		return sum;
 	}
 
-	public static void copy(int[] a, List<Integer> b) {
+	public static int copy(int[] a, List<Integer> b) {
+		int sum = 0;
 		for (int i = 0; i < a.length; i++) {
 			b.add(a[i]);
+			sum += a[i];
 		}
+		return sum;
 	}
 
-	public static void copy(int[] a, Set<Integer> b) {
+	public static int copy(int[] a, Set<Integer> b) {
+		int sum = 0;
 		for (int value : a) {
 			b.add(value);
+			sum += value;
 		}
+		return sum;
 	}
 
-	public static void copy(int[][] a, double[][] b) {
+	public static double copy(int[][] a, double[][] b) {
+		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
 			for (int j = 0; j < a[i].length; j++) {
 				b[i][j] = a[i][j];
+				sum += b[i][j];
 			}
 		}
+		return sum;
 	}
 
-	public static void copyColumn(double[] a, double[][] b, int bj) {
+	public static double copyColumn(double[] a, double[][] b, int bj) {
 		int[] dims = dimensions(b);
-
+		double sum = 0;
 		for (int i = 0; i < dims[0]; i++) {
 			b[i][bj] = a[i];
+			sum += b[i][bj];
 		}
+		return sum;
 	}
 
-	/**
-	 * @param a
-	 * @param aj
-	 * @param b
-	 *            output
-	 */
-	public static void copyColumn(double[][] a, int aj, double[] b) {
+	public static double copyColumn(double[][] a, int aj, double[] b) {
 		if (a.length != b.length) {
 			throw new IllegalArgumentException();
 		}
+		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
 			b[i] = a[i][aj];
+			sum += b[i];
 		}
+		return sum;
 	}
 
-	/**
-	 * @param a
-	 *            input
-	 * @param aj
-	 *            column index of matrix a
-	 * @param b
-	 *            output
-	 * @param bj
-	 *            column index of matrix b
-	 */
-	public static void copyColumn(double[][] a, int aj, double[][] b, int bj) {
+	public static double copyColumn(double[][] a, int aj, double[][] b, int bj) {
 		if (!ArrayChecker.isSameDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
-
 		int rowDim = a.length;
 		int colDim = a[0].length;
+		double sum = 0;
 		for (int i = 0; i < rowDim; i++) {
 			b[i][bj] = a[i][aj];
+			sum += b[i][bj];
 		}
+		return sum;
 	}
 
-	public static void copyRow(double[] a, double[][] b, int bi) {
-		int colDim = b[0].length;
-		for (int i = 0; i < colDim; i++) {
-			b[bi][i] = a[i];
-		}
+	public static double copyRow(double[] a, double[][] b, int bi) {
+		return copy(a, b[bi]);
 	}
 
-	public static void copyRow(double[][] a, int ai, double[] b) {
-		int colDim = a[0].length;
-		for (int i = 0; i < colDim; i++) {
-			b[i] = a[ai][i];
-		}
+	public static double copyRow(double[][] a, int ai, double[] b) {
+		return copy(a[ai], b);
 	}
 
-	public static void copyRow(double[][] a, int ai, double[][] b, int bi) {
-		int colDim = a[0].length;
-		for (int j = 0; j < colDim; j++) {
-			b[bi][j] = a[ai][j];
-		}
+	public static double copyRow(double[][] a, int ai, double[][] b, int bi) {
+		return copy(a[ai], b[bi]);
 	}
 
 	public static double copySubarray(double[] a, double[] b, int start, int end) {
@@ -248,10 +260,13 @@ public class ArrayUtils {
 		return ret;
 	}
 
-	public static void enumerate(double[] a, double start, double increment) {
+	public static double enumerate(double[] a, double start, double increment) {
+		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
 			a[i] = start + i * increment;
+			sum += a[i];
 		}
+		return sum;
 	}
 
 	public static int[] enumerate(int size) {
@@ -270,10 +285,13 @@ public class ArrayUtils {
 		return a;
 	}
 
-	public static void enumerate(int[] a, int start, int increment) {
+	public static int enumerate(int[] a, int start, int increment) {
+		int sum = 0;
 		for (int i = 0; i < a.length; i++) {
 			a[i] = start + i * increment;
+			sum += a[i];
 		}
+		return sum;
 	}
 
 	public static NumberFormat getDoubleNumberFormat(int num_fractions) {
@@ -437,6 +455,10 @@ public class ArrayUtils {
 
 	public static double[][] newMatrix(int size, double init) {
 		return newMatrix(size, size, init);
+	}
+
+	public static double[][] newMatrix(int size) {
+		return newMatrix(size, 0);
 	}
 
 	public static double[][] newMatrix(int rowSize, int colSize, double init) {
@@ -697,10 +719,15 @@ public class ArrayUtils {
 		return ret;
 	}
 
-	public static int[] sort(double[] a) {
+	public static int[] rankedIndexes(double[] a) {
+		int[] b = enumerate(a.length);
+		quickSort(b, copy(a), false);
+		return b;
+	}
+
+	public static void sort(double[] a) {
 		int[] b = enumerate(a.length);
 		quickSort(b, a, false);
-		return b;
 	}
 
 	public static List<Integer>[] split(List<Integer> indexList, int num_folds) {
