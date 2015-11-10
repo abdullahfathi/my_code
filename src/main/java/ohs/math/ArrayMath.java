@@ -16,12 +16,6 @@ import ohs.matrix.SparseVector;
 public class ArrayMath {
 	public static final double LOGTOLERANCE = 30.0;
 
-	/**
-	 * @param a
-	 * @param b
-	 * @param c
-	 * @return
-	 */
 	public static double add(double[] a, double b, double[] c) {
 		if (!ArrayChecker.isSameDim(a, c)) {
 			throw new IllegalArgumentException();
@@ -34,15 +28,6 @@ public class ArrayMath {
 		return sum;
 	}
 
-	/**
-	 * @param a
-	 *            input
-	 * @param b
-	 *            input
-	 * @param c
-	 *            output
-	 * @return
-	 */
 	public static double add(double[] a, double[] b, double[] c) {
 		if (!ArrayChecker.isSameDim(a, b, c)) {
 			throw new IllegalArgumentException();
@@ -55,15 +40,6 @@ public class ArrayMath {
 		return sum;
 	}
 
-	/**
-	 * @param a
-	 * @param b
-	 * @param ac
-	 * @param bc
-	 * @param c
-	 *            output
-	 * @return
-	 */
 	public static double addAfterScale(double[] a, double b, double ac, double bc, double[] c) {
 		if (!ArrayChecker.isSameDim(a, c)) {
 			throw new IllegalArgumentException();
@@ -76,15 +52,6 @@ public class ArrayMath {
 		return sum;
 	}
 
-	/**
-	 * @param a
-	 * @param b
-	 * @param ac
-	 * @param bc
-	 * @param c
-	 *            output
-	 * @return
-	 */
 	public static double addAfterScale(double[] a, double[] b, double ac, double bc, double[] c) {
 		if (!ArrayChecker.isSameDim(a, b, c)) {
 			throw new IllegalArgumentException();
@@ -358,9 +325,7 @@ public class ArrayMath {
 	}
 
 	public static double covariance(double[] a, double[] b) {
-		double mean_of_a = mean(a);
-		double mean_of_b = mean(b);
-		return covariance(a, b, mean_of_a, mean_of_b);
+		return covariance(a, b, mean(a), mean(b));
 	}
 
 	public static double covariance(double[] a, double[] b, double mean_a, double mean_b) {
@@ -498,15 +463,7 @@ public class ArrayMath {
 		return sum;
 	}
 
-	/**
-	 * @param a
-	 *            input
-	 * @param normalizeByMax
-	 * @param b
-	 *            output
-	 * @return
-	 */
-	public static double exponentiate(double[] a, double[] b) {
+	public static double exp(double[] a, double[] b) {
 		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
 			b[i] = Math.exp(a[i]);
@@ -709,7 +666,7 @@ public class ArrayMath {
 		return sum;
 	}
 
-	public static double logSum(double[] x) {
+	public static double sumLogs(double[] x) {
 		double ret = 0;
 		for (int i = 0; i < x.length; i++) {
 			if (x[i] > 0) {
@@ -1088,15 +1045,6 @@ public class ArrayMath {
 		return new double[] { a[index[0]], a[index[1]] };
 	}
 
-	/**
-	 * @param a
-	 *            input
-	 * @param b
-	 *            input
-	 * @param c
-	 *            output
-	 * @return
-	 */
 	public static double multiply(double[] a, double[] b, double[] c) {
 		if (!ArrayChecker.isSameDim(a, b, c)) {
 			throw new IllegalArgumentException();
@@ -1109,14 +1057,6 @@ public class ArrayMath {
 		return sum;
 	}
 
-	/**
-	 * @param a
-	 *            input
-	 * @param b
-	 *            input
-	 * @param c
-	 *            output
-	 */
 	public static void multiply(double[][] a, double[][] b, double[][] c) {
 		if (!ArrayChecker.isSameDim(a, b, c)) {
 			throw new IllegalArgumentException();
@@ -1127,41 +1067,22 @@ public class ArrayMath {
 		}
 	}
 
-	/**
-	 * @param a
-	 *            input / output
-	 */
 	public static void normalize(double[] a) {
 		normalize(a, a);
 	}
 
-	/**
-	 * @param a
-	 *            input / output
-	 * @param high
-	 * @param low
-	 * @return
-	 */
-	public static double normalize(double[] a, double high, double low) {
+	public static double normalize(double[] a, double high, double low, double[] b) {
 		double[] minMax = minMax(a);
 		double min = minMax[0];
 		double max = minMax[1];
 		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
-			double v = a[i];
-			a[i] = low + ((high - low) / (max - min)) * (v - min);
-			sum += a[i];
+			b[i] = low + ((high - low) / (max - min)) * (a[i] - min);
+			sum += b[i];
 		}
 		return sum;
 	}
 
-	/**
-	 * @param a
-	 *            input
-	 * @param b
-	 *            output
-	 * @return
-	 */
 	public static double normalize(double[] a, double[] b) {
 		return scale(a, 1f / sum(a), b);
 	}
@@ -1186,23 +1107,18 @@ public class ArrayMath {
 		return scale(b, 1f / sum, b);
 	}
 
-	/**
-	 * @param a
-	 *            input / output
-	 * @return
-	 */
-	public static double[] normalizeColumns(double[][] a) {
-		double[] columnSums = sumColumns(a);
-
+	public static double normalizeColumns(double[][] a) {
+		double[] colSums = sumColumns(a);
+		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
 			for (int j = 0; j < a[i].length; j++) {
-				double sum = columnSums[j];
-				if (sum > 0) {
-					a[i][j] /= sum;
+				if (colSums[j] != 0) {
+					a[i][j] /= colSums[j];
 				}
+				sum += a[i][j];
 			}
 		}
-		return columnSums;
+		return sum;
 	}
 
 	/**
@@ -1403,14 +1319,6 @@ public class ArrayMath {
 		}
 	}
 
-	/**
-	 * @param a
-	 *            input
-	 * @param ac
-	 * @param b
-	 *            output
-	 * @return
-	 */
 	public static double scale(double[] a, double ac, double[] b) {
 		if (!ArrayChecker.isSameDim(a, b)) {
 			throw new IllegalArgumentException();
@@ -1479,14 +1387,6 @@ public class ArrayMath {
 		System.out.println("SSR  = " + ssr);
 	}
 
-	/**
-	 * @param a
-	 *            input
-	 * @param b
-	 *            input
-	 * @param c
-	 *            output
-	 */
 	public static double substract(double[] a, double[] b, double[] c) {
 		if (!ArrayChecker.isSameDim(a, b, c)) {
 			throw new IllegalArgumentException();
@@ -1539,23 +1439,17 @@ public class ArrayMath {
 		return ret;
 	}
 
-	/**
-	 * @param a
-	 * @param b
-	 *            output
-	 */
 	public static double sumColumns(double[][] a, double[] b) {
 		if (!ArrayChecker.isSameColumnDim(a, b)) {
 			throw new IllegalArgumentException();
 		}
-		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
 			for (int j = 0; j < a[i].length; j++) {
 				b[j] += a[i][j];
-				sum += b[j];
 			}
 		}
-		return sum;
+
+		return sum(b);
 	}
 
 	/**

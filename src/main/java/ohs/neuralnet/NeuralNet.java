@@ -20,9 +20,18 @@ public class NeuralNet {
 	public static void main(String[] args) {
 		NeuralNet nn = new NeuralNet();
 
-		double[][] xs = ArrayMath.random(0, 1, 100, 5);
-		double[] ys = ArrayMath.random(0f, 1, 100);
-		ArrayMath.round(ys, ys);
+		int num_data = 100;
+		int num_labels = 5;
+
+		double[][] xs = ArrayMath.random(0, 1, num_data, num_labels);
+		double[][] ys = new double[num_data][num_labels];
+
+		int[] labels = ArrayMath.random(0, 4, num_data);
+
+		for (int i = 0; i < ys.length; i++) {
+			int label = labels[i];
+			ys[i][label] = 1;
+		}
 
 		nn.train(xs, ys);
 
@@ -40,24 +49,25 @@ public class NeuralNet {
 		ArrayMath.random(0, 1, b2);
 	}
 
-	public void train(double[][] xs, double[] ys) {
-		double[] h = new double[param.getNumHiddenNeurons()];
-		double[] z1 = new double[param.getNumHiddenNeurons()];
-		double[] z2 = new double[param.getNumOutputNeurons()];
+	public void train(double[][] xs, double[][] ys) {
+		double[][] h = new double[xs.length][param.getNumHiddenNeurons()];
+		double[][] z1 = new double[xs.length][param.getNumHiddenNeurons()];
+		double[][] z2 = new double[xs.length][param.getNumOutputNeurons()];
 
-		double[][] yhs = new double[ys.length][param.getNumOutputNeurons()];
-		double[] yh = new double[param.getNumOutputNeurons()];
+		double[][] yh = new double[xs.length][param.getNumOutputNeurons()];
+		double cost = 0;
 
 		for (int i = 0; i < xs.length; i++) {
-			ArrayMath.product(W1, xs[i], z1);
-			ArrayMath.add(z1, b1, z1);
-			ArrayMath.sigmoid(z1, h);
+			ArrayMath.product(W1, xs[i], z1[i]);
+			ArrayMath.add(z1[i], b1, z1[i]);
+			ArrayMath.sigmoid(z1[i], h[i]);
 
-			ArrayMath.product(W2, h, z2);
-			ArrayMath.add(z2, b2, z2);
-			ArrayMath.softmax(z2, yh);
-			ArrayUtils.copy(yh, yhs[i]);
+			ArrayMath.product(W2, h[i], z2[i]);
+			ArrayMath.add(z2[i], b2, z2[i]);
+			ArrayMath.softmax(z2[i], yh[i]);
+			cost += ArrayMath.crossEntropy(ys[i], yh[i]);
 		}
+
 	}
 
 }

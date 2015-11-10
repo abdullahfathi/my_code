@@ -65,7 +65,7 @@ public class ParsimoniousEstimator {
 		SparseVector ret = term_count.copy();
 		ret.normalize();
 
-		double log_likelihood = ArrayMath.logSum(ret.values());
+		double log_likelihood = ArrayMath.sumLogs(ret.values());
 		double old_log_likelihood = log_likelihood;
 
 		NumberFormat nf = NumberFormat.getInstance();
@@ -87,7 +87,7 @@ public class ParsimoniousEstimator {
 			}
 			ret.normalizeAfterSummation();
 
-			log_likelihood = ArrayMath.logSum(ret.values());
+			log_likelihood = ArrayMath.sumLogs(ret.values());
 
 			double diff = log_likelihood - old_log_likelihood;
 
