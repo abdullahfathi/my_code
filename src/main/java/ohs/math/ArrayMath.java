@@ -16,6 +16,18 @@ import ohs.matrix.SparseVector;
 public class ArrayMath {
 	public static final double LOGTOLERANCE = 30.0;
 
+	public static double abs(double[] a, double[] b) {
+		if (!ArrayChecker.isSameDim(a, b)) {
+			throw new IllegalArgumentException();
+		}
+		double sum = 0;
+		for (int i = 0; i < a.length; i++) {
+			b[i] = Math.abs(a[i]);
+			sum += b[i];
+		}
+		return sum;
+	}
+
 	public static double add(double[] a, double b, double[] c) {
 		if (!ArrayChecker.isSameDim(a, c)) {
 			throw new IllegalArgumentException();
@@ -338,6 +350,17 @@ public class ArrayMath {
 		return ret;
 	}
 
+	public static double crossEntropy(double[] a, double[] b) {
+		if (!ArrayChecker.isSameDim(a, b)) {
+			throw new IllegalArgumentException();
+		}
+		double ret = 0;
+		for (int i = 0; i < a.length; i++) {
+			ret += (a[i] * Math.log(b[i]));
+		}
+		return -ret;
+	}
+
 	public static double cumulate(double[] a, double[] b) {
 		double sum = 0;
 		double sum2 = 0;
@@ -437,32 +460,8 @@ public class ArrayMath {
 		return crossEntropy(a, a);
 	}
 
-	public static double crossEntropy(double[] a, double[] b) {
-		if (!ArrayChecker.isSameDim(a, b)) {
-			throw new IllegalArgumentException();
-		}
-		double ret = 0;
-		for (int i = 0; i < a.length; i++) {
-			ret += (a[i] * Math.log(b[i]));
-		}
-		return -ret;
-	}
-
 	public static double euclideanDistance(double[] a, double[] b) {
 		return Math.sqrt(sumSquaredDifferences(a, b));
-	}
-
-	public static double sumSquaredDifferences(double[] a, double[] b) {
-		if (!ArrayChecker.isSameDim(a, b)) {
-			throw new IllegalArgumentException();
-		}
-		double sum = 0;
-		double diff = 0;
-		for (int i = 0; i < a.length; i++) {
-			diff = a[i] - b[i];
-			sum += diff * diff;
-		}
-		return sum;
 	}
 
 	public static double exp(double[] a, double[] b) {
@@ -474,29 +473,16 @@ public class ArrayMath {
 		return sum;
 	}
 
-	public static double softmax(double[] a, double[] b) {
-		if (!ArrayChecker.isSameDim(a, b)) {
-			throw new IllegalArgumentException();
-		}
-		double max = max(a);
-		double sum = 0;
-		for (int i = 0; i < a.length; i++) {
-			b[i] = Math.exp(a[i] - max);
-			sum += b[i];
-		}
-		return scale(b, 1f / sum, b);
+	public static double geometricMean(double[] a) {
+		return Math.pow(product(a), 1f / a.length);
 	}
 
-	public static double sigmoid(double[] a, double[] b) {
-		if (!ArrayChecker.isSameDim(a, b)) {
-			throw new IllegalArgumentException();
-		}
-		double sum = 0;
+	public static double harmonicMean(double[] a) {
+		double inverse_sum = 0;
 		for (int i = 0; i < a.length; i++) {
-			b[i] = CommonFuncs.sigmoid(a[i]);
-			sum += b[i];
+			inverse_sum += 1f / a[i];
 		}
-		return sum;
+		return a.length * (1f / inverse_sum);
 	}
 
 	public static double jensenShannonDivergence(double[] a, double[] b) {
@@ -668,16 +654,6 @@ public class ArrayMath {
 		return sum;
 	}
 
-	public static double sumLogs(double[] x) {
-		double ret = 0;
-		for (int i = 0; i < x.length; i++) {
-			if (x[i] > 0) {
-				ret += Math.log(x[i]);
-			}
-		}
-		return ret;
-	}
-
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 
@@ -743,6 +719,8 @@ public class ArrayMath {
 			int[] samples = new int[probs.length];
 
 			random(0, 1, probs);
+
+			normalize(probs);
 
 			cumulate(probs, probs);
 
@@ -927,87 +905,6 @@ public class ArrayMath {
 
 	public static double mean(double[] x) {
 		return sum(x) / x.length;
-	}
-
-	public static double geometricMean(double[] a) {
-		return Math.pow(product(a), 1f / a.length);
-	}
-
-	public static double harmonicMean(double[] a) {
-		double inverse_sum = 0;
-		for (int i = 0; i < a.length; i++) {
-			inverse_sum += 1f / a[i];
-		}
-		return a.length * (1f / inverse_sum);
-	}
-
-	public static double pow(double[] a, double b, double[] c) {
-		double sum = 0;
-		for (int i = 0; i < a.length; i++) {
-			c[i] = Math.pow(a[i], b);
-			sum += c[i];
-		}
-		return sum;
-	}
-
-	public static double product(double[] a) {
-		double ret = 0;
-		for (int i = 0; i < a.length; i++) {
-			ret *= a[i];
-		}
-		return ret;
-	}
-
-	public static void product(double[] a, double[][] b, double[] c) {
-		double[][] aa = new double[1][];
-		aa[0] = a;
-
-		double[][] cc = new double[1][];
-		cc[0] = c;
-
-		product(aa, b, cc);
-	}
-
-	public static double product(double[][] a, double[] b, double[] c) {
-		double sum = 0;
-		for (int i = 0; i < a.length; i++) {
-			c[i] = dotProduct(a[i], b);
-			sum += c[i];
-		}
-		return sum;
-	}
-
-	public static void product(double[][] a, double[][] b, double[][] c) {
-		if (!ArrayChecker.isProductable(a, b, c)) {
-			throw new IllegalArgumentException();
-		}
-
-		int aRowDim = a.length;
-		int aColDim = a[0].length;
-		int bRowDim = b.length;
-		int bColDim = b[0].length;
-
-		double[] bc = new double[bRowDim]; // column j of B
-
-		for (int j = 0; j < bColDim; j++) {
-			ArrayUtils.copyColumn(b, j, bc);
-			for (int i = 0; i < aRowDim; i++) {
-				c[i][j] = dotProduct(a[i], bc);
-			}
-		}
-	}
-
-	public static double[][] product(double[][] a, double[][] b) {
-		if (!ArrayChecker.isProductable(a, b)) {
-			throw new IllegalArgumentException();
-		}
-
-		int[] dimA = ArrayUtils.dimensions(a);
-		int[] dimB = ArrayUtils.dimensions(a);
-		double[][] c = new double[dimA[0]][dimB[1]];
-		product(a, b, c);
-		return c;
-
 	}
 
 	public static double min(double[] x) {
@@ -1200,18 +1097,73 @@ public class ArrayMath {
 		return ret;
 	}
 
-	// public static double product(double[] a) {
-	// double ret = 1;
-	// for (int i = 0; i < a.length; i++) {
-	// ret *= a[i];
-	// }
-	// return ret;
-	// }
+	public static double pow(double[] a, double b, double[] c) {
+		double sum = 0;
+		for (int i = 0; i < a.length; i++) {
+			c[i] = Math.pow(a[i], b);
+			sum += c[i];
+		}
+		return sum;
+	}
 
-	public static double[][] random(double min, double max, int rows, int columns) {
-		double[][] x = new double[rows][columns];
-		random(min, max, x);
-		return x;
+	public static double product(double[] a) {
+		double ret = 0;
+		for (int i = 0; i < a.length; i++) {
+			ret *= a[i];
+		}
+		return ret;
+	}
+
+	public static void product(double[] a, double[][] b, double[] c) {
+		double[][] aa = new double[1][];
+		aa[0] = a;
+
+		double[][] cc = new double[1][];
+		cc[0] = c;
+
+		product(aa, b, cc);
+	}
+
+	public static double product(double[][] a, double[] b, double[] c) {
+		double sum = 0;
+		for (int i = 0; i < a.length; i++) {
+			c[i] = dotProduct(a[i], b);
+			sum += c[i];
+		}
+		return sum;
+	}
+
+	public static double[][] product(double[][] a, double[][] b) {
+		if (!ArrayChecker.isProductable(a, b)) {
+			throw new IllegalArgumentException();
+		}
+
+		int[] dimA = ArrayUtils.dimensions(a);
+		int[] dimB = ArrayUtils.dimensions(a);
+		double[][] c = new double[dimA[0]][dimB[1]];
+		product(a, b, c);
+		return c;
+
+	}
+
+	public static void product(double[][] a, double[][] b, double[][] c) {
+		if (!ArrayChecker.isProductable(a, b, c)) {
+			throw new IllegalArgumentException();
+		}
+
+		int aRowDim = a.length;
+		int aColDim = a[0].length;
+		int bRowDim = b.length;
+		int bColDim = b[0].length;
+
+		double[] bc = new double[bRowDim]; // column j of B
+
+		for (int j = 0; j < bColDim; j++) {
+			ArrayUtils.copyColumn(b, j, bc);
+			for (int i = 0; i < aRowDim; i++) {
+				c[i][j] = dotProduct(a[i], bc);
+			}
+		}
 	}
 
 	public static double random(double min, double max, double[] x) {
@@ -1239,20 +1191,33 @@ public class ArrayMath {
 		return x;
 	}
 
+	public static double[][] random(double min, double max, int rows, int columns) {
+		double[][] x = new double[rows][columns];
+		random(min, max, x);
+		return x;
+	}
+
 	public static int[] random(int min, int max, int size) {
 		int[] x = new int[size];
 		random(min, max, x);
 		return x;
 	}
 
-	public static double abs(double[] a, double[] b) {
-		if (!ArrayChecker.isSameDim(a, b)) {
-			throw new IllegalArgumentException();
+	public static int random(int min, int max, int[] x) {
+		Random random = new Random();
+		double range = max - min + 1;
+		int sum = 0;
+		for (int i = 0; i < x.length; i++) {
+			x[i] = (int) (range * random.nextDouble()) + min;
+			sum += x[i];
 		}
-		double sum = 0;
-		for (int i = 0; i < a.length; i++) {
-			b[i] = Math.abs(a[i]);
-			sum += b[i];
+		return sum;
+	}
+
+	public static int random(int min, int max, int[][] x) {
+		int sum = 0;
+		for (int i = 0; i < x.length; i++) {
+			sum += random(min, max, x[i]);
 		}
 		return sum;
 	}
@@ -1269,15 +1234,10 @@ public class ArrayMath {
 		return sum;
 	}
 
-	public static int random(int min, int max, int[] x) {
-		Random random = new Random();
-		double range = max - min + 1;
-		int sum = 0;
-		for (int i = 0; i < x.length; i++) {
-			x[i] = (int) (range * random.nextDouble()) + min;
-			sum += x[i];
-		}
-		return sum;
+	public static int[] sample(double[] cumulated_probs, int size) {
+		int[] samples = new int[size];
+		sample(cumulated_probs, samples);
+		return samples;
 	}
 
 	public static void sample(double[] cumulated_probs, int[] samples) {
@@ -1321,6 +1281,12 @@ public class ArrayMath {
 		}
 	}
 
+	public static int[] samples(int[] indexes, double[] values, boolean cumulate, int size) {
+		int[] samples = new int[size];
+		sample(indexes, values, samples, cumulate);
+		return samples;
+	}
+
 	public static double scale(double[] a, double ac, double[] b) {
 		if (!ArrayChecker.isSameDim(a, b)) {
 			throw new IllegalArgumentException();
@@ -1328,6 +1294,18 @@ public class ArrayMath {
 		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
 			b[i] = a[i] * ac;
+			sum += b[i];
+		}
+		return sum;
+	}
+
+	public static double sigmoid(double[] a, double[] b) {
+		if (!ArrayChecker.isSameDim(a, b)) {
+			throw new IllegalArgumentException();
+		}
+		double sum = 0;
+		for (int i = 0; i < a.length; i++) {
+			b[i] = CommonFuncs.sigmoid(a[i]);
 			sum += b[i];
 		}
 		return sum;
@@ -1387,6 +1365,19 @@ public class ArrayMath {
 		System.out.println("SSTO = " + yybar);
 		System.out.println("SSE  = " + rss);
 		System.out.println("SSR  = " + ssr);
+	}
+
+	public static double softmax(double[] a, double[] b) {
+		if (!ArrayChecker.isSameDim(a, b)) {
+			throw new IllegalArgumentException();
+		}
+		double max = max(a);
+		double sum = 0;
+		for (int i = 0; i < a.length; i++) {
+			b[i] = Math.exp(a[i] - max);
+			sum += b[i];
+		}
+		return scale(b, 1f / sum, b);
 	}
 
 	public static double substract(double[] a, double[] b, double[] c) {
@@ -1551,6 +1542,16 @@ public class ArrayMath {
 		return max + logSum;
 	}
 
+	public static double sumLogs(double[] x) {
+		double ret = 0;
+		for (int i = 0; i < x.length; i++) {
+			if (x[i] > 0) {
+				ret += Math.log(x[i]);
+			}
+		}
+		return ret;
+	}
+
 	public static double[] sumRows(double[][] a) {
 		double[] ret = new double[a.length];
 		sumRows(a, ret);
@@ -1565,6 +1566,19 @@ public class ArrayMath {
 		for (int i = 0; i < a.length; i++) {
 			b[i] = sum(a[i]);
 			sum += b[i];
+		}
+		return sum;
+	}
+
+	public static double sumSquaredDifferences(double[] a, double[] b) {
+		if (!ArrayChecker.isSameDim(a, b)) {
+			throw new IllegalArgumentException();
+		}
+		double sum = 0;
+		double diff = 0;
+		for (int i = 0; i < a.length; i++) {
+			diff = a[i] - b[i];
+			sum += diff * diff;
 		}
 		return sum;
 	}

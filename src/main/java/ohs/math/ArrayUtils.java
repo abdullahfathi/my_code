@@ -312,6 +312,15 @@ public class ArrayUtils {
 		System.out.println("process begins.");
 
 		{
+			int[] indexes = enumerate(10);
+
+			double[] props = new double[] { 3, 3, 3 };
+			ArrayMath.normalize(props);
+
+			splitInOrder(indexes, props);
+		}
+
+		{
 			int[] dims = { 3, 2, 3 };
 			int[] indexes = { 0, 1, 2 };
 
@@ -736,6 +745,57 @@ public class ArrayUtils {
 			proportions[i] = 1f / proportions.length;
 		}
 		return splitInOrder(indexList, proportions);
+	}
+
+	/**
+	 * Code from method java.util.Collections.shuffle();
+	 */
+	public static void shuffle(int[] a) {
+		Random random = new Random();
+
+		int count = a.length;
+		for (int i = count; i > 1; i--) {
+			swap(a, i - 1, random.nextInt(i));
+		}
+	}
+
+	public static List<Integer>[] splitInOrder(int[] indexes, double[] proportions) {
+		// double[] fold_prop = copy(proportions);
+		// ArrayMath.normalize(fold_prop);
+
+		double[] fold_maxIndex = copy(proportions);
+		ArrayMath.normalize(fold_maxIndex);
+
+		ArrayMath.cumulate(fold_maxIndex, fold_maxIndex);
+
+		List<Integer>[] ret = new List[fold_maxIndex.length];
+
+		int[][] splits = new int[fold_maxIndex.length][];
+
+		for (int i = 0; i < 3; i++) {
+			shuffle(indexes);
+		}
+
+		for (int i = 0; i < fold_maxIndex.length; i++) {
+			ret[i] = new ArrayList<Integer>();
+			double value = fold_maxIndex[i];
+			double maxIndex = Math.rint(value * indexes.length);
+			fold_maxIndex[i] = maxIndex;
+		}
+
+		for (int i = 0, j = 0; i < indexes.length; i++) {
+			// This gives a slight bias toward putting an extra instance in the
+			// last InstanceList.
+
+			int maxIndex = (int) fold_maxIndex[j];
+
+			if (i >= maxIndex && j < ret.length) {
+				j++;
+			}
+
+			ret[j].add(indexes[i]);
+		}
+		return ret;
 	}
 
 	public static List<Integer>[] splitInOrder(List<Integer> indexList, double[] proportions) {
