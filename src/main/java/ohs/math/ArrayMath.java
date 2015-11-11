@@ -340,11 +340,13 @@ public class ArrayMath {
 
 	public static double cumulate(double[] a, double[] b) {
 		double sum = 0;
+		double sum2 = 0;
 		for (int i = 0; i < a.length; i++) {
 			sum += a[i];
 			b[i] = sum;
+			sum2 += b[i];
 		}
-		return sum;
+		return sum2;
 	}
 
 	public static void distribute(double[] a, double sum, double[] b) {

@@ -5,7 +5,7 @@ import java.util.Map;
 import com.medallia.word2vec.Word2VecTrainerBuilder.TrainingProgressListener;
 import com.medallia.word2vec.huffman.HuffmanCoding.HuffmanNode;
 
-import ohs.types.Vocabulary;
+import ohs.types.Vocab;
 
 /** Fixed configuration for training the neural network */
 public class NeuralNetworkConfig {
@@ -35,7 +35,7 @@ public class NeuralNetworkConfig {
 	}
 
 	/** @return {@link NeuralNetworkTrainer} */
-	public NeuralNetworkTrainer createTrainer(Vocabulary vocab, Map<Integer, HuffmanNode> huffmanNodes, TrainingProgressListener listener) {
+	public NeuralNetworkTrainer createTrainer(Vocab vocab, Map<Integer, HuffmanNode> huffmanNodes, TrainingProgressListener listener) {
 		return type.createTrainer(this, vocab, huffmanNodes, listener);
 	}
 

@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.google.common.util.concurrent.Futures;
@@ -18,7 +17,9 @@ import com.medallia.word2vec.Word2VecTrainerBuilder.TrainingProgressListener.Sta
 import com.medallia.word2vec.huffman.HuffmanCoding.HuffmanNode;
 import com.medallia.word2vec.util.CallableVoid;
 
-import ohs.types.Vocabulary;
+import edu.stanford.nlp.international.arabic.Buckwalter;
+import ohs.math.ArrayUtils;
+import ohs.types.Vocab;
 
 /** Parent class for training word2vec's neural network */
 public abstract class NeuralNetworkTrainer {
@@ -37,7 +38,7 @@ public abstract class NeuralNetworkTrainer {
 
 		long nextRandom;
 		final int iter;
-		final List<Integer[]> batch;
+		final int[][] batch;
 
 		/**
 		 * The number of words observed in the training data for this worker that exist in the vocabulary. It includes words that are
@@ -50,7 +51,7 @@ public abstract class NeuralNetworkTrainer {
 		final double[] neu1 = new double[layer1_size];
 		final double[] neu1e = new double[layer1_size];
 
-		Worker(int randomSeed, int iter, List<Integer[]> batch) {
+		Worker(int randomSeed, int iter, int[][] batch) {
 			this.nextRandom = randomSeed;
 			this.iter = iter;
 			this.batch = batch;
@@ -92,7 +93,7 @@ public abstract class NeuralNetworkTrainer {
 
 		@Override
 		public void run() throws InterruptedException {
-			for (Integer[] sent : batch) {
+			for (int[] sent : batch) {
 				List<Integer> filteredSent = new ArrayList<>();
 
 				for (int w : sent) {
@@ -113,28 +114,32 @@ public abstract class NeuralNetworkTrainer {
 					filteredSent.add(w);
 				}
 
+				int[] fs = new int[filteredSent.size()];
+
+				ArrayUtils.copy(filteredSent, fs);
+
 				// Increment word count one extra for the injected </s> token
 				// Turns out if you don't do this, the produced word vectors aren't as tasty
 				wordCount++;
 
-				List<Integer[]> ps = partitionSentence(filteredSent, MAX_SENTENCE_LENGTH);
+				// int[][] ps = partitionSentence(filteredSent, MAX_SENTENCE_LENGTH);
 
-				for (Integer[] chunked : ps) {
-					if (Thread.currentThread().isInterrupted())
-						throw new InterruptedException("Interrupted while training word2vec model");
+				// for (int[] chunked : ps) {
+				if (Thread.currentThread().isInterrupted())
+					throw new InterruptedException("Interrupted while training word2vec model");
 
-					if (wordCount - lastWordCount > LEARNING_RATE_UPDATE_FREQUENCY) {
-						updateAlpha(iter);
-					}
-					trainSentence(chunked);
+				if (wordCount - lastWordCount > LEARNING_RATE_UPDATE_FREQUENCY) {
+					updateAlpha(iter);
 				}
+				trainSentence(fs);
+				// }
 			}
 
 			actualWordCount.addAndGet(wordCount - lastWordCount);
 		}
 
 		/** Update the model with the given raw sentence */
-		abstract void trainSentence(Integer[] unfiltered);
+		abstract void trainSentence(int[] unfiltered);
 
 		/**
 		 * Degrades the learning rate (alpha) steadily towards 0
@@ -181,46 +186,76 @@ public abstract class NeuralNetworkTrainer {
 		return r * 25_214_903_917L + 11;
 	}
 
-	public static List<Integer[]> partitionSentence(List<Integer> sent, int partition_size) {
-		List<Integer[]> ret = new ArrayList<Integer[]>();
+	public static int[][] partitionSentence(List<Integer> sent, int partition_size) {
+		List<List<Integer>> batches = new ArrayList<List<Integer>>();
 
-		List<Integer> batch = new ArrayList<Integer>();
-
-		for (int i = 0; i < sent.size(); i++) {
-
-			if ((i + 1) % partition_size == 0) {
-				ret.add(batch.toArray(new Integer[batch.size()]));
-				batch = new ArrayList<Integer>();
-			} else {
-				batch.add(sent.get(i));
+		{
+			List<Integer> batch = new ArrayList<Integer>();
+			for (int i = 0; i < sent.size(); i++) {
+				if ((i + 1) % partition_size == 0) {
+					batches.add(batch);
+					batch = new ArrayList<Integer>();
+				} else {
+					batch.add(i);
+				}
+			}
+			if (batch.size() > 0) {
+				batches.add(batch);
 			}
 		}
-		if (batch.size() > 0) {
-			ret.add(batch.toArray(new Integer[batch.size()]));
+
+		int[][] batchSents = new int[batches.size()][];
+
+		for (int i = 0; i < batches.size(); i++) {
+			List<Integer> batch = batches.get(i);
+			int[] subSent = new int[batch.size()];
+
+			for (int j = 0; j < batch.size(); j++) {
+				int idx = batch.get(j);
+				subSent[j] = sent.get(idx);
+			}
+
+			batchSents[i] = subSent;
 		}
-		return ret;
+
+		return batchSents;
 	}
 
-	public static List<List<Integer[]>> partitionSentences(List<Integer[]> sents, int partition_size) {
-		List<List<Integer[]>> ret = new ArrayList<>();
+	public static int[][][] partitionSentences(int[][] sents, int partition_size) {
+		List<List<Integer>> batches = new ArrayList<List<Integer>>();
 
-		List<Integer[]> batch = new ArrayList<Integer[]>();
+		{
+			List<Integer> batch = new ArrayList<Integer>();
 
-		for (int i = 0; i < sents.size(); i++) {
+			for (int i = 0; i < sents.length; i++) {
 
-			if ((i + 1) % partition_size == 0) {
-				ret.add(batch);
-				batch = new ArrayList<Integer[]>();
-			} else {
-				batch.add(sents.get(i));
+				if ((i + 1) % partition_size == 0) {
+					batches.add(batch);
+					batch = new ArrayList<Integer>();
+				} else {
+					batch.add(i);
+				}
+			}
+			if (batch.size() > 0) {
+				batches.add(batch);
 			}
 		}
 
-		if (batch.size() > 0) {
-			ret.add(batch);
+		int[][][] batchSents = new int[batches.size()][][];
+
+		for (int i = 0; i < batches.size(); i++) {
+			List<Integer> batch = batches.get(i);
+
+			batchSents[i] = new int[batch.size()][];
+
+			for (int j = 0; j < batch.size(); j++) {
+				int sid = batch.get(j);
+				batchSents[i][j] = sents[sid];
+			}
+
 		}
 
-		return ret;
+		return batchSents;
 	}
 
 	private final TrainingProgressListener listener;
@@ -260,7 +295,7 @@ public abstract class NeuralNetworkTrainer {
 
 	long startNano;
 
-	NeuralNetworkTrainer(NeuralNetworkConfig config, Vocabulary vocab, Map<Integer, HuffmanNode> huffmanNodes,
+	NeuralNetworkTrainer(NeuralNetworkConfig config, Vocab vocab, Map<Integer, HuffmanNode> huffmanNodes,
 			TrainingProgressListener listener) {
 		this.config = config;
 		this.huffmanNodes = huffmanNodes;
@@ -285,7 +320,7 @@ public abstract class NeuralNetworkTrainer {
 	/**
 	 * @return {@link Worker} to process the given sentences
 	 */
-	abstract Worker createWorker(int randomSeed, int iter, List<Integer[]> batch);
+	abstract Worker createWorker(int randomSeed, int iter, int[][] batch);
 
 	private void initializeSyn0() {
 		long nextRandom = 1;
@@ -328,25 +363,24 @@ public abstract class NeuralNetworkTrainer {
 	/**
 	 * @return Trained NN model
 	 */
-	public NeuralNetworkModel train(List<Integer[]> sents) throws InterruptedException {
+	public NeuralNetworkModel train(int[][] sents) throws InterruptedException {
 		ListeningExecutorService ex = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(config.numThreads));
 
-		for (int i = 0; i < sents.size(); i++) {
-			numTrainedTokens += sents.get(i).length;
+		for (int i = 0; i < sents.length; i++) {
+			numTrainedTokens += sents[i].length;
 		}
 
 		// Partition the sentences evenly amongst the threads
 
-		List<List<Integer[]>> sentBatches = partitionSentences(sents, sents.size() / config.numThreads + 1);
+		int[][][] batchSents = partitionSentences(sents, sents.length / config.numThreads + 1);
 
 		try {
 			listener.update(Stage.TRAIN_NEURAL_NETWORK, 0.0);
 			for (int iter = config.iterations; iter > 0; iter--) {
 				List<CallableVoid> tasks = new ArrayList<>();
-				int i = 0;
-				for (final List<Integer[]> batch : sentBatches) {
+				for (int i = 0; i < batchSents.length; i++) {
+					int[][] batch = batchSents[i];
 					tasks.add(createWorker(i, iter, batch));
-					i++;
 				}
 
 				List<ListenableFuture<?>> futures = new ArrayList<>(tasks.size());

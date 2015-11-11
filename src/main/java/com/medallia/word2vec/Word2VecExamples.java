@@ -6,31 +6,29 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
-import org.apache.thrift.TException;
 
 import com.medallia.word2vec.Searcher.Match;
 import com.medallia.word2vec.Searcher.UnknownWordException;
 import com.medallia.word2vec.Word2VecTrainerBuilder.TrainingProgressListener;
 import com.medallia.word2vec.neuralnetwork.NeuralNetworkType;
-import com.medallia.word2vec.thrift.Word2VecModelThrift;
 import com.medallia.word2vec.util.AutoLog;
-import com.medallia.word2vec.util.Common;
 import com.medallia.word2vec.util.Format;
-import com.medallia.word2vec.util.ProfilingTimer;
 import com.medallia.word2vec.util.Strings;
-import com.medallia.word2vec.util.ThriftUtils;
 
 import ohs.io.TextFileReader;
-import ohs.types.Vocabulary;
-import ohs.utils.StopWatch;
+import ohs.math.ArrayUtils;
+import ohs.types.Counter;
+import ohs.types.Indexer;
+import ohs.types.Vocab;
 
 /** Example usages of {@link Word2VecModel} */
 public class Word2VecExamples {
@@ -38,10 +36,10 @@ public class Word2VecExamples {
 
 	public static Properties getDefaultProp() throws IOException {
 		Properties prop = new Properties();
-		prop.setProperty("input_file", "../../data/medical_ir/ohsumed/sents.txt.gz");
+		prop.setProperty("input_file", "../../data/medical_ir/ohsumed/sents_stem.txt.gz");
 		prop.setProperty("output_file", "../../data/medical_ir/ohsumed/word2vec_model_stem.ser.gz");
 		prop.setProperty("network_type", "cbow");
-		prop.setProperty("threads", "100");
+		prop.setProperty("threads", "1");
 		prop.setProperty("min_freq", "5");
 		prop.setProperty("use_hierarchical_sofmax", "false");
 		prop.setProperty("window_size", "8");
@@ -49,10 +47,8 @@ public class Word2VecExamples {
 		prop.setProperty("negative_samples", "25");
 		prop.setProperty("iterations", "5");
 		prop.setProperty("down_sample_rate", "1e-4");
-		prop.setProperty("min_sent_size", "10");
-		prop.setProperty("max_sent_size", "100");
 		prop.setProperty("num_train_sents", "10000");
-		prop.setProperty("train_mode", "false");
+		prop.setProperty("train_mode", "true");
 		return prop;
 	}
 
@@ -105,102 +101,10 @@ public class Word2VecExamples {
 		System.out.println("process ends.");
 	}
 
-	public static void normalizeSentence(String[] words) {
-		Pattern p = Pattern.compile("\\d+[\\d,\\.]*");
-
-		for (int i = 0; i < words.length; i++) {
-			String word = words[i].toLowerCase();
-			Matcher m = p.matcher(word);
-
-			if (m.find()) {
-				StringBuffer sb = new StringBuffer();
-				do {
-					String g = m.group();
-					g = g.replace(",", "");
-
-					StringBuffer sb2 = new StringBuffer("<N");
-
-					String[] toks = g.split("\\.");
-					for (int j = 0; j < toks.length; j++) {
-						String tok = toks[j];
-						sb2.append(tok.length());
-
-						if (j != toks.length - 1) {
-							sb2.append("_");
-						}
-					}
-					sb2.append(">");
-					String r = sb2.toString();
-					m.appendReplacement(sb, r);
-				} while (m.find());
-				m.appendTail(sb);
-
-				word = sb.toString();
-			}
-			words[i] = word;
-		}
-	}
-
-	public static void readSentences(String inputFileName, Vocabulary vocab, List<Integer[]> sents, int min_sent_size, int max_sent_size,
-			int num_train_sents) {
-		System.out.printf("read [%s]\n", inputFileName);
-
-		NumberFormat nf = NumberFormat.getInstance();
-		nf.setMinimumFractionDigits(1);
-
-		int num_sents = 0;
-		int num_valid_sents = 0;
-		StopWatch stopWatch = new StopWatch();
-		stopWatch.start();
-
-		TextFileReader reader = new TextFileReader(inputFileName);
-		reader.setPrintNexts(false);
-
-		while (reader.hasNext()) {
-			num_sents++;
-
-			if (sents.size() == num_train_sents) {
-				break;
-			}
-
-			String[] parts = reader.next().split("\t");
-
-			if (parts.length != 3) {
-				continue;
-			}
-
-			String sent = parts[2];
-			String[] words = sent.split(" ");
-
-			if (num_sents % 100000 == 0) {
-				double ratio = 1f * num_valid_sents / num_sents * 100;
-				System.out.printf("\r[%d/%d (%s%%), %s]", num_valid_sents, num_sents, nf.format(ratio), stopWatch.stop());
-			}
-
-			if (words.length < min_sent_size || words.length > max_sent_size) {
-				continue;
-			}
-
-			num_valid_sents++;
-
-			normalizeSentence(words);
-
-			Integer[] ws = new Integer[words.length];
-			for (int i = 0; i < words.length; i++) {
-				ws[i] = vocab.getIndexWithIncrement(words[i]);
-			}
-			sents.add(ws);
-		}
-		reader.close();
-
-		System.out.printf("\r[%d/%d, %s]\n", num_valid_sents, num_sents, stopWatch.stop());
-
-	}
-
 	/** Example using Skip-Gram model */
 	// public static void skipGram() throws IOException, TException, InterruptedException, UnknownWordException {
 	// List<Integer[]> sents = new ArrayList<Integer[]>();
-	// Vocabulary vocab = new Vocabulary();
+	// Vocab vocab = new Vocab();
 	//
 	// readSentences(MIRPath.OHSUMED_SENTS_FILE, vocab, sents);
 	//
@@ -251,18 +155,107 @@ public class Word2VecExamples {
 			use_hierarchical_softmax = true;
 		}
 
-		int min_sent_size = Integer.parseInt(prop.getProperty("min_sent_size"));
-		int max_sent_size = Integer.parseInt(prop.getProperty("max_sent_size"));
 		int num_train_sents = Integer.MAX_VALUE;
 
 		if (!prop.getProperty("num_train_sents").equals("all")) {
 			num_train_sents = Integer.parseInt(prop.getProperty("num_train_sents"));
 		}
 
-		List<Integer[]> sents = new ArrayList<Integer[]>();
-		Vocabulary vocab = new Vocabulary();
+		int[][] sents = null;
+		Vocab vocab = null;
 
-		readSentences(inFileName, vocab, sents, min_sent_size, max_sent_size, num_train_sents);
+		{
+			int num_valid_sents = 0;
+
+			{
+				System.out.printf("read [%s]\n", inFileName);
+				Counter<String> wordCounts = new Counter<String>();
+				TextFileReader reader = new TextFileReader(inFileName);
+				reader.setPrintNexts(false);
+
+				while (reader.hasNext()) {
+					reader.print(500000);
+
+					String[] parts = reader.next().split("\t");
+
+					if (parts.length != 3) {
+						continue;
+					}
+
+					if (num_train_sents == num_valid_sents) {
+						break;
+					}
+
+					num_valid_sents++;
+
+					String[] words = parts[2].split("[\\s]+");
+
+					for (String word : words) {
+						wordCounts.incrementCount(word, 1);
+					}
+				}
+				reader.printLast();
+				reader.close();
+
+				wordCounts.pruneKeysBelowThreshold(min_freq);
+
+				Indexer<String> wordIndexer = new Indexer<String>();
+				List<String> words = wordCounts.getSortedKeys();
+				double[] cnts = new double[words.size()];
+
+				for (int i = 0; i < words.size(); i++) {
+					String word = words.get(i);
+					int cnt = (int) wordCounts.getCount(word);
+
+					wordIndexer.add(word);
+					cnts[i] = cnt;
+				}
+
+				vocab = new Vocab(wordIndexer, cnts);
+			}
+
+			{
+
+				sents = new int[num_valid_sents][];
+
+				TextFileReader reader = new TextFileReader(inFileName);
+				reader.setPrintNexts(false);
+
+				int loc = 0;
+
+				while (reader.hasNext()) {
+					reader.print(500000);
+
+					String[] parts = reader.next().split("\t");
+
+					if (parts.length != 3) {
+						continue;
+					}
+
+					if (loc == num_train_sents) {
+						break;
+					}
+
+					String[] words = parts[2].split("[\\s]+");
+					List<Integer> ws = new ArrayList<Integer>();
+
+					for (int i = 0; i < words.length; i++) {
+						String word = words[i];
+						int w = vocab.getWordIndexer().indexOf(word);
+						if (w < 0) {
+							continue;
+						}
+						ws.add(w);
+					}
+
+					int[] ws2 = new int[ws.size()];
+					ArrayUtils.copy(ws, ws2);
+					sents[loc++] = ws2;
+				}
+				reader.printLast();
+				reader.close();
+			}
+		}
 
 		Word2VecTrainerBuilder builder = Word2VecModel.trainer();
 

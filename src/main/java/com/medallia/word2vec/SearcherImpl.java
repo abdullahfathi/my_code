@@ -8,6 +8,9 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.primitives.Doubles;
+import com.medallia.word2vec.Searcher.Match;
+import com.medallia.word2vec.Searcher.SemanticDifference;
+import com.medallia.word2vec.Searcher.UnknownWordException;
 import com.medallia.word2vec.util.Pair;
 
 /** Implementation of {@link Searcher} */

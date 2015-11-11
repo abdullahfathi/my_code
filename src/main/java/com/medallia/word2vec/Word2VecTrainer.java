@@ -21,7 +21,7 @@ import com.medallia.word2vec.neuralnetwork.NeuralNetworkTrainer.NeuralNetworkMod
 import com.medallia.word2vec.util.AC;
 import com.medallia.word2vec.util.ProfilingTimer;
 
-import ohs.types.Vocabulary;
+import ohs.types.Vocab;
 
 /** Responsible for training a word2vec model */
 class Word2VecTrainer {
@@ -35,34 +35,17 @@ class Word2VecTrainer {
 		return counts;
 	}
 
-	private final int minFrequency;
-	private final Vocabulary vocab;
+	private final Vocab vocab;
 
 	private final NeuralNetworkConfig neuralNetworkConfig;
 
-	Word2VecTrainer(Integer minFrequency, Vocabulary vocab, NeuralNetworkConfig neuralNetworkConfig) {
+	Word2VecTrainer(Vocab vocab, NeuralNetworkConfig neuralNetworkConfig) {
 		this.vocab = vocab;
-		this.minFrequency = minFrequency;
 		this.neuralNetworkConfig = neuralNetworkConfig;
 	}
 
-	/**
-	 * @return Tokens with their count, sorted by frequency decreasing, then lexicographically ascending
-	 */
-	private ImmutableMultiset<String> filterAndSort(final Multiset<String> counts) {
-		// This isn't terribly efficient, but it is deterministic
-		// Unfortunately, Guava's multiset doesn't give us a clean way to order both by count and element
-		return Multisets.copyHighestCountFirst(ImmutableSortedMultiset.copyOf(Multisets.filter(counts, new Predicate<String>() {
-			@Override
-			public boolean apply(String s) {
-				return counts.count(s) >= minFrequency;
-			}
-		})));
-
-	}
-
 	/** Train a model using the given data */
-	Word2VecModel train(Log log, TrainingProgressListener listener, List<Integer[]> sents) throws InterruptedException {
+	Word2VecModel train(Log log, TrainingProgressListener listener, int[][] sents) throws InterruptedException {
 		try (ProfilingTimer timer = ProfilingTimer.createLoggingSubtasks(log, "Training word2vec")) {
 			// final Multiset<String> counts;
 			//
@@ -71,10 +54,10 @@ class Word2VecTrainer {
 			// counts = (vocab.isPresent()) ? vocab.get() : count(Iterables.concat(sents));
 			// }
 
-			try (AC ac = timer.start("Filtering and sorting vocabulary")) {
-				listener.update(Stage.FILTER_SORT_VOCAB, 0.0);
-				vocab.getWordCounts().pruneKeysBelowThreshold(minFrequency);
-			}
+			// try (AC ac = timer.start("Filtering and sorting vocabulary")) {
+			// listener.update(Stage.FILTER_SORT_VOCAB, 0.0);
+			// vocab.getWordCounts().pruneKeysBelowThreshold(minFrequency);
+			// }
 
 			final Map<Integer, HuffmanNode> huffmanNodes;
 			try (AC task = timer.start("Create Huffman encoding")) {
@@ -86,7 +69,7 @@ class Word2VecTrainer {
 				model = neuralNetworkConfig.createTrainer(vocab, huffmanNodes, listener).train(sents);
 			}
 
-			return new Word2VecModel(vocab.getWords(), model.layerSize(), model.vectors());
+			return new Word2VecModel(vocab.getWordIndexer().getObjects(), model.layerSize(), model.vectors());
 		}
 	}
 }

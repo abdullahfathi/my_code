@@ -9,7 +9,7 @@ import com.google.common.collect.Multiset;
 import com.medallia.word2vec.Word2VecTrainerBuilder.TrainingProgressListener;
 import com.medallia.word2vec.Word2VecTrainerBuilder.TrainingProgressListener.Stage;
 
-import ohs.types.Vocabulary;
+import ohs.types.Vocab;
 
 /**
  * Word2Vec library relies on a Huffman encoding scheme
@@ -55,7 +55,7 @@ public class HuffmanCoding {
 		}
 	}
 
-	private final Vocabulary vocab;
+	private final Vocab vocab;
 	private final TrainingProgressListener listener;
 
 	/**
@@ -64,7 +64,7 @@ public class HuffmanCoding {
 	 * @param listener
 	 *            Progress listener
 	 */
-	public HuffmanCoding(Vocabulary vocab, TrainingProgressListener listener) {
+	public HuffmanCoding(Vocab vocab, TrainingProgressListener listener) {
 		this.vocab = vocab;
 		this.listener = listener;
 	}
@@ -140,15 +140,15 @@ public class HuffmanCoding {
 	 * @return {@link Map} from each given token to a {@link HuffmanNode}
 	 */
 	public Map<Integer, HuffmanNode> encode() throws InterruptedException {
-		final int numTokens = vocab.size();
+		final int numTokens = vocab.getWordIndexer().size();
 
 		int[] parentNode = new int[numTokens * 2 + 1];
 		byte[] binary = new byte[numTokens * 2 + 1];
 		long[] count = new long[numTokens * 2 + 1];
 		int i = 0;
 
-		for (int w : vocab.getWordCounts().getSortedKeys()) {
-			count[i] = (long) vocab.getWordCounts().getCount(w);
+		for (int w = 0; w < numTokens; w++) {
+			count[i] = (long) vocab.getWordCount(w);
 			i++;
 		}
 		Preconditions.checkState(i == numTokens, "Expected %s to match %s", i, numTokens);
@@ -164,7 +164,7 @@ public class HuffmanCoding {
 	 * @return Ordered map from each token to its {@link HuffmanNode}, ordered by frequency descending
 	 */
 	private Map<Integer, HuffmanNode> encode(byte[] binary, int[] parentNode) throws InterruptedException {
-		int numTokens = vocab.size();
+		int numTokens = vocab.getWordIndexer().size();
 
 		// Now assign binary code to each unique token
 		Map<Integer, HuffmanNode> result = new HashMap<Integer, HuffmanNode>();
@@ -178,7 +178,7 @@ public class HuffmanCoding {
 		// }
 
 		int nodeIdx = 0;
-		for (int w : vocab.getWordCounts().getSortedKeys()) {
+		for (int w = 0; w < vocab.getWordIndexer().size(); w++) {
 			int curNodeIdx = nodeIdx;
 			ArrayList<Byte> code = new ArrayList<>();
 			ArrayList<Integer> points = new ArrayList<>();

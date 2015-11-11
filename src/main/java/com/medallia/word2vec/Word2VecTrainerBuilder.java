@@ -12,7 +12,7 @@ import com.medallia.word2vec.neuralnetwork.NeuralNetworkConfig;
 import com.medallia.word2vec.neuralnetwork.NeuralNetworkType;
 import com.medallia.word2vec.util.AutoLog;
 
-import ohs.types.Vocabulary;
+import ohs.types.Vocab;
 
 /**
  * Builder pattern for training a new {@link Word2VecModel}
@@ -168,7 +168,7 @@ public class Word2VecTrainerBuilder {
 	}
 
 	/** Train the model */
-	public Word2VecModel train(Vocabulary vocab, List<Integer[]> sents) throws InterruptedException {
+	public Word2VecModel train(Vocab vocab, int[][] sents) throws InterruptedException {
 		this.type = MoreObjects.firstNonNull(type, NeuralNetworkType.CBOW);
 		this.initialLearningRate = MoreObjects.firstNonNull(initialLearningRate, type.getDefaultInitialLearningRate());
 		if (this.numThreads == null)
@@ -185,7 +185,7 @@ public class Word2VecTrainerBuilder {
 			}
 		});
 
-		return new Word2VecTrainer(minFrequency, vocab,
+		return new Word2VecTrainer(vocab,
 
 				new NeuralNetworkConfig(type, numThreads, iterations, layerSize,
 

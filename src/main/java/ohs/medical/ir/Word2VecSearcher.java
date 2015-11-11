@@ -18,6 +18,11 @@ public class Word2VecSearcher {
 		for (int i = 0; i < model.getVocab().size(); i++) {
 			wordIndexer.add(model.getVocab().get(i));
 		}
+		
+		
+
+		System.out.println(model.getVocab().size());
+		System.out.println(wordIndexer.size());
 
 		this.layerSize = model.getLayerSize();
 		this.vectors = model.getVectors();

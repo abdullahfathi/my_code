@@ -294,12 +294,40 @@ public class StrUtils {
 		return regex;
 	}
 
-	public static String normalizeNumbers(String text) {
-		return normalizeSpaces(text.replaceAll("\\d+", " "));
+	private static Pattern p = Pattern.compile("\\d+[\\d,\\.]*");
+
+	public static String normalizeNumbers(String s) {
+		Matcher m = p.matcher(s);
+
+		if (m.find()) {
+			StringBuffer sb = new StringBuffer();
+			do {
+				String g = m.group();
+				g = g.replace(",", "");
+
+				StringBuffer sb2 = new StringBuffer("<N");
+
+				String[] toks = g.split("\\.");
+				for (int j = 0; j < toks.length; j++) {
+					String tok = toks[j];
+					sb2.append(tok.length());
+
+					if (j != toks.length - 1) {
+						sb2.append("_");
+					}
+				}
+				sb2.append(">");
+				String r = sb2.toString();
+				m.appendReplacement(sb, r);
+			} while (m.find());
+			m.appendTail(sb);
+			s = sb.toString();
+		}
+		return s;
 	}
 
-	public static String normalizePunctuations(String text) {
-		return normalizeSpaces(text.replaceAll("\\p{Punct}+", " "));
+	public static String normalizePunctuations(String s) {
+		return normalizeSpaces(s.replaceAll("\\p{Punct}+", " "));
 	}
 
 	public static String normalizeSpaces(String text) {
@@ -366,9 +394,9 @@ public class StrUtils {
 
 			if (UnicodeBlock.HANGUL_SYLLABLES.equals(unicodeBlock)
 
-			|| UnicodeBlock.HANGUL_COMPATIBILITY_JAMO.equals(unicodeBlock)
+					|| UnicodeBlock.HANGUL_COMPATIBILITY_JAMO.equals(unicodeBlock)
 
-			|| UnicodeBlock.HANGUL_JAMO.equals(unicodeBlock)) {
+					|| UnicodeBlock.HANGUL_JAMO.equals(unicodeBlock)) {
 				types[i] = 1;
 			} else if (Character.isWhitespace(ch)) {
 				types[i] = 2;

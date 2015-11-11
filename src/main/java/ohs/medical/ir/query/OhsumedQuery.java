@@ -64,7 +64,6 @@ public class OhsumedQuery implements BaseQuery {
 
 	public String getSearchText() {
 		String ret = patientInfo + "\n" + infoRequest;
-
 		ret = ret.replaceAll("[\\p{Punct}]+", " ");
 		return ret;
 	}

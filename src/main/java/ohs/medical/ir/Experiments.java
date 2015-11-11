@@ -320,7 +320,14 @@ public class Experiments {
 		norm = Math.sqrt(norm);
 		wwc.scale(1f / norm);
 
-		StrCounterMap cm = new StrCounterMap();
+		List<String> words = wwc.getSortedKeys();
+		//
+		// StrCounterMap cm = new StrCounterMap();
+		// for (int i = 0; i < words.size() && i < 5; i++) {
+		// Counter<String> c = searcher.search(words.get(i));
+		// cm.setCounter(words.get(i), c);
+		// }
+
 		double[] qwv = new double[searcher.getLayerSize()];
 
 		for (String word : wwc.getSortedKeys()) {
@@ -335,6 +342,9 @@ public class Experiments {
 
 		double[][] wvs = searcher.getVectors();
 		StrCounter c = new StrCounter();
+
+		int dim = wvs.length;
+
 		for (int i = 0; i < wvs.length; i++) {
 			String word = searcher.getWordIndexer().getObject(i);
 			if (word.contains("<N")) {
@@ -342,14 +352,27 @@ public class Experiments {
 			}
 			double sim = ArrayMath.dotProduct(qwv, wvs[i]);
 			c.incrementCount(word, sim);
-
 		}
 
 		StrCounter ret = new StrCounter(wcs);
 
-		List<String> words = c.getSortedKeys();
-		for (int i = 0; i < words.size() && i < 5; i++) {
-			ret.incrementCount(words.get(i), 1);
+		words = c.getSortedKeys();
+		for (int i = 0, j = 0; i < words.size(); i++) {
+			String word = words.get(i);
+			double sim = c.getCount(word);
+			if (sim < 0.5) {
+				break;
+			}
+
+			if (ret.containsKey(word)) {
+				continue;
+			}
+
+			if (j++ == 5) {
+				break;
+			}
+
+			ret.incrementCount(word, 1);
 		}
 
 		// System.out.println(wcs.toString());
@@ -363,7 +386,8 @@ public class Experiments {
 	public void searchByKldFbWordVectorExp() throws Exception {
 		System.out.println("search by KLD FB Word Vector Exp.");
 
-		Word2VecSearcher vSearcher = new Word2VecSearcher(Word2VecModel.fromSerFile("../../data/medical_ir/ohsumed/word2vec_model.ser.gz"));
+		Word2VecSearcher vSearcher = new Word2VecSearcher(
+				Word2VecModel.fromSerFile("../../data/medical_ir/ohsumed/word2vec_model_stem.ser.gz"));
 
 		for (int i = 0; i < queryFileNames.length; i++) {
 			List<BaseQuery> bqs = QueryReader.readQueries(queryFileNames[i]);
@@ -390,13 +414,13 @@ public class Experiments {
 
 				int num_ret_docs = 1000;
 
-				BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(qlm2, wordIndexer));
+				BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(qlm1, wordIndexer));
 				SparseVector docScores = SearcherUtils.search(lbq, is, num_ret_docs);
 
 				WordCountBox wcb = WordCountBox.getWordCountBox(ir, docScores, wordIndexer, IndexFieldName.CONTENT);
 
 				KLDivergenceScorer scorer = new KLDivergenceScorer();
-				scorer.score(wcb, qlm1);
+				// scorer.score(wcb, qlm1);
 
 				RelevanceModelBuilder rmb = new RelevanceModelBuilder();
 				SparseVector rm = rmb.getRelevanceModel(wcb, docScores);
@@ -404,7 +428,7 @@ public class Experiments {
 
 				double mixture = 0.5;
 
-				SparseVector qlm3 = VectorMath.addAfterScale(qlm1, rm, 1 - mixture, mixture);
+				SparseVector qlm3 = VectorMath.addAfterScale(qlm2, rm, 1 - mixture, mixture);
 
 				docScores = scorer.score(wcb, qlm3);
 
@@ -425,7 +449,8 @@ public class Experiments {
 	public void searchByKldFbWordVectorPrior() throws Exception {
 		System.out.println("search by KLD FB Word Vector Prior.");
 
-		Word2VecSearcher vSearcher = new Word2VecSearcher(Word2VecModel.fromSerFile("../../data/medical_ir/ohsumed/word2vec_model.ser.gz"));
+		Word2VecSearcher vSearcher = new Word2VecSearcher(
+				Word2VecModel.fromSerFile("../../data/medical_ir/ohsumed/word2vec_model_stem.ser.gz"));
 		for (int i = 0; i < queryFileNames.length; i++) {
 			List<BaseQuery> bqs = QueryReader.readQueries(queryFileNames[i]);
 			IndexSearcher is = iss[i];

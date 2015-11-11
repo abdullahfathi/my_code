@@ -739,34 +739,31 @@ public class ArrayUtils {
 	}
 
 	public static List<Integer>[] splitInOrder(List<Integer> indexList, double[] proportions) {
-		DenseVector fold_prop = new DenseVector(copy(proportions));
-		fold_prop.normalizeAfterSummation();
+		double[] fold_prop = copy(proportions);
+		ArrayMath.normalize(fold_prop);
 
-		DenseVector fold_maxIndex = fold_prop.copy();
+		double[] fold_maxIndex = copy(fold_prop);
 
-		for (int i = 1; i < fold_maxIndex.size(); i++) {
-			double prevValue = fold_maxIndex.value(i - 1);
-			fold_maxIndex.increment(i, prevValue);
-		}
+		ArrayMath.cumulate(fold_maxIndex, fold_maxIndex);
 
-		List<Integer>[] ret = new List[fold_prop.size()];
+		List<Integer>[] ret = new List[fold_prop.length];
 
 		for (int i = 0; i < 3; i++) {
 			Collections.shuffle(indexList);
 		}
 
-		for (int i = 0; i < fold_maxIndex.size(); i++) {
+		for (int i = 0; i < fold_maxIndex.length; i++) {
 			ret[i] = new ArrayList<Integer>();
-			double value = fold_maxIndex.value(i);
+			double value = fold_maxIndex[i];
 			double maxIndex = Math.rint(value * indexList.size());
-			fold_maxIndex.set(i, maxIndex);
+			fold_maxIndex[i] = maxIndex;
 		}
 
 		for (int i = 0, j = 0; i < indexList.size(); i++) {
 			// This gives a slight bias toward putting an extra instance in the
 			// last InstanceList.
 
-			double maxIndex = fold_maxIndex.value(j);
+			double maxIndex = fold_maxIndex[j];
 
 			if (i >= maxIndex && j < ret.length) {
 				j++;

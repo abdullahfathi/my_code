@@ -6,7 +6,7 @@ import java.util.Map;
 import com.medallia.word2vec.Word2VecTrainerBuilder.TrainingProgressListener;
 import com.medallia.word2vec.huffman.HuffmanCoding.HuffmanNode;
 
-import ohs.types.Vocabulary;
+import ohs.types.Vocab;
 
 /**
  * Trainer for neural network using continuous bag of words
@@ -15,12 +15,12 @@ class CBOWModelTrainer extends NeuralNetworkTrainer {
 
 	/** {@link Worker} for {@link CBOWModelTrainer} */
 	private class CBOWWorker extends Worker {
-		private CBOWWorker(int randomSeed, int iter, List<Integer[]> batch) {
+		private CBOWWorker(int randomSeed, int iter, int[][] batch) {
 			super(randomSeed, iter, batch);
 		}
 
 		@Override
-		void trainSentence(Integer[] sent) {
+		void trainSentence(int[] sent) {
 			int senLen = sent.length;
 
 			// Map<Integer, String> map = new HashMap<>();
@@ -131,13 +131,12 @@ class CBOWModelTrainer extends NeuralNetworkTrainer {
 		}
 	}
 
-	CBOWModelTrainer(NeuralNetworkConfig config, Vocabulary counts, Map<Integer, HuffmanNode> huffmanNodes,
-			TrainingProgressListener listener) {
+	CBOWModelTrainer(NeuralNetworkConfig config, Vocab counts, Map<Integer, HuffmanNode> huffmanNodes, TrainingProgressListener listener) {
 		super(config, counts, huffmanNodes, listener);
 	}
 
 	@Override
-	Worker createWorker(int randomSeed, int iter, List<Integer[]> batch) {
+	Worker createWorker(int randomSeed, int iter, int[][] batch) {
 		return new CBOWWorker(randomSeed, iter, batch);
 	}
 }

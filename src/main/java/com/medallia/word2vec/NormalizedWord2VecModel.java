@@ -1,10 +1,6 @@
 package com.medallia.word2vec;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.DoubleBuffer;
-
-import com.medallia.word2vec.thrift.Word2VecModelThrift;
+import java.util.List;
 
 import ohs.math.ArrayMath;
 
@@ -17,7 +13,7 @@ public class NormalizedWord2VecModel extends Word2VecModel {
 		return new NormalizedWord2VecModel(model.vocab, model.layerSize, model.vectors);
 	}
 
-	private NormalizedWord2VecModel(Iterable<String> vocab, int layerSize, double[][] vectors) {
+	private NormalizedWord2VecModel(List<String> vocab, int layerSize, double[][] vectors) {
 		super(vocab, layerSize, vectors);
 		normalize();
 	}

@@ -1,17 +1,9 @@
 package com.medallia.word2vec;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.DoubleBuffer;
-import java.nio.FloatBuffer;
-import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,16 +11,13 @@ import java.util.List;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import com.google.common.primitives.Doubles;
 import com.medallia.word2vec.thrift.Word2VecModelThrift;
-import com.medallia.word2vec.util.AC;
 import com.medallia.word2vec.util.Common;
-import com.medallia.word2vec.util.ProfilingTimer;
 
 import ohs.io.IOUtils;
-import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
+import ohs.math.ArrayUtils;
+import ohs.types.Counter;
 
 /**
  * Represents the Word2Vec model, containing vectors for each word
@@ -59,6 +48,10 @@ public class Word2VecModel {
 		List<String> vocab = IOUtils.readStrings(ois);
 		double[][] vectors = IOUtils.readDoubleMatrix(ois);
 		ois.close();
+
+		int[] dim = ArrayUtils.dimensions(vectors);
+
+		System.out.printf("read [%d] words and [%d, %d] matrix at [%s]\n", vocab.size(), dim[0], dim[1], fileName);
 
 		return new Word2VecModel(vocab, layerSize, vectors);
 
@@ -117,8 +110,8 @@ public class Word2VecModel {
 
 	final double[][] vectors;
 
-	Word2VecModel(Iterable<String> vocab, int layerSize, double[][] vectors) {
-		this.vocab = ImmutableList.copyOf(vocab);
+	Word2VecModel(List<String> vocab, int layerSize, double[][] vectors) {
+		this.vocab = vocab;
 		this.layerSize = layerSize;
 		this.vectors = vectors;
 	}
@@ -139,7 +132,7 @@ public class Word2VecModel {
 	}
 
 	/**
-	 * @return Vocabulary
+	 * @return Vocab
 	 */
 	public List<String> getVocab() {
 		return vocab;

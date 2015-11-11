@@ -6,7 +6,7 @@ import java.util.Map;
 import com.medallia.word2vec.Word2VecTrainerBuilder.TrainingProgressListener;
 import com.medallia.word2vec.huffman.HuffmanCoding.HuffmanNode;
 
-import ohs.types.Vocabulary;
+import ohs.types.Vocab;
 
 /**
  * Trainer for neural network using skip gram
@@ -15,12 +15,12 @@ class SkipGramModelTrainer extends NeuralNetworkTrainer {
 
 	/** {@link Worker} for {@link SkipGramModelTrainer} */
 	private class SkipGramWorker extends Worker {
-		private SkipGramWorker(int randomSeed, int iter, List<Integer[]> batch) {
+		private SkipGramWorker(int randomSeed, int iter, int[][] batch) {
 			super(randomSeed, iter, batch);
 		}
 
 		@Override
-		void trainSentence(Integer[] sent) {
+		void trainSentence(int[] sent) {
 			int len = sent.length;
 
 			for (int loc = 0; loc < len; loc++) {
@@ -83,13 +83,13 @@ class SkipGramModelTrainer extends NeuralNetworkTrainer {
 		}
 	}
 
-	SkipGramModelTrainer(NeuralNetworkConfig config, Vocabulary counts, Map<Integer, HuffmanNode> huffmanNodes,
+	SkipGramModelTrainer(NeuralNetworkConfig config, Vocab counts, Map<Integer, HuffmanNode> huffmanNodes,
 			TrainingProgressListener listener) {
 		super(config, counts, huffmanNodes, listener);
 	}
 
 	@Override
-	Worker createWorker(int randomSeed, int iter, List<Integer[]> batch) {
+	Worker createWorker(int randomSeed, int iter, int[][] batch) {
 		return new SkipGramWorker(randomSeed, iter, batch);
 	}
 }
