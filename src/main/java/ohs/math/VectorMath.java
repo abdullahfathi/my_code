@@ -17,7 +17,7 @@ import ohs.types.Counter;
  */
 public class VectorMath {
 
-	public static void accumulate(Vector x) {
+	public static void cumulate(Vector x) {
 		double sum = 0;
 		for (int i = 0; i < x.size(); i++) {
 			sum += x.valueAtLoc(i);
@@ -397,7 +397,7 @@ public class VectorMath {
 	public static void main(String[] args) {
 		System.out.println("process begins.");
 
-		int[] indexes = ArrayUtils.enumerate(10);
+		int[] indexes = ArrayUtils.range(10);
 		double[] values = ArrayMath.random(0f, 1f, 10);
 
 		SparseVector sv = new SparseVector(indexes, values, 0);

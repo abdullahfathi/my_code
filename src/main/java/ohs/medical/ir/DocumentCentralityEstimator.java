@@ -89,7 +89,7 @@ public class DocumentCentralityEstimator {
 		SparseMatrix docWordCountData = wcb.getDocWordCounts();
 		int num_docs = docWordCountData.rowSize();
 
-		double[][] trans_probs = ArrayUtils.newMatrix(num_docs);
+		double[][] trans_probs = ArrayUtils.matrix(num_docs);
 
 		for (int i = 0; i < num_docs; i++) {
 			SparseVector dwcs1 = docWordCountData.vectorAtRowLoc(i);

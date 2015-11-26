@@ -692,7 +692,7 @@ public class ArrayMath {
 		{
 			// double[][] a = new double[][] { { 0.5, 0.5, 0 }, { 0.5, 0, 1 }, { 0, 0.5, 0 } };
 			double[][] a = new double[][] { { 0.5, 0.5, 0 }, { 0.5, 0, 0 }, { 0, 0.5, 1 } };
-			double[][] b = ArrayUtils.newMatrix(3, 1f / 3);
+			double[][] b = ArrayUtils.matrix(3, 1f / 3);
 
 			double[][] c = new double[3][3];
 
@@ -1380,11 +1380,28 @@ public class ArrayMath {
 		return scale(b, 1f / sum, b);
 	}
 
+	public static double substract(double[] a, double b, double[] c) {
+		if (!ArrayChecker.isSameDim(a, c)) {
+			throw new IllegalArgumentException();
+		}
+		double sum = 0;
+		for (int i = 0; i < a.length; i++) {
+			c[i] = a[i] - b;
+			sum += c[i];
+		}
+		return sum;
+	}
+
 	public static double substract(double[] a, double[] b, double[] c) {
 		if (!ArrayChecker.isSameDim(a, b, c)) {
 			throw new IllegalArgumentException();
 		}
-		return addAfterScale(a, b, 1, -1, c);
+		double sum = 0;
+		for (int i = 0; i < a.length; i++) {
+			c[i] = a[i] - b[i];
+			sum += c[i];
+		}
+		return sum;
 	}
 
 	/**

@@ -792,7 +792,7 @@ public class LA {
 		int rowDim = a.length;
 		int colDim = a[0].length;
 
-		double[][] identity = ArrayUtils.newIdentityMatrix(rowDim, 1);
+		double[][] identity = ArrayUtils.identity(rowDim, 1);
 		double[][] ai = joinColumns(a, identity);
 		double[][] ia_inverse = ArrayUtils.copy(ai);
 

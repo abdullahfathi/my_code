@@ -54,8 +54,8 @@ public class Experiments {
 		// e.searchSentsByQLD();
 		// e.searchSentsByKLDFB();
 
-		// e.searchByKldFbWordVectors();
-		e.searchByKldFbWordVectorExp();
+		e.searchByKldFbWordVectors();
+		// e.searchByKldFbWordVectorExp();
 		// e.searchByKldFbWordVectorPrior();
 
 		SearchResultEvaluator.main(args);
@@ -329,6 +329,7 @@ public class Experiments {
 		// }
 
 		double[] qwv = new double[searcher.getLayerSize()];
+		double[][] vectors = searcher.getVectors();
 
 		for (String word : wwc.getSortedKeys()) {
 			double[] v = searcher.getVector(word);
@@ -336,6 +337,14 @@ public class Experiments {
 				double tfidf = wwc.getCount(word);
 				ArrayMath.addAfterScale(qwv, v, 1, tfidf, qwv);
 			}
+
+			Counter<String> c = new Counter<>();
+
+			for (int i = 0; i < searcher.getWordIndexer().size(); i++) {
+				c.incrementCount(searcher.getWordIndexer().getObject(i), ArrayMath.dotProduct(v, vectors[i]));
+			}
+
+			System.out.printf("%s -> %s\n", word, c.toString());
 		}
 
 		ArrayMath.unitVector(qwv, qwv);
@@ -375,10 +384,10 @@ public class Experiments {
 			ret.incrementCount(word, 1);
 		}
 
-		// System.out.println(wcs.toString());
-		// System.out.println(c.toString());
-		// System.out.println(ret.toString());
-		// System.out.println();
+		System.out.println(wcs.toString());
+		System.out.println(c.toString());
+		System.out.println(ret.toString());
+		System.out.println();
 
 		return ret;
 	}
@@ -491,7 +500,7 @@ public class Experiments {
 					dwvs[k] = dwv;
 				}
 
-				double[][] sim_mat = ArrayUtils.newMatrix(dwvs.length, 0);
+				double[][] sim_mat = ArrayUtils.matrix(dwvs.length, 0);
 
 				for (int k = 0; k < dwvs.length; k++) {
 					double[] dwv1 = dwvs[k];
@@ -549,7 +558,8 @@ public class Experiments {
 	public void searchByKldFbWordVectors() throws Exception {
 		System.out.println("search by KLD FB Word Vectors.");
 
-		Word2VecSearcher vSearcher = new Word2VecSearcher(Word2VecModel.fromSerFile("../../data/medical_ir/ohsumed/word2vec_model.ser.gz"));
+		Word2VecSearcher vSearcher = new Word2VecSearcher(
+				Word2VecModel.fromSerFile("../../data/medical_ir/ohsumed/word2vec_model_stem.ser.gz"));
 
 		for (int i = 0; i < queryFileNames.length; i++) {
 			List<BaseQuery> bqs = QueryReader.readQueries(queryFileNames[i]);

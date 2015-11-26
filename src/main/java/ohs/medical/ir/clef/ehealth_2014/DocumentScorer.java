@@ -381,7 +381,7 @@ public class DocumentScorer {
 
 		int max_words = newWordIndexer.size();
 
-		double[][] transMat = ArrayUtils.newMatrix(max_words, 0);
+		double[][] transMat = ArrayUtils.matrix(max_words, 0);
 
 		for (int i = 0; i < co.rowSize(); i++) {
 			int w1 = co.indexAtRowLoc(i);
@@ -594,7 +594,7 @@ public class DocumentScorer {
 		}
 
 		int numNewWords = newWordIndexer.size();
-		double[][] m = ArrayUtils.newMatrix(numNewWords, 0);
+		double[][] m = ArrayUtils.matrix(numNewWords, 0);
 
 		for (int w1 : ret.keySet()) {
 			int nw1 = newWordIndexer.indexOf(w1);

@@ -82,7 +82,7 @@ public class DocumentCentralityEstimator {
 
 	private double[][] computeSimilarityMatrix(Indexer<Integer> docIndexer, SparseMatrix docWordCounts) {
 		int num_docs = docIndexer.size();
-		double[][] ret = ArrayUtils.newMatrix(num_docs, 0);
+		double[][] ret = ArrayUtils.matrix(num_docs, 0);
 
 		IntCounterMap temp1 = new IntCounterMap();
 		IntCounterMap temp2 = new IntCounterMap();

@@ -260,7 +260,7 @@ public class ArrayUtils {
 		return ret;
 	}
 
-	public static double enumerate(double[] a, double start, double increment) {
+	public static double range(double[] a, double start, double increment) {
 		double sum = 0;
 		for (int i = 0; i < a.length; i++) {
 			a[i] = start + i * increment;
@@ -269,23 +269,23 @@ public class ArrayUtils {
 		return sum;
 	}
 
-	public static int[] enumerate(int size) {
-		return enumerate(size, 0, 1);
+	public static int[] range(int size) {
+		return range(size, 0, 1);
 	}
 
-	public static double[] enumerate(int size, double start, double increment) {
+	public static double[] range(int size, double start, double increment) {
 		double[] a = new double[size];
-		enumerate(a, start, increment);
+		range(a, start, increment);
 		return a;
 	}
 
-	public static int[] enumerate(int size, int start, int increment) {
+	public static int[] range(int size, int start, int increment) {
 		int[] a = new int[size];
-		enumerate(a, 0, 1);
+		range(a, 0, 1);
 		return a;
 	}
 
-	public static int enumerate(int[] a, int start, int increment) {
+	public static int range(int[] a, int start, int increment) {
 		int sum = 0;
 		for (int i = 0; i < a.length; i++) {
 			a[i] = start + i * increment;
@@ -312,7 +312,7 @@ public class ArrayUtils {
 		System.out.println("process begins.");
 
 		{
-			int[] indexes = enumerate(10);
+			int[] indexes = range(10);
 
 			double[] props = new double[] { 3, 3, 3 };
 			ArrayMath.normalize(props);
@@ -365,6 +365,12 @@ public class ArrayUtils {
 
 			System.out.println(toString(indexes));
 			System.out.println(toString(indexes2));
+		}
+
+		{
+
+			double[] a = ArrayMath.random(0f, 1f, 10000000);
+
 		}
 
 		System.out.println("process ends.");
@@ -422,15 +428,7 @@ public class ArrayUtils {
 
 	}
 
-	public static double[] newArray(double... array) {
-		double[] ret = new double[array.length];
-		for (int i = 0; i < array.length; i++) {
-			ret[i] = array[i];
-		}
-		return ret;
-	}
-
-	public static double[] newArray(int size, double init) {
+	public static double[] array(int size, double init) {
 		double[] ret = new double[size];
 		if (init != 0) {
 			setAll(ret, init);
@@ -438,23 +436,23 @@ public class ArrayUtils {
 		return ret;
 	}
 
-	public static double[][] newDiagonalMatrix(double[] a) {
-		double[][] ret = newMatrix(a.length, 0);
+	public static double[][] diagonal(double[] a) {
+		double[][] ret = matrix(a.length, 0);
 		for (int i = 0; i < a.length; i++) {
 			ret[i][i] = a[i];
 		}
 		return ret;
 	}
 
-	public static double[][] newDiagonalMatrix(int size, double init) {
-		double[][] ret = newMatrix(size, 0);
+	public static double[][] diagonal(int size, double init) {
+		double[][] ret = matrix(size, 0);
 		for (int i = 0; i < ret.length; i++) {
 			ret[i][i] = init;
 		}
 		return ret;
 	}
 
-	public static double[][] newIdentityMatrix(int size, double init) {
+	public static double[][] identity(int size, double init) {
 		double[][] ret = new double[size][size];
 		for (int i = 0; i < size; i++) {
 			ret[i][i] = init;
@@ -462,18 +460,18 @@ public class ArrayUtils {
 		return ret;
 	}
 
-	public static double[][] newMatrix(int size, double init) {
-		return newMatrix(size, size, init);
+	public static double[][] matrix(int size, double init) {
+		return matrix(size, size, init);
 	}
 
-	public static double[][] newMatrix(int size) {
-		return newMatrix(size, 0);
+	public static double[][] matrix(int size) {
+		return matrix(size, 0);
 	}
 
-	public static double[][] newMatrix(int rowSize, int colSize, double init) {
+	public static double[][] matrix(int rowSize, int colSize, double init) {
 		double[][] ret = new double[rowSize][colSize];
 		for (int i = 0; i < ret.length; i++) {
-			ret[i] = newArray(colSize, init);
+			ret[i] = array(colSize, init);
 		}
 		return ret;
 	}
@@ -729,13 +727,13 @@ public class ArrayUtils {
 	}
 
 	public static int[] rankedIndexes(double[] a) {
-		int[] b = enumerate(a.length);
+		int[] b = range(a.length);
 		quickSort(b, copy(a), false);
 		return b;
 	}
 
 	public static void sort(double[] a) {
-		int[] b = enumerate(a.length);
+		int[] b = range(a.length);
 		quickSort(b, a, false);
 	}
 

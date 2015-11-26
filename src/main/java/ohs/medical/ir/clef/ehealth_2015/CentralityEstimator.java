@@ -54,7 +54,7 @@ public class CentralityEstimator {
 
 		int dim = weightVectors.size();
 
-		double[][] sim_matrix = ArrayUtils.newMatrix(dim, 0);
+		double[][] sim_matrix = ArrayUtils.matrix(dim, 0);
 
 		for (int i = 0; i < dim; i++) {
 			sim_matrix[i][i] = 1;

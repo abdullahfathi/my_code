@@ -1,5 +1,7 @@
 package ohs.neuralnet;
 
+import java.math.BigInteger;
+
 import edu.stanford.nlp.parser.shiftreduce.ShiftReduceTrainOptions.TrainingMethod;
 import ohs.math.ArrayMath;
 import ohs.math.ArrayUtils;
@@ -47,6 +49,7 @@ public class NeuralNet {
 		ArrayMath.random(0, 1, W2);
 		ArrayMath.random(0, 1, b1);
 		ArrayMath.random(0, 1, b2);
+
 	}
 
 	public void train(double[][] xs, double[][] ys) {
