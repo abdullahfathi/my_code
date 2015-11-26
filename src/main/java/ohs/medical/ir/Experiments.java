@@ -54,7 +54,8 @@ public class Experiments {
 		// e.searchSentsByQLD();
 		// e.searchSentsByKLDFB();
 
-		e.searchByKldFbWordVectors();
+		// e.searchByKldFbWordVectors();
+		e.searchByKldFbWordVectorExp2();
 		// e.searchByKldFbWordVectorExp();
 		// e.searchByKldFbWordVectorPrior();
 
@@ -390,6 +391,85 @@ public class Experiments {
 		System.out.println();
 
 		return ret;
+	}
+
+	public void searchByKldFbWordVectorExp2() throws Exception {
+		System.out.println("search by KLD FB Word Vector Exp 2.");
+
+		Word2VecSearcher vSearcher = new Word2VecSearcher(
+				Word2VecModel.fromSerFile("../../data/medical_ir/ohsumed/word2vec_model_stem.ser.gz"));
+
+		for (int i = 0; i < queryFileNames.length; i++) {
+			List<BaseQuery> bqs = QueryReader.readQueries(queryFileNames[i]);
+			IndexSearcher is = iss[i];
+			IndexReader ir = is.getIndexReader();
+
+			String outputFileName = resDirNames[i] + "kld-fb_wv-exp_2.txt";
+
+			TextFileWriter writer = new TextFileWriter(outputFileName);
+
+			for (int j = 0; j < bqs.size(); j++) {
+				BaseQuery bq = bqs.get(j);
+
+				Indexer<String> wordIndexer = new Indexer<String>();
+				StrCounter qwcs1 = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
+
+				SparseVector qlm1 = VectorUtils.toSparseVector(qwcs1, wordIndexer, true);
+				qlm1.normalize();
+
+				double[][] wvs = vSearcher.getVectors();
+				double[][] sims = ArrayUtils.matrix(qlm1.size());
+				double[] cents = new double[qlm1.size()];
+
+				for (int k = 0; k < qlm1.size(); k++) {
+					int w1 = qlm1.indexAtLoc(k);
+					double[] wv1 = wvs[w1];
+					for (int l = k + 1; l < qlm1.size(); l++) {
+						int w2 = qlm1.indexAtLoc(l);
+						double[] wv2 = wvs[w2];
+						double cosine = ArrayMath.dotProduct(wv1, wv2);
+						sims[k][l] = cosine;
+						sims[l][k] = cosine;
+					}
+				}
+
+				ArrayMath.doRandomWalk(sims, cents, 10, 0.000001, 0.85);
+
+				SparseVector qlm2 = qlm1.copy();
+				qlm2.setValues(cents);
+
+				int num_ret_docs = 1000;
+
+				BooleanQuery lbq = AnalyzerUtils.getQuery(VectorUtils.toCounter(qlm1, wordIndexer));
+				SparseVector docScores = SearcherUtils.search(lbq, is, num_ret_docs);
+
+				WordCountBox wcb = WordCountBox.getWordCountBox(ir, docScores, wordIndexer, IndexFieldName.CONTENT);
+
+				KLDivergenceScorer scorer = new KLDivergenceScorer();
+				// scorer.score(wcb, qlm1);
+
+				RelevanceModelBuilder rmb = new RelevanceModelBuilder();
+				SparseVector rm = rmb.getRelevanceModel(wcb, docScores);
+				// SparseVector prm = rmb.getPositionalRelevanceModel(qLM, wcb3, docScores);
+
+				double mixture = 0.5;
+
+				SparseVector qlm3 = VectorMath.addAfterScale(qlm2, rm, 1 - mixture, mixture);
+
+				docScores = scorer.score(wcb, qlm3);
+
+				docScores.normalizeAfterSummation();
+
+				System.out.println(bq);
+				System.out.printf("QM1:\t%s\n", VectorUtils.toCounter(qlm1, wordIndexer));
+				System.out.printf("QM2:\t%s\n", VectorUtils.toCounter(qlm2, wordIndexer));
+				System.out.printf("QM3:\t%s\n", VectorUtils.toCounter(qlm3, wordIndexer));
+
+				SearcherUtils.write(writer, bq.getId(), docScores);
+			}
+
+			writer.close();
+		}
 	}
 
 	public void searchByKldFbWordVectorExp() throws Exception {
