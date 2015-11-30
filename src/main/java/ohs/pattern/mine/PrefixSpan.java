@@ -16,7 +16,6 @@ import ohs.string.sim.search.ppss.Gram;
 import ohs.types.Counter;
 import ohs.types.ListMap;
 import ohs.types.Pair;
-import ohs.types.common.IntPair;
 
 /**
  * 
@@ -109,29 +108,29 @@ public class PrefixSpan {
 		// if (this.verbose) {
 		// this.sb.append(this.transaction.size() + "\n");
 		// }
-		List<IntPair> root = new ArrayList<IntPair>();
+		List<Pair> root = new ArrayList<Pair>();
 
 		for (int i = 0; i < records.size(); i++) {
-			root.add(new IntPair(i, -1));
+			root.add(new Pair(i, -1));
 		}
 
 		project(root);
 
 	}
 
-	private void project(List<IntPair> projected) {
+	private void project(List<Pair> projected) {
 
 		if (all) {
 			report(projected);
 		}
 
 		// Map<String, List<IntPair>> counter = new TreeMap<String, List<IntPair>>();
-		ListMap<String, IntPair> c = new ListMap<String, IntPair>();
+		ListMap<String, Pair> c = new ListMap<String, Pair>();
 
 		for (int i = 0; i < projected.size(); i++) {
-			IntPair info = projected.get(i);
-			int id = info.getFirst();
-			int pos = info.getSecond();
+			Pair info = projected.get(i);
+			int id = (int) info.getFirst();
+			int pos = (int) info.getSecond();
 			String[] items = records.get(id);
 
 			Map<String, Integer> tmp = new HashMap<String, Integer>();
@@ -145,7 +144,7 @@ public class PrefixSpan {
 
 			for (String item : tmp.keySet()) {
 				int new_pos = tmp.get(item);
-				c.put(item, new IntPair(id, new_pos));
+				c.put(item, new Pair(id, new_pos));
 			}
 		}
 
@@ -153,7 +152,7 @@ public class PrefixSpan {
 			Iterator<String> iter = c.keySet().iterator();
 			while (iter.hasNext()) {
 				String item = iter.next();
-				List<IntPair> locs = c.get(item);
+				List<Pair> locs = c.get(item);
 
 				if (locs.size() < min_support) {
 					iter.remove();
@@ -168,7 +167,7 @@ public class PrefixSpan {
 
 		{
 			for (String item : c.keySet()) {
-				List<IntPair> locs = c.get(item);
+				List<Pair> locs = c.get(item);
 				if (patterns.size() < max_pat_len) {
 					patterns.push(new Pair<String, Integer>(item, locs.size()));
 					project(locs);
@@ -196,7 +195,7 @@ public class PrefixSpan {
 		// in.close();
 	}
 
-	private void report(List<IntPair> projected) {
+	private void report(List<Pair> projected) {
 		if (projected == null || min_pat_len > patterns.size()) {
 			return;
 		}
@@ -216,7 +215,7 @@ public class PrefixSpan {
 		if (!patMap.containsKey(key)) {
 			List<Integer> ids = new ArrayList<Integer>();
 			for (int i = 0; i < projected.size(); i++) {
-				ids.add(projected.get(i).getFirst());
+				ids.add((int) projected.get(i).getFirst());
 			}
 			patMap.set(key, ids);
 		}

@@ -28,7 +28,7 @@ import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.types.ListMap;
-import ohs.types.common.IntPair;
+import ohs.types.Pair;
 import ohs.utils.StopWatch;
 import ohs.utils.StrUtils;
 
@@ -344,7 +344,7 @@ public class OrganizationIdentificationKernel implements Serializable {
 
 	public Counter<Organization> identify(BilingualText orgName) {
 		orgName = normalizer.normalize(orgName);
-		ListMap<UnivComponent, IntPair>[] labelMaps = detector.detect(orgName);
+		ListMap<UnivComponent, Pair<Integer, Integer>>[] labelMaps = detector.detect(orgName);
 
 		String[] names = new String[] { orgName.getKorean(), orgName.getEnglish() };
 		Counter<StringRecord>[] searchScoreData = new Counter[2];
@@ -362,13 +362,13 @@ public class OrganizationIdentificationKernel implements Serializable {
 				continue;
 			}
 
-			ListMap<UnivComponent, IntPair> labelLocs = labelMaps[i];
-			List<IntPair> locs = labelLocs.get(OrganizationDetector.UnivComponent.UNIVERSITY);
+			ListMap<UnivComponent, Pair<Integer, Integer>> labelLocs = labelMaps[i];
+			List<Pair<Integer, Integer>> locs = labelLocs.get(OrganizationDetector.UnivComponent.UNIVERSITY);
 
 			String subName = name;
 
 			if (locs.size() == 1) {
-				IntPair loc = locs.get(0);
+				Pair<Integer, Integer> loc = locs.get(0);
 				subName = subName.substring(loc.getFirst(), loc.getSecond());
 			}
 

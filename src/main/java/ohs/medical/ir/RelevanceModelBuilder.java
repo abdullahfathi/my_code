@@ -9,9 +9,8 @@ import ohs.math.VectorUtils;
 import ohs.matrix.SparseMatrix;
 import ohs.matrix.SparseVector;
 import ohs.types.Counter;
-import ohs.types.common.IntCounter;
-import ohs.types.common.IntCounterMap;
-import ohs.types.common.IntPair;
+import ohs.types.CounterMap;
+import ohs.types.Pair;
 
 public class RelevanceModelBuilder {
 
@@ -46,16 +45,16 @@ public class RelevanceModelBuilder {
 			int docId = docScores.indexAtLoc(i);
 			List<Integer> dWords = wcb.getDocWords().get(docId);
 
-			Counter<IntPair> psgLocScores = psgGenerator.generate(qWords, dWords);
+			Counter<Pair<Integer, Integer>> psgLocScores = psgGenerator.generate(qWords, dWords);
 
-			List<IntPair> psgLocs = psgLocScores.getSortedKeys();
+			List<Pair<Integer, Integer>> psgLocs = psgLocScores.getSortedKeys();
 
 			SparseVector[] psgWordCountData = new SparseVector[psgLocs.size()];
 
 			for (int j = 0; j < psgLocs.size() && j < psgLocs.size(); j++) {
 				Counter<Integer> c = new Counter<Integer>();
 
-				IntPair psgLoc = psgLocs.get(j);
+				Pair<Integer, Integer> psgLoc = psgLocs.get(j);
 
 				int start = psgLoc.getFirst();
 				int offset = psgLoc.getSecond();
@@ -169,21 +168,21 @@ public class RelevanceModelBuilder {
 
 		PassageGenerator psgGenerator = new PassageGenerator();
 
-		IntCounterMap cm = new IntCounterMap();
+		CounterMap<Integer, Integer> cm = new CounterMap<Integer, Integer>();
 
 		for (int i = 0; i < docScores.size() && i < num_fb_docs; i++) {
 			int docId = docScores.indexAtLoc(i);
 			List<Integer> dWords = wcb.getDocWords().get(docId);
 
-			Counter<IntPair> psgLocScores = psgGenerator.generate(qWords, dWords);
+			Counter<Pair<Integer, Integer>> psgLocScores = psgGenerator.generate(qWords, dWords);
 
-			List<IntPair> psgLocs = psgLocScores.getSortedKeys();
+			List<Pair<Integer, Integer>> psgLocs = psgLocScores.getSortedKeys();
 
 			SparseVector[] psgWordCountData = new SparseVector[psgLocs.size()];
-			IntCounter c = new IntCounter();
+			Counter<Integer> c = new Counter<Integer>();
 
 			for (int j = 0; j < psgLocs.size() && j < psgLocs.size(); j++) {
-				IntPair psgLoc = psgLocs.get(j);
+				Pair<Integer, Integer> psgLoc = psgLocs.get(j);
 
 				int start = psgLoc.getFirst();
 				int offset = psgLoc.getSecond();
@@ -271,13 +270,13 @@ public class RelevanceModelBuilder {
 
 		int fb_type = 1;
 
-		IntCounter fbCounts = new IntCounter();
+		Counter<Integer> fbCounts = new Counter<Integer>();
 
 		for (int i = 0; i < docScores.size(); i++) {
 			int did = docScores.indexAtLoc(i);
 			double doc_score = docScores.valueAtLoc(i);
 			List<Integer> words = wcb.getDocWords().get(did);
-			List<IntPair> locWords = PlmUtils.getQueryLocsInDocument(qlm, words);
+			List<Pair<Integer, Integer>> locWords = PlmUtils.getQueryLocsInDocument(qlm, words);
 
 			double real_doc_len = locWords.size();
 			double len_norm = Math.sqrt(2 * pi) * sigma;
@@ -286,7 +285,7 @@ public class RelevanceModelBuilder {
 			double[] posScores = new double[words.size()];
 
 			for (int j = 0; j < words.size(); j++) {
-				IntCounter c = new IntCounter();
+				Counter<Integer> c = new Counter<Integer>();
 
 				for (int qw : qlm.indexes()) {
 					c.incrementCount(qw, 0);

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ohs.matrix.SparseVector;
-import ohs.types.common.IntPair;
+import ohs.types.Pair;
 
 public class PlmUtils {
 	public static final double pi = Math.PI;
@@ -21,8 +21,8 @@ public class PlmUtils {
 		} else if (x < 0) {
 			res = sigma * (Math.asin(x) + pi / 2.0 - Math.sqrt(1 - x * x) + (1 - Math.abs(x)) * (1 - Math.abs(x)) / 2.0) / 2.0;
 		} else {
-			res = (pi - 1.0) * sigma / 2.0 - sigma
-					* (Math.asin(-x) + pi / 2.0 - Math.sqrt(1 - x * x) + (1 - Math.abs(x)) * (1 - Math.abs(x)) / 2.0) / 2.0;
+			res = (pi - 1.0) * sigma / 2.0
+					- sigma * (Math.asin(-x) + pi / 2.0 - Math.sqrt(1 - x * x) + (1 - Math.abs(x)) * (1 - Math.abs(x)) / 2.0) / 2.0;
 		}
 		return res;
 	}
@@ -79,14 +79,14 @@ public class PlmUtils {
 		return res;
 	}
 
-	public static List<IntPair> getQueryLocsInDocument(SparseVector queryModel, List<Integer> words) {
-		List<IntPair> ret = new ArrayList<IntPair>();
+	public static List<Pair<Integer, Integer>> getQueryLocsInDocument(SparseVector queryModel, List<Integer> words) {
+		List<Pair<Integer, Integer>> ret = new ArrayList<Pair<Integer, Integer>>();
 		for (int j = 0; j < words.size(); j++) {
 			int w = words.get(j);
 			if (queryModel.location(w) < 0) {
 				continue;
 			}
-			ret.add(new IntPair(j, w));
+			ret.add(new Pair<Integer, Integer>(j, w));
 		}
 		return ret;
 

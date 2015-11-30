@@ -2,11 +2,11 @@ package ohs.medical.ir;
 
 import java.util.List;
 
+import edu.stanford.nlp.util.IntPair;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseVector;
 import ohs.types.Counter;
-import ohs.types.common.IntCounter;
-import ohs.types.common.IntPair;
+import ohs.types.Pair;
 
 public class KLDivergenceScorer {
 
@@ -135,7 +135,7 @@ public class KLDivergenceScorer {
 		for (int i = 0; i < wcb.getDocWordCounts().rowSize(); i++) {
 			int docId = wcb.getDocWordCounts().indexAtRowLoc(i);
 			List<Integer> words = wcb.getDocWords().get(docId);
-			List<IntPair> locWords = PlmUtils.getQueryLocsInDocument(qLM, words);
+			List<Pair<Integer, Integer>> locWords = PlmUtils.getQueryLocsInDocument(qLM, words);
 
 			double doc_len = words.size();
 
@@ -149,10 +149,10 @@ public class KLDivergenceScorer {
 			// }
 
 			for (int j = 0; j < locWords.size(); j++) {
-				int center = locWords.get(j).getFirst();
+				int center = (int) locWords.get(j).getFirst();
 				double psg_len = PlmUtils.PropagationCountSum(center, doc_len, propFunction, sigma);
 
-				IntCounter c = new IntCounter();
+				Counter<Integer> c = new Counter<Integer>();
 
 				for (int w : qLM.indexes()) {
 					c.incrementCount(w, 0);
@@ -210,9 +210,9 @@ public class KLDivergenceScorer {
 
 			List<Integer> dWords = wcb.getDocWords().get(docId);
 
-			Counter<IntPair> psgLocScores = psgGenerator.generate(qWords, dWords);
+			Counter<Pair<Integer,Integer>> psgLocScores = psgGenerator.generate(qWords, dWords);
 
-			List<IntPair> psgLocs = psgLocScores.getSortedKeys();
+			List<Pair<Integer,Integer>> psgLocs = psgLocScores.getSortedKeys();
 
 			int num_psgs = Math.min(psgLocs.size(), 5);
 
@@ -246,7 +246,7 @@ public class KLDivergenceScorer {
 				for (int j = 0; j < num_psgs; j++) {
 					Counter<Integer> c = new Counter<Integer>();
 
-					IntPair psgLoc = psgLocs.get(j);
+					Pair<Integer,Integer> psgLoc = psgLocs.get(j);
 
 					int start = psgLoc.getFirst();
 					int offset = psgLoc.getSecond();

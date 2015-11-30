@@ -21,8 +21,6 @@ import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.DeepMap;
 import ohs.types.ListMap;
-import ohs.types.common.StrBidMap;
-import ohs.types.common.StrCounterMap;
 import ohs.utils.StrUtils;
 
 public class SearchResultEvaluator {
@@ -190,9 +188,9 @@ public class SearchResultEvaluator {
 				collName = f.getParentFile().getParentFile().getName();
 			}
 
-			StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(docMapFileName);
+			BidMap<String, String> docIdMap = DocumentIdMapper.readDocumentIdMap(docMapFileName);
 
-			StrCounterMap relData = RelevanceReader.readRelevances(relFileName);
+			CounterMap<String, String> relData = RelevanceReader.readRelevances(relFileName);
 			relData = RelevanceReader.filter(relData, docIdMap);
 
 			PerformanceEvaluator retEvaluator = new PerformanceEvaluator();
@@ -221,7 +219,7 @@ public class SearchResultEvaluator {
 
 			for (int j = 0; j < resultFiles.size(); j++) {
 				File resultFile = resultFiles.get(j);
-				StrCounterMap resultData = DocumentIdMapper
+				CounterMap<String, String> resultData = DocumentIdMapper
 						.mapIndexIdsToDocIds(PerformanceEvaluator.readSearchResults(resultFile.getPath()), docIdMap);
 
 				String paramStr = resultFile.getName().replace(".txt", "");
@@ -479,12 +477,12 @@ public class SearchResultEvaluator {
 				collName = f.getParentFile().getParentFile().getName();
 			}
 
-			StrBidMap docIdMap = new StrBidMap();
+			BidMap<String, String> docIdMap = new BidMap<String, String>();
 			if (docMapFileName != null && docMapFileName.length() > 0) {
 				docIdMap = DocumentIdMapper.readDocumentIdMap(docMapFileName);
 			}
 
-			StrCounterMap relData = RelevanceReader.readRelevances(relFileName);
+			CounterMap<String, String> relData = RelevanceReader.readRelevances(relFileName);
 
 			if (docIdMap.size() > 0) {
 				relData = RelevanceReader.filter(relData, docIdMap);
@@ -517,7 +515,7 @@ public class SearchResultEvaluator {
 			for (int j = 0; j < resFiles.size(); j++) {
 				File resFile = resFiles.get(j);
 
-				StrCounterMap resData = PerformanceEvaluator.readSearchResults(resFile.getPath());
+				CounterMap<String, String> resData = PerformanceEvaluator.readSearchResults(resFile.getPath());
 
 				if (docIdMap.size() > 0) {
 					resData = DocumentIdMapper.mapIndexIdsToDocIds(resData, docIdMap);

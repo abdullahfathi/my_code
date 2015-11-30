@@ -3,7 +3,6 @@ package ohs.medical.ir;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
@@ -11,7 +10,6 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 
-import com.medallia.word2vec.Searcher;
 import com.medallia.word2vec.Word2VecModel;
 
 import ohs.io.IOUtils;
@@ -28,13 +26,10 @@ import ohs.matrix.DenseVector;
 import ohs.matrix.SparseVector;
 import ohs.medical.ir.query.BaseQuery;
 import ohs.medical.ir.query.QueryReader;
+import ohs.types.BidMap;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
-import ohs.types.common.IntCounter;
-import ohs.types.common.StrBidMap;
-import ohs.types.common.StrCounter;
-import ohs.types.common.StrCounterMap;
 
 /**
  * 
@@ -180,7 +175,7 @@ public class Experiments {
 				docScores.normalizeAfterSummation();
 
 				Indexer<String> wordIndexer = new Indexer<String>();
-				StrCounter qwcs = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
+				Counter qwcs = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
 
 				SparseVector qlm = VectorUtils.toSparseVector(qwcs, wordIndexer, true);
 				qlm.normalize();
@@ -213,7 +208,7 @@ public class Experiments {
 				BaseQuery bq = bqs.get(j);
 
 				Indexer<String> wordIndexer = new Indexer<String>();
-				StrCounter qwcs = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
+				Counter<String> qwcs = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
 
 				SparseVector qlm = VectorUtils.toSparseVector(qwcs, wordIndexer, true);
 				qlm.normalize();
@@ -264,7 +259,7 @@ public class Experiments {
 				BaseQuery bq = bqs.get(j);
 
 				Indexer<String> wordIndexer = new Indexer<String>();
-				StrCounter qwcs = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
+				Counter<String> qwcs = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
 
 				SparseVector qlm = VectorUtils.toSparseVector(qwcs, wordIndexer, true);
 				qlm.normalize();
@@ -302,9 +297,9 @@ public class Experiments {
 		}
 	}
 
-	public StrCounter expand(IndexReader ir, Word2VecSearcher searcher, StrCounter wcs) throws IOException {
+	public Counter<String> expand(IndexReader ir, Word2VecSearcher searcher, Counter<String> wcs) throws IOException {
 
-		StrCounter wwc = new StrCounter();
+		Counter<String> wwc = new Counter<String>();
 		double norm = 0;
 
 		for (String word : wcs.keySet()) {
@@ -323,7 +318,7 @@ public class Experiments {
 
 		List<String> words = wwc.getSortedKeys();
 		//
-		// StrCounterMap cm = new StrCounterMap();
+		// Counter<String>Map cm = new Counter<String>Map();
 		// for (int i = 0; i < words.size() && i < 5; i++) {
 		// Counter<String> c = searcher.search(words.get(i));
 		// cm.setCounter(words.get(i), c);
@@ -351,7 +346,7 @@ public class Experiments {
 		ArrayMath.unitVector(qwv, qwv);
 
 		double[][] wvs = searcher.getVectors();
-		StrCounter c = new StrCounter();
+		Counter<String> c = new Counter<String>();
 
 		int dim = wvs.length;
 
@@ -364,7 +359,7 @@ public class Experiments {
 			c.incrementCount(word, sim);
 		}
 
-		StrCounter ret = new StrCounter(wcs);
+		Counter<String> ret = new Counter<String>(wcs);
 
 		words = c.getSortedKeys();
 		for (int i = 0, j = 0; i < words.size(); i++) {
@@ -397,7 +392,7 @@ public class Experiments {
 		System.out.println("search by KLD FB Word Vector Exp 2.");
 
 		Word2VecSearcher vSearcher = new Word2VecSearcher(
-				Word2VecModel.fromSerFile("../../data/medical_ir/ohsumed/word2vec_model_stem.ser.gz"));
+				Word2VecModel.fromSerFile("../../data/medical_ir/trec_cds/word2vec_model_stem.ser.gz"));
 
 		for (int i = 0; i < queryFileNames.length; i++) {
 			List<BaseQuery> bqs = QueryReader.readQueries(queryFileNames[i]);
@@ -412,31 +407,73 @@ public class Experiments {
 				BaseQuery bq = bqs.get(j);
 
 				Indexer<String> wordIndexer = new Indexer<String>();
-				StrCounter qwcs1 = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
+				Counter<String> qwcs1 = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
 
 				SparseVector qlm1 = VectorUtils.toSparseVector(qwcs1, wordIndexer, true);
 				qlm1.normalize();
 
+				SparseVector tfidfs = VectorUtils.toSparseVector(qwcs1, wordIndexer, true);
+
+				for (int k = 0; k < tfidfs.size(); k++) {
+					int w = tfidfs.indexAtLoc(k);
+					String word = wordIndexer.getObject(w);
+					double doc_freq = ir.docFreq(new Term(IndexFieldName.CONTENT, word));
+					double tf = Math.log(tfidfs.valueAtLoc(k)) + 1;
+					double num_docs = ir.maxDoc();
+					double idf = Math.log((num_docs + 1) / doc_freq);
+					double tfidf = tf * idf;
+					tfidfs.setAtLoc(k, tfidf);
+				}
+
+				ArrayMath.unitVector(tfidfs.values(), tfidfs.values());
+
 				double[][] wvs = vSearcher.getVectors();
 				double[][] sims = ArrayUtils.matrix(qlm1.size());
-				double[] cents = new double[qlm1.size()];
+				double[] cents = ArrayUtils.copy(tfidfs.values());
+
+				CounterMap cm = new CounterMap();
 
 				for (int k = 0; k < qlm1.size(); k++) {
 					int w1 = qlm1.indexAtLoc(k);
+					double tfidf1 = tfidfs.valueAtLoc(k);
+					String word1 = wordIndexer.getObject(w1);
+
+					if (word1.startsWith("<N")) {
+						continue;
+					}
+
 					double[] wv1 = wvs[w1];
 					for (int l = k + 1; l < qlm1.size(); l++) {
 						int w2 = qlm1.indexAtLoc(l);
+						double tfidf2 = tfidfs.valueAtLoc(l);
+						String word2 = wordIndexer.getObject(w2);
+
+						if (word2.startsWith("<N")) {
+							continue;
+						}
+
 						double[] wv2 = wvs[w2];
 						double cosine = ArrayMath.dotProduct(wv1, wv2);
-						sims[k][l] = cosine;
-						sims[l][k] = cosine;
+						double weight = cosine * tfidf1 * tfidf2;
+						if (cosine > 0.7) {
+							sims[k][l] = weight;
+							sims[l][k] = weight;
+							cm.setCount(word1, word2, weight);
+						}
 					}
 				}
 
-				ArrayMath.doRandomWalk(sims, cents, 10, 0.000001, 0.85);
+//				cm.normalize();
+//				cm = cm.invert();
+
+				ArrayMath.normalizeColumns(sims);
+
+				ArrayMath.doRandomWalk(sims, cents, 10, 0.000001, 0.8);
 
 				SparseVector qlm2 = qlm1.copy();
 				qlm2.setValues(cents);
+
+				// qlm2 = VectorMath.addAfterScale(new ohs.matrix.Vector[] { qlm1, qlm2 }, new double[] { .5, .5 });
 
 				int num_ret_docs = 1000;
 
@@ -470,6 +507,7 @@ public class Experiments {
 
 			writer.close();
 		}
+
 	}
 
 	public void searchByKldFbWordVectorExp() throws Exception {
@@ -491,12 +529,12 @@ public class Experiments {
 				BaseQuery bq = bqs.get(j);
 
 				Indexer<String> wordIndexer = new Indexer<String>();
-				StrCounter qwcs1 = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
+				Counter<String> qwcs1 = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
 
 				SparseVector qlm1 = VectorUtils.toSparseVector(qwcs1, wordIndexer, true);
 				qlm1.normalize();
 
-				StrCounter qwcs2 = expand(ir, vSearcher, qwcs1);
+				Counter<String> qwcs2 = expand(ir, vSearcher, qwcs1);
 
 				SparseVector qlm2 = VectorUtils.toSparseVector(qwcs2, wordIndexer, true);
 				qlm2.normalize();
@@ -555,7 +593,7 @@ public class Experiments {
 				BaseQuery bq = bqs.get(j);
 
 				Indexer<String> wordIndexer = new Indexer<String>();
-				StrCounter qwcs = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
+				Counter<String> qwcs = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
 
 				SparseVector qlm = VectorUtils.toSparseVector(qwcs, wordIndexer, true);
 				qlm.normalize();
@@ -654,7 +692,7 @@ public class Experiments {
 				BaseQuery bq = bqs.get(j);
 
 				Indexer<String> wordIndexer = new Indexer<String>();
-				StrCounter qwcs = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
+				Counter<String> qwcs = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
 
 				SparseVector qlm = VectorUtils.toSparseVector(qwcs, wordIndexer, true);
 				qlm.normalize();
@@ -737,7 +775,7 @@ public class Experiments {
 			String outFileName = resDirNames[i].replace("result", "result_sent") + "kld-fb.txt";
 			String logFileName = logDirNames[i].replace("log", "log_sent") + "kld-fb.txt";
 
-			StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(docIdMapFileNames[i]);
+			BidMap<String, String> docIdMap = DocumentIdMapper.readDocumentIdMap(docIdMapFileNames[i]);
 
 			// IOUtils.deleteFilesUnder(resDirNames[i]);
 
@@ -764,7 +802,7 @@ public class Experiments {
 				}
 				// logWriter.write("\n\n");
 
-				IntCounter c = new IntCounter();
+				Counter<Integer> c = new Counter<Integer>();
 
 				for (String docId : cm.keySet()) {
 					String s = docIdMap.getKey(docId);
@@ -778,7 +816,7 @@ public class Experiments {
 				SparseVector docScores = VectorUtils.toSparseVector(c);
 
 				Indexer<String> wordIndexer = new Indexer<String>();
-				StrCounter qwcs = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
+				Counter<String> qwcs = AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer);
 
 				SparseVector qlm = VectorUtils.toSparseVector(qwcs, wordIndexer, true);
 				qlm.normalize();
@@ -819,7 +857,7 @@ public class Experiments {
 			String outputFileName = resDirNames[i].replace("result", "result_sent") + "qld.txt";
 			String logFileName = logDirNames[i].replace("log", "log_sent") + "gld.txt";
 
-			StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(docIdMapFileNames[i]);
+			BidMap<String, String> docIdMap = DocumentIdMapper.readDocumentIdMap(docIdMapFileNames[i]);
 
 			// IOUtils.deleteFilesUnder(resDirNames[i]);
 
@@ -846,7 +884,7 @@ public class Experiments {
 				}
 				logWriter.write("\n\n");
 
-				IntCounter c = new IntCounter();
+				Counter<Integer> c = new Counter<Integer>();
 
 				for (String docId : cm.keySet()) {
 					String s = docIdMap.getKey(docId);

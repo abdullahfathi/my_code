@@ -19,7 +19,6 @@ import ohs.io.IOUtils;
 import ohs.lucene.common.IndexFieldName;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
-import ohs.types.common.IntCounter;
 
 public class NumericalWordStats {
 
@@ -139,7 +138,7 @@ public class NumericalWordStats {
 
 				BytesRef bytesRef = null;
 				PostingsEnum postingsEnum = null;
-				IntCounter wcs = new IntCounter();
+				Counter<Integer> wcs = new Counter<Integer>();
 				Map<Integer, String> temp = new TreeMap<Integer, String>();
 
 				while ((bytesRef = termsEnum.next()) != null) {

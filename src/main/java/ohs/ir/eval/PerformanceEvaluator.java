@@ -10,19 +10,18 @@ import ohs.medical.ir.clef.ehealth_2014.EHPath;
 import ohs.medical.ir.clef.ehealth_2014.RelevanceJudgementReader;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
-import ohs.types.common.StrCounterMap;
 
 public class PerformanceEvaluator {
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("process begins.");
 
-		StrCounterMap relevanceData = RelevanceJudgementReader.read(new File(EHPath.QUERY_2013_TEST_RELEVANCE_FILE));
+		CounterMap<String, String> relevanceData = RelevanceJudgementReader.read(new File(EHPath.QUERY_2013_TEST_RELEVANCE_FILE));
 
 		for (File file : new File(EHPath.OUTPUT_BASIC_DIR).listFiles()) {
 			String retModel = IOUtils.removeExtension(file.getName());
 
-			StrCounterMap resultData = new StrCounterMap();
+			CounterMap<String, String> resultData = new CounterMap<String, String>();
 
 			TextFileReader reader = new TextFileReader(file.getPath());
 			while (reader.hasNext()) {
@@ -45,8 +44,8 @@ public class PerformanceEvaluator {
 		System.out.println("process ends.");
 	}
 
-	public static StrCounterMap readSearchResults(String fileName) {
-		StrCounterMap ret = new StrCounterMap();
+	public static CounterMap<String, String> readSearchResults(String fileName) {
+		CounterMap<String, String> ret = new CounterMap<String, String>();
 		TextFileReader reader = new TextFileReader(fileName);
 		while (reader.hasNext()) {
 			String[] parts = reader.next().split("\t");
@@ -63,7 +62,7 @@ public class PerformanceEvaluator {
 
 	private int[] top_n_for_each_eval = { 10 };
 
-	public List<Performance> evalute(StrCounterMap resultData, StrCounterMap relevData) {
+	public List<Performance> evalute(CounterMap<String, String> resultData, CounterMap<String, String> relevData) {
 		List<Performance> ret = new ArrayList<Performance>();
 
 		for (int top_n : top_n_for_each_eval) {

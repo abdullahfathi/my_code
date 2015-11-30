@@ -11,8 +11,8 @@ import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.TermQuery;
 
+import ohs.types.Counter;
 import ohs.types.Indexer;
-import ohs.types.common.StrCounter;
 
 public class AnalyzerUtils {
 
@@ -31,11 +31,11 @@ public class AnalyzerUtils {
 		return builder.build();
 	}
 
-	public static BooleanQuery getQuery(StrCounter wordCounts) throws Exception {
+	public static BooleanQuery getQuery(Counter<String> wordCounts) throws Exception {
 		return getQuery(wordCounts, IndexFieldName.CONTENT);
 	}
 
-	public static BooleanQuery getQuery(StrCounter wordCounts, String field) throws Exception {
+	public static BooleanQuery getQuery(Counter<String> wordCounts, String field) throws Exception {
 		BooleanQuery.Builder builder = new BooleanQuery.Builder();
 		List<String> words = wordCounts.getSortedKeys();
 		for (int i = 0; i < words.size() && i < BooleanQuery.getMaxClauseCount(); i++) {
@@ -55,7 +55,7 @@ public class AnalyzerUtils {
 	public static BooleanQuery getQuery(String text, Analyzer analyzer, String field) throws Exception {
 		BooleanQuery.Builder builder = new BooleanQuery.Builder();
 
-		StrCounter c = getWordCounts(text, analyzer);
+		Counter<String> c = getWordCounts(text, analyzer);
 		List<String> words = c.getSortedKeys();
 
 		for (int i = 0; i < words.size() && i < BooleanQuery.getMaxClauseCount(); i++) {
@@ -68,8 +68,8 @@ public class AnalyzerUtils {
 		return builder.build();
 	}
 
-	public static StrCounter getWordCounts(String text, Analyzer analyzer) throws Exception {
-		StrCounter ret = new StrCounter();
+	public static Counter getWordCounts(String text, Analyzer analyzer) throws Exception {
+		Counter<String> ret = new Counter<String>();
 
 		TokenStream ts = analyzer.tokenStream(IndexFieldName.CONTENT, text);
 		CharTermAttribute attr = ts.addAttribute(CharTermAttribute.class);

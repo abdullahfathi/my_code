@@ -10,8 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import edu.stanford.nlp.util.IntPair;
 import ohs.types.Counter;
-import ohs.types.common.IntPair;
+import ohs.types.Pair;
 
 /**
  * @author Heung-Seon Oh
@@ -20,11 +21,11 @@ import ohs.types.common.IntPair;
  */
 public class GramOrderer implements Serializable {
 
-	private class PositionComparator implements Comparator<IntPair>, Serializable {
+	private class PositionComparator implements Comparator<Pair>, Serializable {
 
 		@Override
-		public int compare(IntPair o1, IntPair o2) {
-			return o1.getFirst() - o2.getFirst();
+		public int compare(Pair o1, Pair o2) {
+			return (int) o1.getFirst() - (int) o2.getFirst();
 		}
 	}
 
@@ -35,7 +36,7 @@ public class GramOrderer implements Serializable {
 	private boolean isAscendingOrder = true;
 
 	public GramOrderer() {
-		
+
 	}
 
 	public void determineGramOrders() {
@@ -127,10 +128,10 @@ public class GramOrderer implements Serializable {
 	 * @param grams
 	 * 
 	 *            Reorder the grams according to global gram orders.
-	 * */
+	 */
 	public void order(Gram[] grams) {
 		Set<Integer> unknown = new HashSet<Integer>();
-		List<IntPair> orderLocs = new ArrayList<IntPair>();
+		List<Pair> orderLocs = new ArrayList<Pair>();
 
 		for (int i = 0; i < grams.length; i++) {
 			Gram gram = grams[i];
@@ -139,7 +140,7 @@ public class GramOrderer implements Serializable {
 				unknown.add(i);
 				order = -unknown.size();
 			}
-			orderLocs.add(new IntPair(order, i));
+			orderLocs.add(new Pair(order, i));
 		}
 
 		Collections.sort(orderLocs, new PositionComparator());
@@ -152,7 +153,7 @@ public class GramOrderer implements Serializable {
 		}
 
 		for (int i = 0; i < orderLocs.size(); i++) {
-			int loc = orderLocs.get(i).getSecond();
+			int loc = (int) orderLocs.get(i).getSecond();
 			grams[i] = tempGrams[loc];
 		}
 	}

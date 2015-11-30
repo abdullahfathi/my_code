@@ -25,13 +25,11 @@ import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.types.ListMap;
-import ohs.types.common.IntCounterMap;
-import ohs.types.common.StrCounter;
 
 public class WordCountBox {
 
-	public static StrCounter getDocFreqs(IndexReader indexReader, String field, Collection<String> c) throws Exception {
-		StrCounter ret = new StrCounter();
+	public static Counter<String> getDocFreqs(IndexReader indexReader, String field, Collection<String> c) throws Exception {
+		Counter ret = new Counter();
 		for (String word : c) {
 			Term term = new Term(field, word);
 			double df = indexReader.docFreq(term);
@@ -136,8 +134,8 @@ public class WordCountBox {
 		return ret;
 	}
 
-	public static StrCounter getWordCounts(IndexReader indexReader, String field, StrCounter c) throws Exception {
-		StrCounter ret = new StrCounter();
+	public static Counter getWordCounts(IndexReader indexReader, String field, Counter<String> c) throws Exception {
+		Counter ret = new Counter();
 		for (String word : c.keySet()) {
 			Term term = new Term(field, word);
 			double cnt = indexReader.totalTermFreq(term);
@@ -175,7 +173,7 @@ public class WordCountBox {
 
 	public void computeWordCooccurrences(int window_size) {
 
-		IntCounterMap cm = new IntCounterMap();
+		CounterMap cm = new CounterMap();
 
 		for (int docId : docWords.keySet()) {
 			List<Integer> words = docWords.get(docId);

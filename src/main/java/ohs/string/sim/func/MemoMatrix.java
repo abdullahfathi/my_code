@@ -2,7 +2,8 @@ package ohs.string.sim.func;
 
 import java.text.NumberFormat;
 
-import ohs.types.common.IntPair;
+import edu.stanford.nlp.util.IntPair;
+import ohs.types.Pair;
 
 /**
  * 
@@ -21,7 +22,7 @@ public abstract class MemoMatrix {
 
 	protected String t;
 
-	protected IntPair indexAtBest;
+	protected Pair indexAtBest;
 
 	protected double best;
 
@@ -30,7 +31,7 @@ public abstract class MemoMatrix {
 		this.t = t;
 		values = new double[s.length() + 1][t.length() + 1];
 		computed = new boolean[s.length() + 1][t.length() + 1];
-		indexAtBest = new IntPair(-1, -1);
+		indexAtBest = new Pair(-1, -1);
 		best = Double.NEGATIVE_INFINITY;
 	}
 
@@ -45,10 +46,10 @@ public abstract class MemoMatrix {
 	}
 
 	public double getBestScore() {
-		return get(indexAtBest.getFirst(), indexAtBest.getSecond());
+		return get((int) indexAtBest.getFirst(), (int) indexAtBest.getSecond());
 	}
 
-	public IntPair getIndexAtBest() {
+	public Pair getIndexAtBest() {
 		return indexAtBest;
 	}
 
@@ -64,7 +65,7 @@ public abstract class MemoMatrix {
 		return values;
 	}
 
-	public void setIndexAtBest(IntPair indexAtBest) {
+	public void setIndexAtBest(Pair indexAtBest) {
 		this.indexAtBest = indexAtBest;
 	}
 

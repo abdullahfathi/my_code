@@ -19,10 +19,10 @@ import ohs.matrix.SparseVector;
 import ohs.medical.ir.query.BaseQuery;
 import ohs.medical.ir.query.QueryReader;
 import ohs.medical.ir.query.RelevanceReader;
+import ohs.types.BidMap;
+import ohs.types.Counter;
+import ohs.types.CounterMap;
 import ohs.types.Indexer;
-import ohs.types.common.StrBidMap;
-import ohs.types.common.StrCounter;
-import ohs.types.common.StrCounterMap;
 
 public class RelevanceCollector {
 
@@ -52,16 +52,16 @@ public class RelevanceCollector {
 
 		for (int i = 0; i < queryFileNames.length; i++) {
 			List<BaseQuery> bqs = QueryReader.readQueries(queryFileNames[i]);
-			StrCounterMap queryRels = RelevanceReader.readRelevances(relDataFileNames[i]);
+			CounterMap<String, String> queryRels = RelevanceReader.readRelevances(relDataFileNames[i]);
 
-			List<StrCounter> qs = new ArrayList<StrCounter>();
+			List<Counter<String>> qs = new ArrayList<Counter<String>>();
 
 			for (int j = 0; j < bqs.size(); j++) {
 				BaseQuery bq = bqs.get(j);
 				qs.add(AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer));
 			}
 
-			StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(docMapFileNames[i]);
+			BidMap<String, String> docIdMap = DocumentIdMapper.readDocumentIdMap(docMapFileNames[i]);
 
 			// queryRelevances = RelevanceReader.filter(queryRelevances, docIdMap);
 
@@ -83,7 +83,7 @@ public class RelevanceCollector {
 
 				Indexer<String> wordIndexer = new Indexer<String>();
 
-				StrCounter qwcs = qs.get(j);
+				Counter<String> qwcs = qs.get(j);
 
 				SparseVector q = VectorUtils.toSparseVector(qs.get(j), wordIndexer, true);
 
@@ -141,7 +141,7 @@ public class RelevanceCollector {
 
 		for (int i = 0; i < queryFileNames.length; i++) {
 			List<BaseQuery> bqs = new ArrayList<BaseQuery>();
-			StrCounterMap queryRels = new StrCounterMap();
+			CounterMap<String, String> queryRels = new CounterMap<String, String>();
 
 			File queryFile = new File(queryFileNames[i]);
 			File relvFile = new File(relDataFileNames[i]);
@@ -160,14 +160,14 @@ public class RelevanceCollector {
 				queryRels = RelevanceReader.readTrecGenomicsRelevances(relDataFileNames[i]);
 			}
 
-			List<StrCounter> qs = new ArrayList<StrCounter>();
+			List<Counter<String>> qs = new ArrayList<Counter<String>>();
 
 			for (int j = 0; j < bqs.size(); j++) {
 				BaseQuery bq = bqs.get(j);
 				qs.add(AnalyzerUtils.getWordCounts(bq.getSearchText(), analyzer));
 			}
 
-			StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(docMapFileNames[i]);
+			BidMap<String, String> docIdMap = DocumentIdMapper.readDocumentIdMap(docMapFileNames[i]);
 
 			// queryRelevances = RelevanceReader.filter(queryRelevances, docIdMap);
 
@@ -189,7 +189,7 @@ public class RelevanceCollector {
 
 				Indexer<String> wordIndexer = new Indexer<String>();
 
-				StrCounter qwcs = qs.get(j);
+				Counter<String> qwcs = qs.get(j);
 
 				SparseVector q = VectorUtils.toSparseVector(qs.get(j), wordIndexer, true);
 
@@ -275,7 +275,7 @@ public class RelevanceCollector {
 
 		for (int i = 0; i < queryFileNames.length; i++) {
 			List<BaseQuery> bqs = new ArrayList<BaseQuery>();
-			StrCounterMap queryRels = new StrCounterMap();
+			CounterMap<String, String> queryRels = new CounterMap<String, String>();
 
 			File queryFile = new File(queryFileNames[i]);
 			File relvFile = new File(relDataFileNames[i]);
@@ -294,7 +294,7 @@ public class RelevanceCollector {
 				queryRels = RelevanceReader.readTrecGenomicsRelevances(relDataFileNames[i]);
 			}
 
-			StrCounter qWordCounts = new StrCounter();
+			Counter<String> qWordCounts = new Counter<String>();
 
 			for (int j = 0; j < bqs.size(); j++) {
 				BaseQuery bq = bqs.get(j);
@@ -324,7 +324,7 @@ public class RelevanceCollector {
 		wcs.scale(1f / norm);
 	}
 
-	public String toString(StrCounter c) {
+	public String toString(Counter<String> c) {
 		StringBuffer sb = new StringBuffer();
 		List<String> keys = c.getSortedKeys();
 		for (int i = 0; i < keys.size(); i++) {

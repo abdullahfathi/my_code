@@ -1,7 +1,6 @@
 package ohs.medical.ir;
 
 import java.nio.file.Paths;
-import java.util.List;
 
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.queryparser.classic.QueryParser;
@@ -12,19 +11,13 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.similarities.LMDirichletSimilarity;
 import org.apache.lucene.store.FSDirectory;
 
-import ohs.io.IOUtils;
 import ohs.io.TextFileWriter;
 import ohs.lucene.common.AnalyzerUtils;
 import ohs.lucene.common.IndexFieldName;
 import ohs.lucene.common.MedicalEnglishAnalyzer;
 import ohs.math.VectorUtils;
 import ohs.matrix.SparseVector;
-import ohs.medical.ir.query.BaseQuery;
-import ohs.medical.ir.query.QueryReader;
-import ohs.medical.ir.query.RelevanceReader;
 import ohs.types.Indexer;
-import ohs.types.common.StrCounter;
-import ohs.types.common.StrCounterMap;
 
 /**
  * 
@@ -70,7 +63,7 @@ public class SearcherUtils {
 	}
 
 	public static SparseVector search(SparseVector qm, Indexer<String> wordIndexer, IndexSearcher is, int top_k) throws Exception {
-		Query q = AnalyzerUtils.getQuery((StrCounter) VectorUtils.toCounter(qm, wordIndexer));
+		Query q = AnalyzerUtils.getQuery(VectorUtils.toCounter(qm, wordIndexer));
 		return search(q, is, top_k);
 	}
 

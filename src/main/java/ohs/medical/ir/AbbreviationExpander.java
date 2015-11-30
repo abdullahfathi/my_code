@@ -10,8 +10,6 @@ import ohs.lucene.common.AnalyzerUtils;
 import ohs.lucene.common.MedicalEnglishAnalyzer;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
-import ohs.types.common.StrCounter;
-import ohs.types.common.StrCounterMap;
 import ohs.utils.StrUtils;
 
 public class AbbreviationExpander {
@@ -22,20 +20,20 @@ public class AbbreviationExpander {
 		for (int i = 0; i < collDirs.length; i++) {
 			String inputFileName = collDirs[i] + "abbrs_filter.txt";
 			String outputFileName = collDirs[i] + "abbrs_cm.txt";
-			StrCounterMap cm = readAbbreviationData(inputFileName);
+			CounterMap<String, String> cm = readAbbreviationData(inputFileName);
 			IOUtils.write(outputFileName, cm);
 		}
 	}
 
-	public static StrCounterMap readAbbreviationData(String fileName) throws Exception {
-		StrCounterMap ret = new StrCounterMap();
+	public static CounterMap<String, String> readAbbreviationData(String fileName) throws Exception {
+		CounterMap<String, String> ret = new CounterMap<String, String>();
 		Analyzer analyzer = MedicalEnglishAnalyzer.getAnalyzer();
 
 		TextFileReader reader = new TextFileReader(fileName);
 		while (reader.hasNext()) {
 			List<String> lines = reader.getNextLines();
 			String shortForm = lines.get(0).split("\t")[1];
-			StrCounter c = new StrCounter();
+			Counter<String> c = new Counter<String>();
 
 			for (int i = 1; i < lines.size(); i++) {
 				String[] parts = lines.get(i).split("\t");
@@ -66,14 +64,14 @@ public class AbbreviationExpander {
 		return ret;
 	}
 
-	private StrCounterMap abbrMap;
+	private CounterMap<String, String> abbrMap;
 
 	public AbbreviationExpander(String fileName) throws Exception {
 		abbrMap = readAbbreviationData(fileName);
 	}
 
-	public StrCounter expand(StrCounter qLM) {
-		StrCounter ret = new StrCounter();
+	public Counter<String> expand(Counter<String> qLM) {
+		Counter<String> ret = new Counter<String>();
 		double mixture = 0.5;
 
 		for (String word : qLM.keySet()) {
@@ -105,7 +103,7 @@ public class AbbreviationExpander {
 	}
 
 	public String expand(String searchText) {
-		StrCounter ret = new StrCounter();
+		Counter<String> ret = new Counter<String>();
 		double mixture = 0.5;
 
 		List<String> words = StrUtils.split(searchText);

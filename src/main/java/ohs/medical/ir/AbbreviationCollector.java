@@ -19,9 +19,7 @@ import ohs.lucene.common.IndexFieldName;
 import ohs.medical.ir.clef.ehealth_2014.AbbreviationExtractor;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
-import ohs.types.common.StrCounter;
-import ohs.types.common.StrCounterMap;
-import ohs.types.common.StrPair;
+import ohs.types.Pair;
 import ohs.utils.StopWatch;
 import ohs.utils.StrUtils;
 
@@ -90,9 +88,9 @@ public class AbbreviationCollector {
 
 				for (int k = 0; k < sents.length; k++) {
 					String sent = sents[k];
-					List<StrPair> pairs = ext.extract(sent);
+					List<Pair<String, String>> pairs = ext.extract(sent);
 
-					for (StrPair pair : pairs) {
+					for (Pair<String, String> pair : pairs) {
 						String shortForm = pair.getFirst();
 						String longForm = pair.getSecond();
 						String output = String.format("%s\t%s\t%d\t%d", shortForm, longForm, j, k);
@@ -139,7 +137,7 @@ public class AbbreviationCollector {
 				List<String> lines = reader.getNextLines();
 
 				String data = lines.get(0);
-				StrCounter c = new StrCounter();
+				Counter<String> c = new Counter<String>();
 
 				for (int j = 1; j < lines.size(); j++) {
 					String[] parts = lines.get(j).split("\t");
@@ -221,11 +219,11 @@ public class AbbreviationCollector {
 
 	}
 
-	private static List<Span[]> getSpans(List<StrPair> pairs, String content) {
+	private static List<Span[]> getSpans(List<Pair<String, String>> pairs, String content) {
 		List<Span[]> ret = new ArrayList<Span[]>();
 
 		for (int i = 0; i < pairs.size(); i++) {
-			StrPair pair = pairs.get(i);
+			Pair<String, String> pair = pairs.get(i);
 			String shortForm = pair.getFirst();
 			String longForm = pair.getSecond();
 
@@ -258,7 +256,7 @@ public class AbbreviationCollector {
 			// continue;
 			// }
 
-			StrCounterMap shortLongCounts = new StrCounterMap();
+			CounterMap<String, String> shortLongCounts = new CounterMap();
 
 			TextFileReader reader = new TextFileReader(abbrFileNames[i]);
 			while (reader.hasNext()) {
@@ -274,8 +272,8 @@ public class AbbreviationCollector {
 					// shortForm = capitalize(shortForm);
 					longForm = capitalize(longForm);
 
-					Set<StrPair> set = new HashSet<StrPair>();
-					StrPair sp = new StrPair(shortForm, longForm);
+					Set<Pair<String, String>> set = new HashSet<Pair<String, String>>();
+					Pair<String, String> sp = new Pair<String, String>(shortForm, longForm);
 					if (!set.contains(sp)) {
 						shortLongCounts.incrementCount(shortForm, longForm, 1);
 						set.add(sp);

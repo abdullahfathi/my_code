@@ -20,8 +20,8 @@ import ohs.matrix.SparseVector;
 import ohs.medical.ir.query.BaseQuery;
 import ohs.medical.ir.query.QueryReader;
 import ohs.medical.ir.query.RelevanceReader;
-import ohs.types.common.StrBidMap;
-import ohs.types.common.StrCounterMap;
+import ohs.types.BidMap;
+import ohs.types.CounterMap;
 import ohs.utils.StrUtils;
 
 public class SearchLogAnalyzer {
@@ -39,9 +39,9 @@ public class SearchLogAnalyzer {
 
 		String targetRunName = "cbeem_100_10_5_25_2000.0_0.5_false_false_false_0.5_false_false.txt";
 
-		StrCounterMap map1 = new StrCounterMap();
-		StrCounterMap map2 = new StrCounterMap();
-		StrCounterMap map3 = new StrCounterMap();
+		CounterMap<String, String> map1 = new CounterMap<String, String>();
+		CounterMap<String, String> map2 = new CounterMap<String, String>();
+		CounterMap<String, String> map3 = new CounterMap<String, String>();
 
 		for (int i = 0; i < logDirNames.length; i++) {
 			String logDir = logDirNames[i];
@@ -131,9 +131,9 @@ public class SearchLogAnalyzer {
 		String[] logDirNames = MIRPath.LogDirNames;
 		String[] collNames = MIRPath.CollNames;
 
-		StrCounterMap map1 = new StrCounterMap();
-		StrCounterMap map2 = new StrCounterMap();
-		StrCounterMap map3 = new StrCounterMap();
+		CounterMap<String, String> map1 = new CounterMap<String, String>();
+		CounterMap<String, String> map2 = new CounterMap<String, String>();
+		CounterMap<String, String> map3 = new CounterMap<String, String>();
 
 		for (int i = 0; i < logDirNames.length; i++) {
 			String logDir = logDirNames[i];
@@ -300,7 +300,7 @@ public class SearchLogAnalyzer {
 
 		for (int i = 0; i < queryFileNames.length; i++) {
 			List<BaseQuery> baseQueries = new ArrayList<BaseQuery>();
-			StrCounterMap queryRelevances = new StrCounterMap();
+			CounterMap<String, String> queryRelevances = new CounterMap<String, String>();
 
 			File queryFile = new File(queryFileNames[i]);
 			File relvFile = new File(relevanceDataFileNames[i]);
@@ -322,7 +322,7 @@ public class SearchLogAnalyzer {
 				bq.setLuceneQuery(luceneQuery);
 			}
 
-			StrBidMap docIdMap = DocumentIdMapper.readDocumentIdMap(docMapFileNames[i]);
+			BidMap<String, String> docIdMap = DocumentIdMapper.readDocumentIdMap(docMapFileNames[i]);
 
 			queryRelevances = RelevanceReader.filter(queryRelevances, docIdMap);
 

@@ -13,7 +13,6 @@ import ohs.types.Counter;
 import ohs.types.CounterMap;
 import ohs.types.Indexer;
 import ohs.types.ListMap;
-import ohs.types.common.StrCounter;
 
 public class VectorUtils {
 	public static void copy(Vector src, Vector tar) {
@@ -74,8 +73,8 @@ public class VectorUtils {
 		return ret;
 	}
 
-	public static StrCounter toCounter(Counter<Integer> x, Indexer<String> indexer) {
-		StrCounter ret = new StrCounter();
+	public static Counter<String> toCounter(Counter<Integer> x, Indexer<String> indexer) {
+		Counter<String> ret = new Counter<String>();
 		for (int index : x.keySet()) {
 			double value = x.getCount(index);
 			String obj = indexer.getObject(index);
@@ -87,8 +86,8 @@ public class VectorUtils {
 		return ret;
 	}
 
-	public static StrCounter toCounter(DenseVector x, Indexer<String> indexer) {
-		StrCounter ret = new StrCounter();
+	public static Counter<String> toCounter(DenseVector x, Indexer<String> indexer) {
+		Counter<String> ret = new Counter<String>();
 		for (int i = 0; i < x.size(); i++) {
 			double value = x.value(i);
 			if (value == 0) {
@@ -113,8 +112,8 @@ public class VectorUtils {
 		return ret;
 	}
 
-	public static StrCounter toCounter(SparseVector x, Indexer<String> indexer) {
-		StrCounter ret = new StrCounter();
+	public static Counter<String> toCounter(SparseVector x, Indexer<String> indexer) {
+		Counter<String> ret = new Counter<String>();
 		for (int i = 0; i < x.size(); i++) {
 			int index = x.indexAtLoc(i);
 			if (index < 0) {

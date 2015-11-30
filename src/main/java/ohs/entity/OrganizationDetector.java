@@ -9,7 +9,7 @@ import ohs.entity.data.struct.BilingualText;
 import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.types.ListMap;
-import ohs.types.common.IntPair;
+import ohs.types.Pair;
 
 public class OrganizationDetector {
 
@@ -50,7 +50,7 @@ public class OrganizationDetector {
 				continue;
 			}
 
-			ListMap<UnivComponent, IntPair>[] res = det.detect(orgName);
+			ListMap<UnivComponent, Pair<Integer, Integer>>[] res = det.detect(orgName);
 
 			StringBuffer sb = new StringBuffer();
 			sb.append("[Input]\n");
@@ -58,7 +58,7 @@ public class OrganizationDetector {
 			sb.append("[Output]\n");
 
 			for (int i = 0; i < res.length; i++) {
-				ListMap<UnivComponent, IntPair> ret = res[i];
+				ListMap<UnivComponent, Pair<Integer, Integer>> ret = res[i];
 				String s = i == 0 ? orgName.getKorean() : orgName.getEnglish();
 
 				if (i == 0) {
@@ -75,17 +75,17 @@ public class OrganizationDetector {
 
 						sb.append(label);
 
-						List<IntPair> locs = ret.get(label);
+						List<Pair<Integer, Integer>> locs = ret.get(label);
 
 						for (int k = 0; k < locs.size(); k++) {
-							IntPair loc = locs.get(k);
+							Pair<Integer, Integer> loc = locs.get(k);
 							sb.append("\t" + s.substring(loc.getFirst(), loc.getSecond()));
 						}
 						sb.append("\n");
 					}
 				}
 			}
-			
+
 			System.out.println(sb.toString() + "\n");
 
 			writer.write(sb.toString() + "\n");
@@ -94,19 +94,19 @@ public class OrganizationDetector {
 		reader.close();
 
 		//
-		// ListMap<UnivComponent, IntPair>[] res = det
+		// ListMap<UnivComponent, Pair<Integer,Integer>>[] res = det
 		// .detect(new BilingualText("경북대 지리학과", "Department of Geography, Kyungpook National University"));
 		//
-		// ListMap<UnivComponent, IntPair>[] res = det.detect(new BilingualText("부산대학교 조선해양공학과 대학원", ""));
+		// ListMap<UnivComponent, Pair<Integer,Integer>>[] res = det.detect(new BilingualText("부산대학교 조선해양공학과 대학원", ""));
 		//
-		// ListMap<UnivComponent, IntPair>[] res = det.detect(new BilingualText("부산대학교 자연과학대학 화학과", ""));
+		// ListMap<UnivComponent, Pair<Integer,Integer>>[] res = det.detect(new BilingualText("부산대학교 자연과학대학 화학과", ""));
 		//
-		// ListMap<UnivComponent, IntPair>[] res = det.detect(new BilingualText("한양대학교 전자전기제어계측공학과",
+		// ListMap<UnivComponent, Pair<Integer,Integer>>[] res = det.detect(new BilingualText("한양대학교 전자전기제어계측공학과",
 		// "Department of Electronic, Electrical, Control and Instrumentation Engineering, Hanyang University"));
-		// ListMap<UnivComponent, IntPair>[] res = det.detect(
+		// ListMap<UnivComponent, Pair<Integer,Integer>>[] res = det.detect(
 		// new BilingualText("한국교원대학교 가정교육과", "Department of Home Economics Education, Korea National University of Education"));
 		//
-		// ListMap<UnivComponent, IntPair>[] res = det
+		// ListMap<UnivComponent, Pair<Integer,Integer>>[] res = det
 		// .detect(new BilingualText("서울대학교 산림과학부", "Forest Science Department, Seoul National University"));
 	}
 
@@ -126,14 +126,14 @@ public class OrganizationDetector {
 
 	}
 
-	public ListMap<UnivComponent, IntPair>[] detect(BilingualText orgName) {
+	public ListMap<UnivComponent, Pair<Integer, Integer>>[] detect(BilingualText orgName) {
 		String engName = orgName.getEnglish();
 		String korName = orgName.getKorean();
 
-		ListMap<UnivComponent, IntPair>[] ret = new ListMap[2];
+		ListMap<UnivComponent, Pair<Integer, Integer>>[] ret = new ListMap[2];
 
 		for (int i = 0; i < ret.length; i++) {
-			ret[i] = new ListMap<UnivComponent, IntPair>();
+			ret[i] = new ListMap<UnivComponent, Pair<Integer, Integer>>();
 		}
 
 		if (korName.length() > 0) {
@@ -147,10 +147,10 @@ public class OrganizationDetector {
 		return ret;
 	}
 
-	public ListMap<UnivComponent, IntPair> detectEnglish(String s) {
+	public ListMap<UnivComponent, Pair<Integer, Integer>> detectEnglish(String s) {
 		Matcher m = p3.matcher(s);
 
-		ListMap<UnivComponent, IntPair> ret = new ListMap<UnivComponent, IntPair>();
+		ListMap<UnivComponent, Pair<Integer, Integer>> ret = new ListMap<UnivComponent, Pair<Integer, Integer>>();
 
 		if (m.find()) {
 			for (int i = 0; i <= m.groupCount(); i++) {
@@ -164,17 +164,17 @@ public class OrganizationDetector {
 				int end = m.end(i);
 				UnivComponent label = UnivComponent.values()[UnivComponent.values().length - i];
 
-				ret.put(label, new IntPair(start, end));
+				ret.put(label, new Pair<Integer, Integer>(start, end));
 			}
 		}
 
 		return ret;
 	}
 
-	public ListMap<UnivComponent, IntPair> detectKorean(String s) {
+	public ListMap<UnivComponent, Pair<Integer, Integer>> detectKorean(String s) {
 		Matcher m = p1.matcher(s);
 
-		ListMap<UnivComponent, IntPair> ret = new ListMap<UnivComponent, IntPair>();
+		ListMap<UnivComponent, Pair<Integer, Integer>> ret = new ListMap<UnivComponent, Pair<Integer, Integer>>();
 
 		if (m.find()) {
 			for (int i = 0; i <= m.groupCount(); i++) {
@@ -201,7 +201,7 @@ public class OrganizationDetector {
 
 				int start = m.start(i);
 				int end = m.end(i);
-				ret.put(label, new IntPair(start, end));
+				ret.put(label, new Pair<Integer, Integer>(start, end));
 			}
 
 		}

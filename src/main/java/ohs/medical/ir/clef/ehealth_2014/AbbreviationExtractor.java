@@ -8,23 +8,18 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.regex.Pattern;
 
-import ohs.types.common.StrPair;
+import ohs.types.Pair;
 
 /**
- * The AbbreviationExtractor class implements a simple algorithm for extraction
- * of abbreviations and their definitions from biomedical text. Abbreviations
- * (short forms) are extracted from the input file, and those abbreviations for
- * which a definition (long form) is found are printed out, along with that
- * definition, one per line.
+ * The AbbreviationExtractor class implements a simple algorithm for extraction of abbreviations and their definitions from biomedical text.
+ * Abbreviations (short forms) are extracted from the input file, and those abbreviations for which a definition (long form) is found are
+ * printed out, along with that definition, one per line.
  * 
- * A file consisting of short-form/long-form pairs (tab separated) can be
- * specified in tandem with the -testlist option for the purposes of evaluating
- * the algorithm.
+ * A file consisting of short-form/long-form pairs (tab separated) can be specified in tandem with the -testlist option for the purposes of
+ * evaluating the algorithm.
  * 
- * @see <a href="http://biotext.berkeley.edu/papers/psb03.pdf">A Simple
- *      Algorithm for Identifying Abbreviation Definitions in Biomedical
- *      Text</a> A.S. Schwartz, M.A. Hearst; Pacific Symposium on Biocomputing
- *      8:451-462(2003) for a detailed description of the algorithm.
+ * @see <a href="http://biotext.berkeley.edu/papers/psb03.pdf">A Simple Algorithm for Identifying Abbreviation Definitions in Biomedical
+ *      Text</a> A.S. Schwartz, M.A. Hearst; Pacific Symposium on Biocomputing 8:451-462(2003) for a detailed description of the algorithm.
  * 
  * @author Ariel Schwartz
  * @version 03/12/03
@@ -62,9 +57,9 @@ public class AbbreviationExtractor {
 		}
 		if (bestLongForm.length() < shortForm.length() || bestLongForm.indexOf(shortForm + " ") > -1
 
-		|| bestLongForm.endsWith(shortForm) || longFormSize > shortFormSize * 2
+				|| bestLongForm.endsWith(shortForm) || longFormSize > shortFormSize * 2
 
-		|| longFormSize > shortFormSize + 5 || shortFormSize > 10) {
+				|| longFormSize > shortFormSize + 5 || shortFormSize > 10) {
 			return false;
 		}
 
@@ -109,8 +104,7 @@ public class AbbreviationExtractor {
 		}
 
 		/*
-		 * Accept a short form which has some lower characters but has a high
-		 * ratio.
+		 * Accept a short form which has some lower characters but has a high ratio.
 		 */
 
 		{
@@ -134,13 +128,13 @@ public class AbbreviationExtractor {
 		return true;
 	}
 
-	public List<StrPair> extract(String text) {
+	public List<Pair<String, String>> extract(String text) {
 		String tmpStr, longForm = "", shortForm = "";
 		String currSentence = "";
 		int openParenIndex, closeParenIndex = -1, sentenceEnd, newCloseParenIndex, tmpIndex = -1;
 		boolean newParagraph = true;
 		StringTokenizer shortTokenizer;
-		List<StrPair> ret = new ArrayList<StrPair>();
+		List<Pair<String, String>> ret = new ArrayList<Pair<String, String>>();
 		String[] lines = text.split(" ");
 
 		for (int u = 0; u < lines.length; u++) {
@@ -205,7 +199,7 @@ public class AbbreviationExtractor {
 							String test2 = currSentence.substring(openParenIndex + 1, closeParenIndex);
 
 							if (accept(sf, lf) && accept2(sf, lf)) {
-								ret.add(new StrPair(sf, lf));
+								ret.add(new Pair<String, String>(sf, lf));
 							}
 						}
 					}

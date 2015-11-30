@@ -2,15 +2,14 @@ package ohs.medical.ir.query;
 
 import ohs.io.TextFileReader;
 import ohs.medical.ir.MIRPath;
+import ohs.types.BidMap;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
-import ohs.types.common.StrBidMap;
-import ohs.types.common.StrCounterMap;
 
 public class RelevanceReader {
 
-	public static StrCounterMap filter(StrCounterMap relData, StrBidMap docIdMap) {
-		StrCounterMap ret = new StrCounterMap();
+	public static CounterMap<String, String> filter(CounterMap<String, String> relData, BidMap<String, String> docIdMap) {
+		CounterMap<String, String> ret = new CounterMap<String, String>();
 
 		int num_pairs = 0;
 		int num_result_pairs = 0;
@@ -61,14 +60,14 @@ public class RelevanceReader {
 	public static void main(String[] args) throws Exception {
 
 		{
-			StrCounterMap relData = readTrecGenomicsRelevances(MIRPath.TREC_GENOMICS_RELEVANCE_JUDGE_2007_FILE);
+			CounterMap<String, String> relData = readTrecGenomicsRelevances(MIRPath.TREC_GENOMICS_RELEVANCE_JUDGE_2007_FILE);
 			System.out.println(relData);
 		}
 
 	}
 
-	public static StrCounterMap readClefEHealthRelevances(String fileName) {
-		StrCounterMap ret = new StrCounterMap();
+	public static CounterMap<String, String> readClefEHealthRelevances(String fileName) {
+		CounterMap<String, String> ret = new CounterMap<String, String>();
 		TextFileReader reader = new TextFileReader(fileName);
 		while (reader.hasNext()) {
 			String line = reader.next();
@@ -90,8 +89,8 @@ public class RelevanceReader {
 		return ret;
 	}
 
-	public static StrCounterMap readOhsumedRelevances(String fileName) {
-		StrCounterMap ret = new StrCounterMap();
+	public static CounterMap<String, String> readOhsumedRelevances(String fileName) {
+		CounterMap<String, String> ret = new CounterMap<String, String>();
 		TextFileReader reader = new TextFileReader(fileName);
 		while (reader.hasNext()) {
 			String line = reader.next();
@@ -131,8 +130,8 @@ public class RelevanceReader {
 		return ret;
 	}
 
-	public static StrCounterMap readRelevances(String fileName) throws Exception {
-		StrCounterMap ret = new StrCounterMap();
+	public static CounterMap<String, String> readRelevances(String fileName) throws Exception {
+		CounterMap<String, String> ret = new CounterMap<String, String>();
 		if (fileName.contains("trec_cds")) {
 			ret = readTrecCdsRelevances(fileName);
 		} else if (fileName.contains("clef_ehealth")) {
@@ -145,8 +144,8 @@ public class RelevanceReader {
 		return ret;
 	}
 
-	public static StrCounterMap readTrecCdsRelevances(String fileName) {
-		StrCounterMap ret = new StrCounterMap();
+	public static CounterMap<String, String> readTrecCdsRelevances(String fileName) {
+		CounterMap<String, String> ret = new CounterMap<String, String>();
 		TextFileReader reader = new TextFileReader(fileName);
 		while (reader.hasNext()) {
 			String line = reader.next();
@@ -163,8 +162,8 @@ public class RelevanceReader {
 		return ret;
 	}
 
-	public static StrCounterMap readTrecGenomicsRelevances(String fileName) {
-		StrCounterMap ret = new StrCounterMap();
+	public static CounterMap<String, String> readTrecGenomicsRelevances(String fileName) {
+		CounterMap<String, String> ret = new CounterMap<String, String>();
 		TextFileReader reader = new TextFileReader(fileName);
 		while (reader.hasNext()) {
 			String line = reader.next();

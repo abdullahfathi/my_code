@@ -3,7 +3,7 @@ package ohs.medical.ir.clef.ehealth_2014;
 import java.io.File;
 
 import ohs.io.TextFileReader;
-import ohs.types.common.StrCounterMap;
+import ohs.types.CounterMap;
 
 public class RelevanceJudgementReader {
 
@@ -15,13 +15,13 @@ public class RelevanceJudgementReader {
 		System.out.println("process ends.");
 	}
 
-	public static StrCounterMap read(File inputFile) {
+	public static CounterMap<String, String> read(File inputFile) {
 		// boolean is_2013_queries = false;
 		//
 		// if (inputFile.getPath().contains("2013ehealth")) {
 		// is_2013_queries = true;
 		// }
-		StrCounterMap ret = new StrCounterMap();
+		CounterMap<String, String> ret = new CounterMap<String, String>();
 		TextFileReader reader = new TextFileReader(inputFile);
 		while (reader.hasNext()) {
 			String line = reader.next();

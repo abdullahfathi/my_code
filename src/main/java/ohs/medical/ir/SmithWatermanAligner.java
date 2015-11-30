@@ -7,7 +7,7 @@ import java.util.List;
 import ohs.math.ArrayMath;
 import ohs.medical.ir.SmithWatermanScorer.ScoreMatrix;
 import ohs.string.sim.func.MatchType;
-import ohs.types.common.IntPair;
+import ohs.types.Pair;
 
 public class SmithWatermanAligner {
 
@@ -20,7 +20,7 @@ public class SmithWatermanAligner {
 	}
 
 	public void align(ScoreMatrix sm) {
-		List<IntPair> path = getAlignmentPath(sm);
+		List<Pair<Integer, Integer>> path = getAlignmentPath(sm);
 
 		List<Integer> s = sm.getSource();
 		List<Integer> t = sm.getTarget();
@@ -34,7 +34,7 @@ public class SmithWatermanAligner {
 		int pj = -1;
 
 		for (int k = 0; k < path.size(); k++) {
-			IntPair index = path.get(k);
+			Pair<Integer, Integer> index = path.get(k);
 			int i = index.getFirst();
 			int j = index.getSecond();
 
@@ -94,8 +94,8 @@ public class SmithWatermanAligner {
 		return ret;
 	}
 
-	private List<IntPair> getAlignmentPath(ScoreMatrix mm) {
-		List<IntPair> ret = new ArrayList<IntPair>();
+	private List<Pair<Integer, Integer>> getAlignmentPath(ScoreMatrix mm) {
+		List<Pair<Integer, Integer>> ret = new ArrayList<Pair<Integer, Integer>>();
 
 		List<Integer> s = mm.getSource();
 		List<Integer> t = mm.getTarget();
@@ -104,7 +104,7 @@ public class SmithWatermanAligner {
 		int j = t.size();
 
 		while (i > 0 && j > 0) {
-			ret.add(new IntPair(i - 1, j - 1));
+			ret.add(new Pair<Integer, Integer>(i - 1, j - 1));
 
 			double score = mm.get(i, j);
 			double west_score = mm.get(i, j - 1);

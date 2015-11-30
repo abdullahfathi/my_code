@@ -6,19 +6,19 @@ import java.util.List;
 import ohs.io.TextFileReader;
 import ohs.matrix.SparseVector;
 import ohs.medical.ir.query.BaseQuery;
+import ohs.types.BidMap;
 import ohs.types.Counter;
-import ohs.types.common.IntCounter;
-import ohs.types.common.StrBidMap;
-import ohs.types.common.StrCounterMap;
+import ohs.types.CounterMap;
 
 public class DocumentIdMapper {
 
-	public static List<SparseVector> mapDocIdsToIndexIds(List<BaseQuery> baseQueries, StrCounterMap relevanceData, StrBidMap docIdMap) {
+	public static List<SparseVector> mapDocIdsToIndexIds(List<BaseQuery> baseQueries, CounterMap<String, String> relevanceData,
+			BidMap<String, String> docIdMap) {
 		List<SparseVector> ret = new ArrayList<SparseVector>();
 		for (BaseQuery bq : baseQueries) {
 			String queryId = bq.getId();
 			Counter<String> docScores = relevanceData.getCounter(queryId);
-			IntCounter counter = new IntCounter();
+			Counter<Integer> counter = new Counter<Integer>();
 
 			for (String docId : docScores.keySet()) {
 				double score = docScores.getCount(docId);
@@ -37,8 +37,8 @@ public class DocumentIdMapper {
 		return ret;
 	}
 
-	public static StrCounterMap mapIndexIdsToDocIds(StrCounterMap resultData, StrBidMap docIdMap) {
-		StrCounterMap ret = new StrCounterMap();
+	public static CounterMap<String, String> mapIndexIdsToDocIds(CounterMap<String, String> resultData, BidMap<String, String> docIdMap) {
+		CounterMap<String, String> ret = new CounterMap<String, String>();
 		for (String queryId : resultData.keySet()) {
 			Counter<String> indexScores = resultData.getCounter(queryId);
 			for (String indexId : indexScores.keySet()) {
@@ -50,8 +50,8 @@ public class DocumentIdMapper {
 		return ret;
 	}
 
-	public static StrBidMap readDocumentIdMap(String fileName) {
-		StrBidMap ret = new StrBidMap();
+	public static BidMap<String, String> readDocumentIdMap(String fileName) {
+		BidMap<String, String> ret = new BidMap<String, String>();
 		TextFileReader reader = new TextFileReader(fileName);
 		while (reader.hasNext()) {
 			String[] parts = reader.next().split("\t");

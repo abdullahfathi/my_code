@@ -1,17 +1,10 @@
 package ohs.medical.ir;
 
-import java.text.NumberFormat;
-import java.util.List;
-import java.util.TreeSet;
-
 import ohs.math.ArrayMath;
 import ohs.math.ArrayUtils;
 import ohs.math.LA;
 import ohs.matrix.SparseMatrix;
 import ohs.matrix.SparseVector;
-import ohs.types.Counter;
-import ohs.types.Indexer;
-import ohs.types.common.IntCounterMap;
 
 /**
  * This class implements centralities of categories.

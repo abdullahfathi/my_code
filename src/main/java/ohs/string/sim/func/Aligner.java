@@ -4,8 +4,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import edu.stanford.nlp.util.IntPair;
 import ohs.math.ArrayMath;
-import ohs.types.common.IntPair;
+import ohs.types.Pair;
 
 public class Aligner {
 
@@ -18,7 +19,7 @@ public class Aligner {
 	}
 
 	public AlignResult align(MemoMatrix mm) {
-		List<IntPair> path = getAlignmentPath(mm);
+		List<Pair> path = getAlignmentPath(mm);
 
 		String s = mm.getSource();
 		String t = mm.getTarget();
@@ -32,9 +33,9 @@ public class Aligner {
 		int pj = -1;
 
 		for (int k = 0; k < path.size(); k++) {
-			IntPair index = path.get(k);
-			int i = index.getFirst();
-			int j = index.getSecond();
+			Pair index = path.get(k);
+			int i = (int) index.getFirst();
+			int j = (int) index.getSecond();
 
 			char si = s.charAt(i);
 			char tj = t.charAt(j);
@@ -93,8 +94,8 @@ public class Aligner {
 		return ret;
 	}
 
-	private List<IntPair> getAlignmentPath(MemoMatrix mm) {
-		List<IntPair> ret = new ArrayList<IntPair>();
+	private List<Pair> getAlignmentPath(MemoMatrix mm) {
+		List<Pair> ret = new ArrayList<Pair>();
 
 		String s = mm.getSource();
 		String t = mm.getTarget();
@@ -103,7 +104,7 @@ public class Aligner {
 		int j = t.length();
 
 		while (i > 0 && j > 0) {
-			ret.add(new IntPair(i - 1, j - 1));
+			ret.add(new Pair(i - 1, j - 1));
 
 			// Token ti = s.getToken(i - 1);
 			// Token tj = t.getToken(j - 1);

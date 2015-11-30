@@ -14,7 +14,6 @@ import ohs.io.TextFileReader;
 import ohs.io.TextFileWriter;
 import ohs.types.Counter;
 import ohs.types.CounterMap;
-import ohs.types.common.StrCounterMap;
 import ohs.utils.StrUtils;
 
 public class PaperDataHandler {
@@ -34,7 +33,7 @@ public class PaperDataHandler {
 
 		// dh.selectSubsetForOrgHistory();
 		//
-		
+
 		System.out.println("process ends.");
 	}
 
@@ -44,7 +43,7 @@ public class PaperDataHandler {
 
 		// TextFileWriter writer = new TextFileWriter(ENTPath.PERSON_SUBSET_FILE);
 
-		StrCounterMap cm = new StrCounterMap();
+		CounterMap<String, String> cm = new CounterMap<String, String>();
 
 		while (reader.hasNext()) {
 			reader.print(1000000);
@@ -170,7 +169,7 @@ public class PaperDataHandler {
 		reader.setPrintNexts(false);
 
 		CounterMap<String, BilingualText> cm = new CounterMap<String, BilingualText>();
-		StrCounterMap cm2 = new StrCounterMap();
+		CounterMap<String, String> cm2 = new CounterMap<String, String>();
 
 		while (reader.hasNext()) {
 			reader.print(1000000);

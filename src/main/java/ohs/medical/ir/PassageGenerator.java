@@ -6,7 +6,7 @@ import ohs.math.ArrayMath;
 import ohs.medical.ir.SmithWatermanScorer.ScoreMatrix;
 import ohs.types.Counter;
 import ohs.types.Indexer;
-import ohs.types.common.IntPair;
+import ohs.types.Pair;
 
 public class PassageGenerator {
 
@@ -16,7 +16,7 @@ public class PassageGenerator {
 
 	private StringBuffer logBuff;
 
-	public Counter<IntPair> generate(List<Integer> qWords, List<Integer> dWords) {
+	public Counter<Pair<Integer, Integer>> generate(List<Integer> qWords, List<Integer> dWords) {
 		logBuff = new StringBuffer();
 
 		SmithWatermanScorer swScorer = new SmithWatermanScorer();
@@ -32,7 +32,7 @@ public class PassageGenerator {
 			}
 		}
 
-		Counter<IntPair> psgScores = new Counter<IntPair>();
+		Counter<Pair<Integer, Integer>> psgScores = new Counter<Pair<Integer, Integer>>();
 
 		for (int m = 0, p_start = 0, p_offset = 0; m < sw_score_sum_for_each_word.length; m++) {
 			int w = dWords.get(m);
@@ -40,7 +40,7 @@ public class PassageGenerator {
 
 			if (sw_score_sum_for_word == 0) {
 				if (p_offset > 0) {
-					IntPair psgLoc = new IntPair(p_start, p_offset);
+					Pair<Integer, Integer> psgLoc = new Pair<Integer, Integer>(p_start, p_offset);
 					double psg_score = 0;
 
 					for (int n = p_start; n < p_start + p_offset; n++) {
@@ -61,10 +61,10 @@ public class PassageGenerator {
 		if (makeLog) {
 			StringBuffer psgBuff = new StringBuffer();
 
-			List<IntPair> psgLocs = psgScores.getSortedKeys();
+			List<Pair<Integer, Integer>> psgLocs = psgScores.getSortedKeys();
 
 			for (int m = 0; m < psgLocs.size(); m++) {
-				IntPair psgLoc = psgLocs.get(m);
+				Pair<Integer, Integer> psgLoc = psgLocs.get(m);
 				int p_start = psgLoc.getFirst();
 				int p_offset = psgLoc.getSecond();
 				int p_end = p_start + p_offset;

@@ -7,7 +7,7 @@ import java.util.List;
 import ohs.math.ArrayMath;
 import ohs.types.Counter;
 import ohs.types.Indexer;
-import ohs.types.common.IntPair;
+import ohs.types.Pair;
 
 public class SmithWatermanScorer {
 
@@ -19,9 +19,9 @@ public class SmithWatermanScorer {
 
 		private List<Integer> t;
 
-		private IntPair indexAtBest;
+		private Pair<Integer, Integer> indexAtBest;
 
-		ScoreMatrix(List<Integer> s, List<Integer> t, double[][] values, IntPair indexAtBest) {
+		ScoreMatrix(List<Integer> s, List<Integer> t, double[][] values, Pair<Integer, Integer> indexAtBest) {
 			this.s = s;
 			this.t = t;
 			this.values = values;
@@ -215,7 +215,7 @@ public class SmithWatermanScorer {
 			}
 		}
 
-		return new ScoreMatrix(s, t, sw, new IntPair(max_i, max_j));
+		return new ScoreMatrix(s, t, sw, new Pair<Integer, Integer>(max_i, max_j));
 	}
 
 	public double getNormalizedScore(ScoreMatrix sm) {
